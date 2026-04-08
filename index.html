@@ -2,170 +2,266 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
   <meta name="apple-mobile-web-app-title" content="Ödeme Takip"/>
-  <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="theme-color" content="#0f172a"/>
   <link rel="manifest" href="/manifest.json"/>
   <link rel="apple-touch-icon" href="/icon-192.png"/>
   <title>Arlinoks – Ödeme Takip</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background: #0f172a; font-family: Georgia, serif; color: #f1f5f9; min-height: 100vh; padding: 16px 14px 160px; overscroll-behavior: none; }
 
-    /* ÜST BAR */
-    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .arlinoks { font-size: 22px; font-weight: bold; color: #ffffff; letter-spacing: 2px; font-style: italic; }
-    .header-sag { text-align: right; }
-    .firma-duzenle { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-bottom: 3px; }
-    #firma-adi-goster { color: #f1f5f9; font-size: 15px; font-weight: bold; cursor: pointer; border-bottom: 1px dashed #334155; }
-    .firma-input { background: #0f172a; border: 1px solid #c9a84c; color: #f1f5f9; border-radius: 6px; padding: 5px 10px; font-size: 14px; outline: none; font-family: Georgia, serif; width: 140px; text-align: right; display: none; }
-    .btn-kaydet-firma { background: #c9a84c; color: #0f172a; border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; display: none; }
+    body {
+      background: #0c1220;
+      font-family: Georgia, serif;
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── NAVİGASYON ── */
+    .navbar {
+      background: #0f1e35;
+      border-bottom: 2px solid #c9a84c;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .arlinoks { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 3px; font-style: italic; }
+    .navbar-sag { display: flex; align-items: center; gap: 16px; }
+    .firma-duzenle { display: flex; align-items: center; gap: 6px; }
+    #firma-adi-goster { color: #c9a84c; font-size: 14px; font-weight: bold; cursor: pointer; border-bottom: 1px dashed #c9a84c55; }
+    .firma-input { background: #0f172a; border: 1px solid #c9a84c; color: #f1f5f9; border-radius: 6px; padding: 4px 10px; font-size: 13px; outline: none; font-family: Georgia, serif; width: 130px; display: none; }
+    .btn-kaydet-firma { background: #c9a84c; color: #0f172a; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; display: none; }
     .baslik-kucuk { color: #64748b; font-size: 10px; letter-spacing: 2px; }
 
-    /* BİLDİRİM BANNER */
-    #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; text-align: center; }
-    .btn-bildirim { background: #f59e0b; color: #0f172a; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; margin-top: 8px; }
+    /* ── ANA KONTEYNER ── */
+    .konteyner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 28px 120px;
+    }
 
-    /* FATURA EKLEME FORMU */
-    .form-card { background: #1e293b; border: 2px solid #c9a84c; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
-    .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; text-align: center; margin-bottom: 14px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .form-alan label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 4px; }
+    /* ── ÖZET KARTLAR ── */
+    .ozet-kartlar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .ozet-kart {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 16px 20px;
+      border-left: 4px solid #334155;
+    }
+    .ozet-kart.toplam { border-left-color: #c9a84c; }
+    .ozet-kart.odenen { border-left-color: #4ade80; }
+    .ozet-kart.kalan  { border-left-color: #ef4444; }
+    .ozet-etiket { font-size: 11px; color: #64748b; letter-spacing: 1px; margin-bottom: 6px; }
+    .ozet-deger { font-size: 20px; font-weight: bold; }
+    .ozet-kart.toplam .ozet-deger { color: #f1f5f9; }
+    .ozet-kart.odenen .ozet-deger { color: #4ade80; }
+    .ozet-kart.kalan  .ozet-deger { color: #ef4444; }
+
+    /* ── FORM ── */
+    .form-card {
+      background: #1e293b;
+      border: 1.5px solid #c9a84c55;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: 2fr 2fr 2fr 1fr; gap: 14px; align-items: end; }
+    .form-alan label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 5px; letter-spacing: 0.5px; }
     .hint { color: #64748b; font-size: 10px; }
     input[type=text], input[type=date], input[type=number] {
       width: 100%; background: #0f172a; border: 1px solid #334155;
-      color: #f1f5f9; border-radius: 8px; padding: 10px 10px;
-      font-size: 14px; outline: none; font-family: Georgia, serif; -webkit-appearance: none;
+      color: #f1f5f9; border-radius: 8px; padding: 10px 12px;
+      font-size: 14px; outline: none; font-family: Georgia, serif;
     }
     input:focus { border-color: #c9a84c; }
-    #vade-hint { color: #c9a84c; font-size: 11px; margin-top: 3px; display: none; }
-    .btn-kaydet { width: 100%; background: linear-gradient(135deg, #c9a84c, #a07830); color: #0f172a; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
-    .btn-kaydet:active { opacity: 0.85; }
-    #msg { text-align: center; margin-top: 8px; font-size: 13px; min-height: 18px; }
+    #vade-hint { color: #c9a84c; font-size: 11px; margin-top: 4px; display: none; }
+    .btn-kaydet {
+      width: 100%; background: linear-gradient(135deg, #c9a84c, #a07830);
+      color: #0f172a; border: none; border-radius: 8px; padding: 10px;
+      font-size: 14px; font-weight: bold; cursor: pointer; font-family: Georgia, serif;
+      white-space: nowrap;
+    }
+    .btn-kaydet:hover { opacity: 0.9; }
+    #msg { font-size: 12px; margin-top: 6px; min-height: 16px; color: #4ade80; }
 
-    /* TABLO */
-    .liste-baslik { color: #64748b; font-size: 12px; text-align: center; margin-bottom: 10px; }
-    .tablo-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #334155; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+    /* ── TABLO ── */
+    .liste-baslik { color: #64748b; font-size: 12px; margin-bottom: 10px; }
+    .tablo-wrap { border-radius: 12px; border: 1px solid #1e293b; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead tr { background: #1e3a5f; }
-    thead th { padding: 10px 10px; text-align: left; color: #c9a84c; font-size: 10px; letter-spacing: 1px; font-weight: bold; border-bottom: 2px solid #c9a84c55; white-space: nowrap; }
-    tbody tr { border-bottom: 1px solid #1e293b; }
-    tbody tr:nth-child(even) { background: #111827; }
-    tbody tr.odendi-satir { background: #0d2a1a !important; opacity: 0.75; }
+    thead th { padding: 11px 14px; text-align: left; color: #c9a84c; font-size: 10px; letter-spacing: 1px; font-weight: bold; border-bottom: 2px solid #c9a84c44; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #1a2535; transition: background 0.15s; }
+    tbody tr:hover { background: #1a2a42; }
+    tbody tr.odendi-satir { background: #0d2218 !important; opacity: 0.72; }
     tbody tr.odendi-satir td { text-decoration: line-through; color: #4ade80 !important; }
-    td { padding: 10px 10px; vertical-align: middle; }
+    td { padding: 11px 14px; vertical-align: middle; }
     .tutar-hucre { color: #c9a84c; font-weight: bold; }
-    .durum { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
-    .islem-grup { display: flex; gap: 4px; }
-    .btn-odendi { font-size: 11px; padding: 5px 9px; border-radius: 6px; cursor: pointer; border: 1px solid #60a5fa55; background: #1a3a5c; color: #60a5fa; font-family: Georgia, serif; white-space: nowrap; }
-    .btn-geri-al { font-size: 11px; padding: 5px 9px; border-radius: 6px; cursor: pointer; border: 1px solid #4ade8055; background: #0d2a1a; color: #4ade80; font-family: Georgia, serif; white-space: nowrap; }
-    .btn-sil-tablo { font-size: 11px; padding: 5px 8px; border-radius: 6px; cursor: pointer; border: 1px solid #334155; background: transparent; color: #ef4444; font-family: Georgia, serif; }
-    .bos { text-align: center; color: #475569; padding: 36px 20px; border: 1px dashed #334155; border-radius: 12px; font-size: 14px; line-height: 2.2; }
+    .durum { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .islem-grup { display: flex; gap: 6px; }
+    .btn-odendi  { font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid #60a5fa44; background: #1a3a5c; color: #60a5fa; font-family: Georgia, serif; white-space: nowrap; }
+    .btn-odendi:hover { background: #1e4a72; }
+    .btn-geri-al { font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid #4ade8044; background: #0d2218; color: #4ade80; font-family: Georgia, serif; white-space: nowrap; }
+    .btn-sil-tablo { font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #334155; background: transparent; color: #ef4444; font-family: Georgia, serif; }
+    .btn-sil-tablo:hover { background: #2a1212; }
+    .bos { text-align: center; color: #475569; padding: 48px 20px; font-size: 15px; line-height: 2.5; }
 
-    /* ÖZET ÇUBUĞU */
-    #ozet-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f1e35; border-top: 2px solid #c9a84c; padding: 12px 16px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; z-index: 100; }
-    .ozet-kutu { text-align: center; padding: 10px 6px; border-radius: 10px; background: #1e293b; }
-    .ozet-etiket { font-size: 10px; color: #64748b; letter-spacing: 0.5px; margin-bottom: 5px; }
-    .ozet-deger { font-size: 13px; font-weight: bold; }
+    /* ── BİLDİRİM BANNER ── */
+    #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; display: none; align-items: center; justify-content: space-between; gap: 12px; }
+    #bildirim-banner.goster { display: flex; }
+    .btn-bildirim { background: #f59e0b; color: #0f172a; border: none; border-radius: 6px; padding: 7px 16px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
 
-    /* UYARI MODALI */
-    #uyari-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.90); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    /* ── POP-UP UYARI ── */
+    #uyari-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
     #uyari-overlay.aktif { display: flex; }
-    #uyari-kutu { background: #1e293b; border: 3px solid #ef4444; border-radius: 18px; padding: 28px 22px; max-width: 400px; width: 100%; text-align: center; animation: salla 0.4s ease; }
-    @keyframes salla { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
-    #uyari-ikon { font-size: 52px; margin-bottom: 10px; }
-    #uyari-baslik { color: #ef4444; font-size: 20px; font-weight: bold; margin-bottom: 6px; }
-    #uyari-alt { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
-    #uyari-liste { margin: 0 0 18px; text-align: left; }
-    .uyari-satir { background: #0f172a; border-left: 4px solid #ef4444; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; color: #f1f5f9; font-size: 14px; line-height: 1.7; }
-    .uyari-satir .tutar { color: #c9a84c; font-weight: bold; }
-    #uyari-kapat { background: #ef4444; color: white; border: none; border-radius: 10px; padding: 14px 32px; font-size: 15px; font-weight: bold; cursor: pointer; width: 100%; font-family: Georgia, serif; }
+    #uyari-kutu {
+      background: #1e293b;
+      border: 2px solid #ef4444;
+      border-radius: 16px;
+      padding: 30px 32px;
+      width: 100%;
+      max-width: 560px;
+      animation: salla 0.35s ease;
+    }
+    @keyframes salla { 0%{transform:scale(0.85);opacity:0} 60%{transform:scale(1.03)} 100%{transform:scale(1);opacity:1} }
+    .uyari-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    #uyari-ikon { font-size: 36px; }
+    #uyari-baslik { color: #ef4444; font-size: 20px; font-weight: bold; }
+    #uyari-alt { color: #94a3b8; font-size: 13px; margin-top: 2px; }
+    #uyari-liste { margin-bottom: 20px; }
+    .uyari-satir {
+      background: #0f172a;
+      border-left: 4px solid #ef4444;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .uyari-satir .uyari-no { color: #f1f5f9; font-weight: bold; font-size: 14px; }
+    .uyari-satir .uyari-tutar { color: #c9a84c; font-weight: bold; font-size: 15px; }
+    .uyari-satir .uyari-gun { font-size: 12px; }
+    #uyari-kapat {
+      background: #ef4444; color: white; border: none;
+      border-radius: 10px; padding: 12px; font-size: 14px;
+      font-weight: bold; cursor: pointer; width: 100%;
+      font-family: Georgia, serif;
+    }
+    #uyari-kapat:hover { background: #dc2626; }
   </style>
 </head>
 <body>
 
-  <!-- UYARI MODALI -->
+  <!-- POP-UP UYARI -->
   <div id="uyari-overlay">
     <div id="uyari-kutu">
-      <div id="uyari-ikon">🚨</div>
-      <div id="uyari-baslik">Ödeme Uyarısı!</div>
-      <div id="uyari-alt">Aşağıdaki faturalar için ödeme yapmanız gerekiyor:</div>
+      <div class="uyari-header">
+        <div id="uyari-ikon">🚨</div>
+        <div>
+          <div id="uyari-baslik">Ödeme Uyarısı!</div>
+          <div id="uyari-alt">Bugün ödenmesi gereken veya gecikmiş faturalar:</div>
+        </div>
+      </div>
       <div id="uyari-liste"></div>
       <button id="uyari-kapat" onclick="uyariKapat()">✔ Anladım, Kapat</button>
     </div>
   </div>
 
-  <!-- ÜST BAR -->
-  <div class="top-bar">
+  <!-- NAVİGASYON -->
+  <div class="navbar">
     <div class="arlinoks">Arlinoks</div>
-    <div class="header-sag">
+    <div class="navbar-sag">
       <div class="firma-duzenle">
-        <span id="firma-adi-goster" onclick="firmaAdiniDuzenle()" title="Düzenlemek için tıklayın">X Firması ✎</span>
-        <input class="firma-input" id="firma-inp" type="text" placeholder="Firma adı" />
+        <span id="firma-adi-goster" onclick="firmaAdiniDuzenle()" title="Düzenlemek için tıklayın"></span>
+        <input class="firma-input" id="firma-inp" type="text" placeholder="Firma adı"/>
         <button class="btn-kaydet-firma" id="firma-kaydet-btn" onclick="firmaKaydet()">✓</button>
       </div>
       <div class="baslik-kucuk">90 GÜNLÜK ÖDEME TAKİBİ</div>
     </div>
   </div>
 
-  <!-- BİLDİRİM BANNER -->
-  <div id="bildirim-banner">
-    <div style="color:#f59e0b;font-size:13px;">🔔 Ödeme uyarıları alabilmek için bildirim iznine ihtiyaç var.</div>
-    <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
-  </div>
+  <div class="konteyner">
 
-  <!-- FATURA EKLEME FORMU -->
-  <div class="form-card">
-    <div class="form-title">➕ Yeni Fatura Ekle</div>
-    <div class="form-grid">
-      <div class="form-alan">
-        <label>Fatura No</label>
-        <input type="text" id="inp-no" placeholder="FTR-001"/>
-      </div>
-      <div class="form-alan">
-        <label>Fatura Tarihi <span class="hint">(90 gün)</span></label>
-        <input type="date" id="inp-tarih" oninput="gosterVade()"/>
-        <div id="vade-hint"></div>
-      </div>
-      <div class="form-alan">
-        <label>Tutar (₺)</label>
-        <input type="number" id="inp-tutar" placeholder="15000" inputmode="decimal"/>
-      </div>
+    <!-- BİLDİRİM BANNER -->
+    <div id="bildirim-banner">
+      <span style="color:#f59e0b;font-size:13px;">🔔 Ödeme uyarıları alabilmek için bildirim iznine ihtiyaç var.</span>
+      <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
-    <button class="btn-kaydet" onclick="faturaEkle()">💾 Kaydet</button>
-    <div id="msg"></div>
-  </div>
 
-  <!-- LİSTE -->
-  <div id="liste-baslik" class="liste-baslik"></div>
-  <div id="liste"></div>
+    <!-- ÖZET KARTLAR -->
+    <div class="ozet-kartlar">
+      <div class="ozet-kart toplam">
+        <div class="ozet-etiket">💰 TOPLAM TUTAR</div>
+        <div class="ozet-deger" id="oz-toplam">0 ₺</div>
+      </div>
+      <div class="ozet-kart odenen">
+        <div class="ozet-etiket">✅ ÖDENEN</div>
+        <div class="ozet-deger" id="oz-odenen">0 ₺</div>
+      </div>
+      <div class="ozet-kart kalan">
+        <div class="ozet-etiket">🔴 KALAN</div>
+        <div class="ozet-deger" id="oz-kalan">0 ₺</div>
+      </div>
+    </div>
 
-  <!-- ÖZET ÇUBUĞU -->
-  <div id="ozet-bar">
-    <div class="ozet-kutu">
-      <div class="ozet-etiket">💰 TOPLAM</div>
-      <div class="ozet-deger" style="color:#f1f5f9" id="oz-toplam">0 ₺</div>
+    <!-- FATURA EKLEME FORMU -->
+    <div class="form-card">
+      <div class="form-title">➕ Yeni Fatura Ekle</div>
+      <div class="form-grid">
+        <div class="form-alan">
+          <label>FATURA NO</label>
+          <input type="text" id="inp-no" placeholder="FTR-001"/>
+        </div>
+        <div class="form-alan">
+          <label>FATURA TARİHİ <span class="hint">(90 gün sonrası vade)</span></label>
+          <input type="date" id="inp-tarih" oninput="gosterVade()"/>
+          <div id="vade-hint"></div>
+        </div>
+        <div class="form-alan">
+          <label>TUTAR (₺)</label>
+          <input type="number" id="inp-tutar" placeholder="15.000"/>
+        </div>
+        <div class="form-alan">
+          <label>&nbsp;</label>
+          <button class="btn-kaydet" onclick="faturaEkle()">💾 Kaydet</button>
+        </div>
+      </div>
+      <div id="msg"></div>
     </div>
-    <div class="ozet-kutu">
-      <div class="ozet-etiket">✅ ÖDENEN</div>
-      <div class="ozet-deger" style="color:#4ade80" id="oz-odenen">0 ₺</div>
-    </div>
-    <div class="ozet-kutu">
-      <div class="ozet-etiket">🔴 KALAN</div>
-      <div class="ozet-deger" style="color:#ef4444" id="oz-kalan">0 ₺</div>
-    </div>
+
+    <!-- LİSTE -->
+    <div id="liste-baslik" class="liste-baslik"></div>
+    <div id="liste"></div>
+
   </div>
 
   <script>
-    const ANAHTAR = "x-firma-odeme-takip";
+    const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(()=>{});
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
     // ── FİRMA ADI ──
     function firmaAdiniYukle() {
@@ -182,21 +278,16 @@
     }
     function firmaKaydet() {
       const ad = document.getElementById("firma-inp").value.trim();
-      if (ad) {
-        localStorage.setItem(FIRMA_ANAHTAR, ad);
-        document.getElementById("firma-adi-goster").textContent = ad + " ✎";
-      }
+      if (ad) { localStorage.setItem(FIRMA_ANAHTAR, ad); document.getElementById("firma-adi-goster").textContent = ad + " ✎"; }
       document.getElementById("firma-inp").style.display = "none";
       document.getElementById("firma-kaydet-btn").style.display = "none";
-      document.getElementById("firma-adi-goster").style.display = "block";
+      document.getElementById("firma-adi-goster").style.display = "inline";
     }
 
     // ── VERİ ──
-    function faturaYukle() {
-      try { return JSON.parse(localStorage.getItem(ANAHTAR) || "[]"); } catch { return []; }
-    }
-    function faturaKaydet(liste) { localStorage.setItem(ANAHTAR, JSON.stringify(liste)); }
-    function vadeTarihi(t) { const d = new Date(t); d.setDate(d.getDate()+90); return d; }
+    function faturaYukle() { try { return JSON.parse(localStorage.getItem(ANAHTAR)||"[]"); } catch { return []; } }
+    function faturaKaydet(l) { localStorage.setItem(ANAHTAR, JSON.stringify(l)); }
+    function vadeTarihi(t) { const d=new Date(t); d.setDate(d.getDate()+90); return d; }
     function formatTarih(d) { return new Date(d).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"}); }
     function kalanGun(v) { const b=new Date(); b.setHours(0,0,0,0); const vd=new Date(v); vd.setHours(0,0,0,0); return Math.round((vd-b)/86400000); }
     function formatPara(s) { return Number(s).toLocaleString("tr-TR",{minimumFractionDigits:0})+" ₺"; }
@@ -209,59 +300,52 @@
       return{label:"⚪ "+g+" gün kaldı",renk:"#6b7280",bg:"#6b728022"};
     }
 
-    function gcalLink(inv) {
-      const vade=vadeTarihi(inv.tarih);
-      const ds=vade.toISOString().replace(/-|:|\.\d{3}/g,"").slice(0,8);
-      const t=encodeURIComponent("💸 Ödeme: "+inv.tutar+" ₺ - "+inv.no);
-      const d=encodeURIComponent("Fatura No: "+inv.no+"\nTutar: "+inv.tutar+" ₺");
-      return"https://calendar.google.com/calendar/render?action=TEMPLATE&text="+t+"&dates="+ds+"/"+ds+"&details="+d+"&sf=true&output=xml";
-    }
-
     // ── SES ──
     function uyariSesiCal() {
       try {
         const ctx=new(window.AudioContext||window.webkitAudioContext)();
         [[880,0,0.18],[880,0.22,0.18],[1100,0.44,0.32]].forEach(([f,b,s])=>{
           const o=ctx.createOscillator(),g=ctx.createGain();
-          o.connect(g);g.connect(ctx.destination);o.type="sine";
+          o.connect(g); g.connect(ctx.destination); o.type="sine";
           o.frequency.setValueAtTime(f,ctx.currentTime+b);
           g.gain.setValueAtTime(0.4,ctx.currentTime+b);
           g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+b+s);
-          o.start(ctx.currentTime+b);o.stop(ctx.currentTime+b+s);
+          o.start(ctx.currentTime+b); o.stop(ctx.currentTime+b+s);
         });
       } catch(e){}
     }
 
     // ── ROZET ──
     function rozetGuncelle() {
-      const s = faturaYukle().filter(inv => !inv.odendi && kalanGun(vadeTarihi(inv.tarih)) <= 0).length;
-      if ('setAppBadge' in navigator) {
-        s > 0 ? navigator.setAppBadge(s).catch(()=>{}) : navigator.clearAppBadge().catch(()=>{});
-      }
+      const s=faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih))<=0).length;
+      if('setAppBadge' in navigator){ s>0?navigator.setAppBadge(s).catch(()=>{}):navigator.clearAppBadge().catch(()=>{}); }
     }
 
     // ── ÖZET ──
     function ozetGuncelle() {
-      const liste = faturaYukle();
-      let toplam=0, odenen=0;
-      liste.forEach(inv => {
-        const t = Number(inv.tutar)||0;
-        toplam += t;
-        if (inv.odendi) odenen += t;
-      });
-      document.getElementById("oz-toplam").textContent = formatPara(toplam);
-      document.getElementById("oz-odenen").textContent = formatPara(odenen);
-      document.getElementById("oz-kalan").textContent  = formatPara(toplam - odenen);
+      const liste=faturaYukle(); let toplam=0,odenen=0;
+      liste.forEach(inv=>{ const t=Number(inv.tutar)||0; toplam+=t; if(inv.odendi) odenen+=t; });
+      document.getElementById("oz-toplam").textContent=formatPara(toplam);
+      document.getElementById("oz-odenen").textContent=formatPara(odenen);
+      document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
     }
 
-    // ── UYARI ──
+    // ── POP-UP UYARI ──
     function uyariKontrol() {
-      const acil = faturaYukle().filter(inv => !inv.odendi && kalanGun(vadeTarihi(inv.tarih)) <= 0);
-      if (!acil.length) return;
-      document.getElementById("uyari-liste").innerHTML = acil.map(inv => {
-        const g = kalanGun(vadeTarihi(inv.tarih));
-        const gm = g<0 ? `<span style="color:#ef4444">⚠️ ${Math.abs(g)} gün gecikmiş!</span>` : `<span style="color:#f97316">⏰ Bugün son gün!</span>`;
-        return `<div class="uyari-satir"><strong>${inv.no}</strong><br><span class="tutar">${formatPara(inv.tutar)}</span><br>${gm}</div>`;
+      const acil=faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih))<=0);
+      if(!acil.length) return;
+      document.getElementById("uyari-liste").innerHTML=acil.map(inv=>{
+        const g=kalanGun(vadeTarihi(inv.tarih));
+        const gunMetin=g<0
+          ?`<span class="uyari-gun" style="color:#ef4444">⚠️ ${Math.abs(g)} gün gecikmiş</span>`
+          :`<span class="uyari-gun" style="color:#f97316">⏰ Bugün son gün!</span>`;
+        return`<div class="uyari-satir">
+          <div>
+            <div class="uyari-no">${inv.no}</div>
+            ${gunMetin}
+          </div>
+          <div class="uyari-tutar">${formatPara(inv.tutar)}</div>
+        </div>`;
       }).join("");
       document.getElementById("uyari-overlay").classList.add("aktif");
       uyariSesiCal();
@@ -270,34 +354,34 @@
 
     // ── BİLDİRİM ──
     function bildirimKontrol() {
-      if (!('Notification' in window)) return;
-      if (Notification.permission === 'default') document.getElementById('bildirim-banner').style.display = 'block';
+      if(!('Notification' in window)) return;
+      if(Notification.permission==='default') document.getElementById('bildirim-banner').classList.add('goster');
     }
     function bildirimIzniIste() {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted') {
-          document.getElementById('bildirim-banner').style.display = 'none';
-          new Notification('Arlinoks Ödeme Takip', { body: 'Bildirimler aktif! ✅', icon: '/icon-192.png' });
+      Notification.requestPermission().then(p=>{
+        if(p==='granted'){
+          document.getElementById('bildirim-banner').classList.remove('goster');
+          new Notification('Arlinoks Ödeme Takip',{body:'Bildirimler aktif! ✅',icon:'/icon-192.png'});
         }
       });
     }
 
     // ── FORM ──
     function gosterVade() {
-      const t = document.getElementById("inp-tarih").value;
-      const h = document.getElementById("vade-hint");
-      if(t){ h.style.display="block"; h.textContent="→ "+formatTarih(vadeTarihi(t)); }
+      const t=document.getElementById("inp-tarih").value;
+      const h=document.getElementById("vade-hint");
+      if(t){ h.style.display="block"; h.textContent="→ Vade: "+formatTarih(vadeTarihi(t)); }
       else h.style.display="none";
     }
 
     function faturaEkle() {
-      const no    = document.getElementById("inp-no").value.trim();
-      const tarih = document.getElementById("inp-tarih").value;
-      const tutar = document.getElementById("inp-tutar").value.trim();
-      const msg   = document.getElementById("msg");
+      const no=document.getElementById("inp-no").value.trim();
+      const tarih=document.getElementById("inp-tarih").value;
+      const tutar=document.getElementById("inp-tutar").value.trim();
+      const msg=document.getElementById("msg");
       if(!no||!tarih||!tutar){ msg.style.color="#f87171"; msg.textContent="⚠️ Lütfen tüm alanları doldurun."; return; }
-      const liste = faturaYukle();
-      liste.push({id:Date.now(), no, tarih, tutar, odendi:false});
+      const liste=faturaYukle();
+      liste.push({id:Date.now(),no,tarih,tutar,odendi:false});
       faturaKaydet(liste);
       document.getElementById("inp-no").value="";
       document.getElementById("inp-tarih").value="";
@@ -308,79 +392,56 @@
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
-    function faturasSil(id) {
-      faturaKaydet(faturaYukle().filter(i=>i.id!==id));
+    function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
+
+    function odendiBelirle(id,durum) {
+      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum}:i));
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
-    function odendiBelirle(id, durum) {
-      const liste = faturaYukle().map(i => i.id===id ? {...i, odendi:durum} : i);
-      faturaKaydet(liste);
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
-    }
-
-    // ── LİSTE ──
+    // ── TABLO ──
     function listeyiGoster() {
-      const liste = faturaYukle().sort((a,b) => {
-        if (a.odendi && !b.odendi) return 1;
-        if (!a.odendi && b.odendi) return -1;
-        return kalanGun(vadeTarihi(a.tarih)) - kalanGun(vadeTarihi(b.tarih));
+      const liste=faturaYukle().sort((a,b)=>{
+        if(a.odendi&&!b.odendi) return 1;
+        if(!a.odendi&&b.odendi) return -1;
+        return kalanGun(vadeTarihi(a.tarih))-kalanGun(vadeTarihi(b.tarih));
       });
-
-      const baslik    = document.getElementById("liste-baslik");
-      const konteyner = document.getElementById("liste");
-
+      const baslik=document.getElementById("liste-baslik");
+      const konteyner=document.getElementById("liste");
       if(!liste.length){
         baslik.textContent="";
-        konteyner.innerHTML='<div class="bos">🗂️<br>Henüz fatura eklenmedi.</div>';
+        konteyner.innerHTML='<div class="bos">🗂️<br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#334155">Yukarıdaki formu doldurun.</span></div>';
         return;
       }
-
-      baslik.textContent = liste.length+" fatura · Vadeye göre sıralı";
-      konteyner.innerHTML = `
-        <div class="tablo-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>FATURA NO</th>
-                <th>VADE TARİHİ</th>
-                <th>TUTAR</th>
-                <th>DURUM</th>
-                <th>İŞLEM</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${liste.map((inv, i) => {
-                const vade = vadeTarihi(inv.tarih);
-                const g    = kalanGun(vade);
-                const {label, renk, bg} = durumBilgi(g);
-                const odendi = inv.odendi;
-                return `<tr class="${odendi ? 'odendi-satir' : ''}">
-                  <td>${i+1}</td>
-                  <td><strong>${inv.no}</strong></td>
-                  <td>${formatTarih(vade)}</td>
-                  <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
-                  <td>
-                    ${odendi
-                      ? '<span class="durum" style="color:#4ade80;background:#4ade8022">✅ Ödendi</span>'
-                      : `<span class="durum" style="color:${renk};background:${bg}">${label}</span>`
-                    }
-                  </td>
-                  <td>
-                    <div class="islem-grup">
-                      ${odendi
-                        ? `<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)">↩ Geri Al</button>`
-                        : `<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)">✅ Ödendi</button>`
-                      }
-                      <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})">🗑️</button>
-                    </div>
-                  </td>
-                </tr>`;
-              }).join("")}
-            </tbody>
-          </table>
-        </div>`;
+      baslik.textContent=liste.length+" fatura · Vadeye göre sıralı";
+      konteyner.innerHTML=`<div class="tablo-wrap"><table>
+        <thead><tr>
+          <th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>İŞLEM</th>
+        </tr></thead>
+        <tbody>${liste.map((inv,i)=>{
+          const vade=vadeTarihi(inv.tarih),g=kalanGun(vade);
+          const{label,renk,bg}=durumBilgi(g);
+          const odendi=inv.odendi;
+          return`<tr class="${odendi?'odendi-satir':''}">
+            <td style="color:#64748b">${i+1}</td>
+            <td><strong>${inv.no}</strong></td>
+            <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
+            <td>${formatTarih(vade)}</td>
+            <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
+            <td>${odendi
+              ?'<span class="durum" style="color:#4ade80;background:#4ade8022">✅ Ödendi</span>'
+              :`<span class="durum" style="color:${renk};background:${bg}">${label}</span>`
+            }</td>
+            <td><div class="islem-grup">
+              ${odendi
+                ?`<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)">↩ Geri Al</button>`
+                :`<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)">✅ Ödendi</button>`
+              }
+              <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})">🗑️ Sil</button>
+            </div></td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table></div>`;
     }
 
     firmaAdiniYukle();
@@ -388,7 +449,7 @@
     rozetGuncelle();
     ozetGuncelle();
     bildirimKontrol();
-    setTimeout(uyariKontrol, 700);
+    setTimeout(uyariKontrol, 800);
     setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
   </script>
 </body>
