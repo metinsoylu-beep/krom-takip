@@ -11,27 +11,10 @@
   <title>Arlinoks – Ödeme Takip</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: #0c1220; font-family: Georgia, serif; color: #f1f5f9; min-height: 100vh; }
 
-    body {
-      background: #0c1220;
-      font-family: Georgia, serif;
-      color: #f1f5f9;
-      min-height: 100vh;
-      padding: 0;
-    }
-
-    /* ── NAVİGASYON ── */
-    .navbar {
-      background: #0f1e35;
-      border-bottom: 2px solid #c9a84c;
-      padding: 12px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
+    /* ── NAVBAR ── */
+    .navbar { background: #0f1e35; border-bottom: 2px solid #c9a84c; padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .arlinoks { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 3px; font-style: italic; }
     .navbar-sag { display: flex; align-items: center; gap: 16px; }
     .firma-duzenle { display: flex; align-items: center; gap: 6px; }
@@ -40,26 +23,53 @@
     .btn-kaydet-firma { background: #c9a84c; color: #0f172a; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; display: none; }
     .baslik-kucuk { color: #64748b; font-size: 10px; letter-spacing: 2px; }
 
-    /* ── ANA KONTEYNER ── */
-    .konteyner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 28px 120px;
+    /* ── KONTEYNER ── */
+    .konteyner { max-width: 1100px; margin: 0 auto; padding: 28px 28px 40px; }
+
+    /* ── LOGO ── */
+    .logo-alan { text-align: center; margin-bottom: 28px; }
+    .para {
+      width: 100px; height: 100px;
+      display: inline-block;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: cevir 3s ease-in-out infinite;
+      cursor: pointer;
     }
+    @keyframes cevir {
+      0%   { transform: rotateY(0deg); }
+      45%  { transform: rotateY(180deg); }
+      55%  { transform: rotateY(180deg); }
+      95%  { transform: rotateY(360deg); }
+      100% { transform: rotateY(360deg); }
+    }
+    .para-yuz, .para-arka {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 0 0 4px #a07830, 0 0 0 7px #c9a84c44, 0 8px 32px #c9a84c44;
+    }
+    .para-yuz {
+      background: radial-gradient(circle at 35% 35%, #f0d060, #c9a84c 50%, #8a6820);
+    }
+    .para-arka {
+      background: radial-gradient(circle at 65% 35%, #e8c850, #b89038 50%, #7a5810);
+      transform: rotateY(180deg);
+    }
+    .para-harf {
+      font-size: 42px; font-weight: bold; font-style: italic;
+      color: #5a3a00;
+      text-shadow: 1px 1px 2px #f0d06066, -1px -1px 1px #3a200066;
+      font-family: Georgia, serif;
+      user-select: none;
+    }
+    .logo-altyazi { color: #64748b; font-size: 11px; letter-spacing: 2px; margin-top: 10px; }
 
     /* ── ÖZET KARTLAR ── */
-    .ozet-kartlar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-    .ozet-kart {
-      background: #1e293b;
-      border-radius: 12px;
-      padding: 16px 20px;
-      border-left: 4px solid #334155;
-    }
+    .ozet-kartlar { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+    .ozet-kart { background: #1e293b; border-radius: 12px; padding: 16px 20px; border-left: 4px solid #334155; }
     .ozet-kart.toplam { border-left-color: #c9a84c; }
     .ozet-kart.odenen { border-left-color: #4ade80; }
     .ozet-kart.kalan  { border-left-color: #ef4444; }
@@ -70,32 +80,17 @@
     .ozet-kart.kalan  .ozet-deger { color: #ef4444; }
 
     /* ── FORM ── */
-    .form-card {
-      background: #1e293b;
-      border: 1.5px solid #c9a84c55;
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin-bottom: 24px;
-    }
+    .form-card { background: #1e293b; border: 1.5px solid #c9a84c55; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
     .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
     .form-grid { display: grid; grid-template-columns: 2fr 2fr 2fr 1fr; gap: 14px; align-items: end; }
     .form-alan label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 5px; letter-spacing: 0.5px; }
     .hint { color: #64748b; font-size: 10px; }
-    input[type=text], input[type=date], input[type=number] {
-      width: 100%; background: #0f172a; border: 1px solid #334155;
-      color: #f1f5f9; border-radius: 8px; padding: 10px 12px;
-      font-size: 14px; outline: none; font-family: Georgia, serif;
-    }
+    input[type=text], input[type=date], input[type=number] { width: 100%; background: #0f172a; border: 1px solid #334155; color: #f1f5f9; border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none; font-family: Georgia, serif; }
     input:focus { border-color: #c9a84c; }
     #vade-hint { color: #c9a84c; font-size: 11px; margin-top: 4px; display: none; }
-    .btn-kaydet {
-      width: 100%; background: linear-gradient(135deg, #c9a84c, #a07830);
-      color: #0f172a; border: none; border-radius: 8px; padding: 10px;
-      font-size: 14px; font-weight: bold; cursor: pointer; font-family: Georgia, serif;
-      white-space: nowrap;
-    }
+    .btn-kaydet { width: 100%; background: linear-gradient(135deg, #c9a84c, #a07830); color: #0f172a; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
     .btn-kaydet:hover { opacity: 0.9; }
-    #msg { font-size: 12px; margin-top: 6px; min-height: 16px; color: #4ade80; }
+    #msg { font-size: 12px; margin-top: 6px; min-height: 16px; }
 
     /* ── TABLO ── */
     .liste-baslik { color: #64748b; font-size: 12px; margin-bottom: 10px; }
@@ -119,77 +114,85 @@
     .bos { text-align: center; color: #475569; padding: 48px 20px; font-size: 15px; line-height: 2.5; }
 
     /* ── BİLDİRİM BANNER ── */
-    #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; display: none; align-items: center; justify-content: space-between; gap: 12px; }
+    #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; align-items: center; justify-content: space-between; gap: 12px; }
     #bildirim-banner.goster { display: flex; }
     .btn-bildirim { background: #f59e0b; color: #0f172a; border: none; border-radius: 6px; padding: 7px 16px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
 
-    /* ── POP-UP UYARI ── */
-    #uyari-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+    /* ── FOOTER ── */
+    footer {
+      background: #0a1628;
+      border-top: 1px solid #1e293b;
+      padding: 28px 32px;
+      margin-top: 40px;
+      max-width: 100%;
     }
-    #uyari-overlay.aktif { display: flex; }
-    #uyari-kutu {
-      background: #1e293b;
-      border: 2px solid #ef4444;
-      border-radius: 16px;
-      padding: 30px 32px;
-      width: 100%;
-      max-width: 560px;
-      animation: salla 0.35s ease;
-    }
+    .footer-ic { max-width: 1100px; margin: 0 auto; }
+    .footer-baslik { color: #c9a84c; font-size: 13px; font-weight: bold; margin-bottom: 14px; letter-spacing: 1px; }
+    .footer-maddeler { list-style: none; margin-bottom: 18px; }
+    .footer-maddeler li { color: #64748b; font-size: 12px; padding: 5px 0; border-bottom: 1px solid #1e293b; display: flex; align-items: flex-start; gap: 8px; }
+    .footer-maddeler li span { flex: 1; }
+    .footer-alt { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid #1e293b; }
+    .footer-telif { color: #475569; font-size: 11px; }
+    .footer-mail { color: #c9a84c; font-size: 12px; text-decoration: none; }
+    .footer-mail:hover { text-decoration: underline; }
+
+    /* ── POPUP (Karşılama + Ödeme) ── */
+    .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.80); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .popup-overlay.aktif { display: flex; }
+    .popup-kutu { background: #1e293b; border-radius: 16px; padding: 30px 32px; width: 100%; max-width: 520px; animation: salla 0.35s ease; }
     @keyframes salla { 0%{transform:scale(0.85);opacity:0} 60%{transform:scale(1.03)} 100%{transform:scale(1);opacity:1} }
-    .uyari-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    #uyari-ikon { font-size: 36px; }
-    #uyari-baslik { color: #ef4444; font-size: 20px; font-weight: bold; }
-    #uyari-alt { color: #94a3b8; font-size: 13px; margin-top: 2px; }
-    #uyari-liste { margin-bottom: 20px; }
-    .uyari-satir {
-      background: #0f172a;
-      border-left: 4px solid #ef4444;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .uyari-satir .uyari-no { color: #f1f5f9; font-weight: bold; font-size: 14px; }
-    .uyari-satir .uyari-tutar { color: #c9a84c; font-weight: bold; font-size: 15px; }
-    .uyari-satir .uyari-gun { font-size: 12px; }
-    #uyari-kapat {
-      background: #ef4444; color: white; border: none;
-      border-radius: 10px; padding: 12px; font-size: 14px;
-      font-weight: bold; cursor: pointer; width: 100%;
-      font-family: Georgia, serif;
-    }
-    #uyari-kapat:hover { background: #dc2626; }
+    .popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .popup-ikon { font-size: 36px; }
+    .popup-baslik { font-size: 20px; font-weight: bold; }
+    .popup-alt { font-size: 13px; margin-top: 3px; color: #94a3b8; }
+    .popup-kapat { background: linear-gradient(135deg,#c9a84c,#a07830); color: #0f172a; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; font-family: Georgia, serif; margin-top: 6px; }
+    .popup-kapat:hover { opacity: 0.9; }
+
+    /* Ödeme popup özel */
+    #odeme-popup { border: 2px solid #ef4444; }
+    #odeme-popup .popup-baslik { color: #ef4444; }
+    .odeme-satir { background: #0f172a; border-left: 4px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .odeme-satir .od-no { color: #f1f5f9; font-weight: bold; font-size: 14px; }
+    .odeme-satir .od-tutar { color: #c9a84c; font-weight: bold; font-size: 15px; }
+    .odeme-satir .od-gun { font-size: 12px; }
+
+    /* Karşılama popup özel */
+    #karsılama-popup { border: 2px solid #c9a84c; }
+    #karsılama-popup .popup-baslik { color: #c9a84c; }
   </style>
 </head>
 <body>
 
-  <!-- POP-UP UYARI -->
-  <div id="uyari-overlay">
-    <div id="uyari-kutu">
-      <div class="uyari-header">
-        <div id="uyari-ikon">🚨</div>
+  <!-- KARŞILAMA POPUP -->
+  <div class="popup-overlay" id="karsılama-overlay">
+    <div class="popup-kutu" id="karsılama-popup">
+      <div class="popup-header">
+        <div class="popup-ikon" id="karsılama-ikon">🌅</div>
         <div>
-          <div id="uyari-baslik">Ödeme Uyarısı!</div>
-          <div id="uyari-alt">Bugün ödenmesi gereken veya gecikmiş faturalar:</div>
+          <div class="popup-baslik" id="karsılama-baslik">Günaydın!</div>
+          <div class="popup-alt" id="karsılama-alt">Arlinoks Ödeme Takip Sistemine hoş geldiniz.</div>
         </div>
       </div>
-      <div id="uyari-liste"></div>
-      <button id="uyari-kapat" onclick="uyariKapat()">✔ Anladım, Kapat</button>
+      <button class="popup-kapat" onclick="karsılamaKapat()">✔ Devam Et</button>
     </div>
   </div>
 
-  <!-- NAVİGASYON -->
+  <!-- ÖDEME UYARI POPUP -->
+  <div class="popup-overlay" id="odeme-overlay">
+    <div class="popup-kutu" id="odeme-popup">
+      <div class="popup-header">
+        <div class="popup-ikon">🚨</div>
+        <div>
+          <div class="popup-baslik">Ödeme Uyarısı!</div>
+          <div class="popup-alt">Bugün ödenmesi gereken veya gecikmiş faturalar:</div>
+        </div>
+      </div>
+      <div id="odeme-liste" style="margin-bottom:16px;"></div>
+      <button class="popup-kapat" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:white;" onclick="odemeKapat()">✔ Anladım, Kapat</button>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
   <div class="navbar">
     <div class="arlinoks">Arlinoks</div>
     <div class="navbar-sag">
@@ -210,6 +213,15 @@
       <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
 
+    <!-- LOGO -->
+    <div class="logo-alan">
+      <div class="para" onclick="this.style.animationDuration='1s';setTimeout(()=>this.style.animationDuration='3s',1500)">
+        <div class="para-yuz"><span class="para-harf">M</span></div>
+        <div class="para-arka"><span class="para-harf">S</span></div>
+      </div>
+      <div class="logo-altyazi">ARLINOKS · ÖDEME TAKİP</div>
+    </div>
+
     <!-- ÖZET KARTLAR -->
     <div class="ozet-kartlar">
       <div class="ozet-kart toplam">
@@ -226,7 +238,7 @@
       </div>
     </div>
 
-    <!-- FATURA EKLEME FORMU -->
+    <!-- FORM -->
     <div class="form-card">
       <div class="form-title">➕ Yeni Fatura Ekle</div>
       <div class="form-grid">
@@ -256,6 +268,25 @@
     <div id="liste"></div>
 
   </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-ic">
+      <div class="footer-baslik">📋 Veri Saklama Bilgisi</div>
+      <ul class="footer-maddeler">
+        <li>✅ <span>Tüm fatura verileri tarayıcınızın yerel hafızasında (localStorage) saklanır.</span></li>
+        <li>✅ <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
+        <li>⚠️ <span>Tarayıcı geçmişi veya önbellek temizlenirse veriler kalıcı olarak silinir.</span></li>
+        <li>⚠️ <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler görünmez.</span></li>
+        <li>⚠️ <span>Veriler herhangi bir sunucuya gönderilmez; yalnızca bu cihazda saklanır.</span></li>
+        <li>💡 <span>Önemli verilerinizi düzenli aralıklarla not alarak yedeklemeniz önerilir.</span></li>
+      </ul>
+      <div class="footer-alt">
+        <div class="footer-telif">© 2025 Arlinoks · Tüm hakları saklıdır. Üretici: Metin Soylu</div>
+        <a class="footer-mail" href="mailto:metinsoylu@gmail.com">✉ metinsoylu@gmail.com</a>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const ANAHTAR       = "x-firma-odeme-takip";
@@ -301,23 +332,67 @@
     }
 
     // ── SES ──
-    function uyariSesiCal() {
+    function sesliBildirim(tip) {
       try {
-        const ctx=new(window.AudioContext||window.webkitAudioContext)();
-        [[880,0,0.18],[880,0.22,0.18],[1100,0.44,0.32]].forEach(([f,b,s])=>{
+        const ctx = new(window.AudioContext||window.webkitAudioContext)();
+        const notlar = tip === 'karsılama'
+          ? [[523,0,0.2],[659,0.25,0.2],[784,0.5,0.35]]   // Do-Mi-Sol (neşeli)
+          : [[880,0,0.18],[880,0.22,0.18],[1100,0.44,0.32]]; // Uyarı sesi
+        notlar.forEach(([f,b,s])=>{
           const o=ctx.createOscillator(),g=ctx.createGain();
           o.connect(g); g.connect(ctx.destination); o.type="sine";
           o.frequency.setValueAtTime(f,ctx.currentTime+b);
-          g.gain.setValueAtTime(0.4,ctx.currentTime+b);
+          g.gain.setValueAtTime(0.35,ctx.currentTime+b);
           g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+b+s);
           o.start(ctx.currentTime+b); o.stop(ctx.currentTime+b+s);
         });
       } catch(e){}
     }
 
+    // ── KARŞILAMA POPUP ──
+    function karsılamaGoster() {
+      const saat = new Date().getHours();
+      let ikon, mesaj, alt;
+      if (saat>=6  && saat<12) { ikon="🌅"; mesaj="Günaydın!";     alt="Yeni bir güne başlıyorsunuz. Ödemeleriniz kontrol altında!"; }
+      else if (saat>=12 && saat<18) { ikon="☀️"; mesaj="İyi Günler!";    alt="Günün ortasındasınız. Ödemelerinizi takip etmeyi unutmayın!"; }
+      else if (saat>=18 && saat<22) { ikon="🌆"; mesaj="İyi Akşamlar!";  alt="Günün sonuna geldiniz. Bugünkü ödemelerinizi kontrol edin!"; }
+      else                           { ikon="🌙"; mesaj="İyi Geceler!";   alt="Geç saatlerde de çalışıyorsunuz. Yarınki ödemeleri gözden geçirin!"; }
+
+      document.getElementById("karsılama-ikon").textContent   = ikon;
+      document.getElementById("karsılama-baslik").textContent = mesaj;
+      document.getElementById("karsılama-alt").textContent    = alt;
+      document.getElementById("karsılama-overlay").classList.add("aktif");
+      sesliBildirim('karsılama');
+    }
+
+    function karsılamaKapat() {
+      document.getElementById("karsılama-overlay").classList.remove("aktif");
+      // Karşılama kapandıktan sonra ödeme uyarısını kontrol et
+      setTimeout(odemeUyariKontrol, 400);
+    }
+
+    // ── ÖDEME UYARI POPUP ──
+    function odemeUyariKontrol() {
+      const acil = faturaYukle().filter(inv => !inv.odendi && kalanGun(vadeTarihi(inv.tarih)) <= 0);
+      if (!acil.length) return;
+      document.getElementById("odeme-liste").innerHTML = acil.map(inv => {
+        const g = kalanGun(vadeTarihi(inv.tarih));
+        const gunMetin = g<0
+          ? `<span class="od-gun" style="color:#ef4444">⚠️ ${Math.abs(g)} gün gecikmiş</span>`
+          : `<span class="od-gun" style="color:#f97316">⏰ Bugün son gün!</span>`;
+        return `<div class="odeme-satir">
+          <div><div class="od-no">${inv.no}</div>${gunMetin}</div>
+          <div class="od-tutar">${formatPara(inv.tutar)}</div>
+        </div>`;
+      }).join("");
+      document.getElementById("odeme-overlay").classList.add("aktif");
+      sesliBildirim('odeme');
+    }
+    function odemeKapat() { document.getElementById("odeme-overlay").classList.remove("aktif"); }
+
     // ── ROZET ──
     function rozetGuncelle() {
-      const s=faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih))<=0).length;
+      const s = faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih))<=0).length;
       if('setAppBadge' in navigator){ s>0?navigator.setAppBadge(s).catch(()=>{}):navigator.clearAppBadge().catch(()=>{}); }
     }
 
@@ -329,28 +404,6 @@
       document.getElementById("oz-odenen").textContent=formatPara(odenen);
       document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
     }
-
-    // ── POP-UP UYARI ──
-    function uyariKontrol() {
-      const acil=faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih))<=0);
-      if(!acil.length) return;
-      document.getElementById("uyari-liste").innerHTML=acil.map(inv=>{
-        const g=kalanGun(vadeTarihi(inv.tarih));
-        const gunMetin=g<0
-          ?`<span class="uyari-gun" style="color:#ef4444">⚠️ ${Math.abs(g)} gün gecikmiş</span>`
-          :`<span class="uyari-gun" style="color:#f97316">⏰ Bugün son gün!</span>`;
-        return`<div class="uyari-satir">
-          <div>
-            <div class="uyari-no">${inv.no}</div>
-            ${gunMetin}
-          </div>
-          <div class="uyari-tutar">${formatPara(inv.tutar)}</div>
-        </div>`;
-      }).join("");
-      document.getElementById("uyari-overlay").classList.add("aktif");
-      uyariSesiCal();
-    }
-    function uyariKapat() { document.getElementById("uyari-overlay").classList.remove("aktif"); }
 
     // ── BİLDİRİM ──
     function bildirimKontrol() {
@@ -393,11 +446,7 @@
     }
 
     function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
-
-    function odendiBelirle(id,durum) {
-      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum}:i));
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
-    }
+    function odendiBelirle(id,durum) { faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum}:i)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
 
     // ── TABLO ──
     function listeyiGoster() {
@@ -408,16 +457,10 @@
       });
       const baslik=document.getElementById("liste-baslik");
       const konteyner=document.getElementById("liste");
-      if(!liste.length){
-        baslik.textContent="";
-        konteyner.innerHTML='<div class="bos">🗂️<br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#334155">Yukarıdaki formu doldurun.</span></div>';
-        return;
-      }
+      if(!liste.length){ baslik.textContent=""; konteyner.innerHTML='<div class="bos">🗂️<br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#334155">Yukarıdaki formu doldurun.</span></div>'; return; }
       baslik.textContent=liste.length+" fatura · Vadeye göre sıralı";
       konteyner.innerHTML=`<div class="tablo-wrap"><table>
-        <thead><tr>
-          <th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>İŞLEM</th>
-        </tr></thead>
+        <thead><tr><th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>İŞLEM</th></tr></thead>
         <tbody>${liste.map((inv,i)=>{
           const vade=vadeTarihi(inv.tarih),g=kalanGun(vade);
           const{label,renk,bg}=durumBilgi(g);
@@ -428,15 +471,11 @@
             <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
             <td>${formatTarih(vade)}</td>
             <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
-            <td>${odendi
-              ?'<span class="durum" style="color:#4ade80;background:#4ade8022">✅ Ödendi</span>'
-              :`<span class="durum" style="color:${renk};background:${bg}">${label}</span>`
-            }</td>
+            <td>${odendi?'<span class="durum" style="color:#4ade80;background:#4ade8022">✅ Ödendi</span>':`<span class="durum" style="color:${renk};background:${bg}">${label}</span>`}</td>
             <td><div class="islem-grup">
               ${odendi
                 ?`<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)">↩ Geri Al</button>`
-                :`<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)">✅ Ödendi</button>`
-              }
+                :`<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)">✅ Ödendi</button>`}
               <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})">🗑️ Sil</button>
             </div></td>
           </tr>`;
@@ -444,12 +483,13 @@
       </table></div>`;
     }
 
+    // ── BAŞLANGIÇ ──
     firmaAdiniYukle();
     listeyiGoster();
     rozetGuncelle();
     ozetGuncelle();
     bildirimKontrol();
-    setTimeout(uyariKontrol, 800);
+    setTimeout(karsılamaGoster, 500);
     setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
   </script>
 </body>
