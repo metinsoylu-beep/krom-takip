@@ -214,6 +214,12 @@
       <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
 
+    <!-- SYNC BANNER -->
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <span id="sync-durum" style="font-size:12px;color:#94a3b8;">☁️ Google Sheets bağlantısı kontrol ediliyor...</span>
+      <button onclick="buludanYukle()" style="background:#1e3a5f;color:#60a5fa;border:1px solid #60a5fa44;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">🔄 Yenile</button>
+    </div>
+
     <!-- ÖZET KARTLAR -->
     <div class="ozet-kartlar">
       <div class="ozet-kart toplam">
@@ -287,8 +293,53 @@
   <script>
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
+    const API_URL       = "https://script.google.com/macros/s/AKfycbyHsha1TcZwbQ52U3zkF8KZAYbeBn-AaA9q1rMAVnLUGJK20lpzyQwjXUun36PHge2s/exec";
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+    // ── BULUT SYNC ──
+    function syncGoster(mesaj, renk) {
+      const el = document.getElementById("sync-durum");
+      if (el) { el.textContent = mesaj; el.style.color = renk; }
+    }
+
+    async function buludaKaydet(liste) {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify({ action: "save", items: liste }),
+        });
+        syncGoster("✅ Google Sheets'e kaydedildi", "#4ade80");
+      } catch(e) {
+        syncGoster("⚠️ Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
+      }
+    }
+
+    async function buludanYukle() {
+      syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
+      try {
+        const r = await fetch(API_URL + "?t=" + Date.now());
+        const data = await r.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const liste = data.map(row => ({
+            id:      Number(row.id),
+            no:      String(row.no),
+            tarih:   String(row.tarih),
+            vadeGun: Number(row.vadeGun) || 90,
+            tutar:   String(row.tutar),
+            odendi:  row.odendi === true || row.odendi === "TRUE" || row.odendi === "true",
+          }));
+          faturaKaydet(liste);
+          listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+          syncGoster("✅ " + liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
+        } else {
+          syncGoster("ℹ️ Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
+        }
+      } catch(e) {
+        syncGoster("⚠️ Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
+      }
+    }
 
     // ── FİRMA ADI ──
     function firmaAdiniYukle() {
@@ -313,7 +364,10 @@
 
     // ── VERİ ──
     function faturaYukle() { try { return JSON.parse(localStorage.getItem(ANAHTAR)||"[]"); } catch { return []; } }
-    function faturaKaydet(l) { localStorage.setItem(ANAHTAR, JSON.stringify(l)); }
+    function faturaKaydet(l) {
+      localStorage.setItem(ANAHTAR, JSON.stringify(l));
+      buludaKaydet(l);
+    }
 
     // vadeGun: fatura tarihinden kaç gün sonra vade
     function vadeTarihi(tarih, vadeGun) {
@@ -545,6 +599,7 @@
     rozetGuncelle();
     ozetGuncelle();
     bildirimKontrol();
+    buludanYukle(); // Google Sheets'ten yükle
     setTimeout(karsılamaGoster, 500);
     setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
   </script>
