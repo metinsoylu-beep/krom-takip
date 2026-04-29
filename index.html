@@ -293,7 +293,7 @@
   <script>
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
-    const API_URL       = "https://script.google.com/macros/s/AKfycbyHsha1TcZwbQ52U3zkF8KZAYbeBn-AaA9q1rMAVnLUGJK20lpzyQwjXUun36PHge2s/exec";
+    const API_URL       = "https://script.google.com/macros/s/AKfycbyLAqgjZz41eA_Sc2ger1l6O_gab6OdUQ97PvpqV4D9iW18YO3Pp8oQAlOgQL7iS-cS/exec";
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
@@ -305,12 +305,30 @@
 
     async function buludaKaydet(liste) {
       try {
-        await fetch(API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          body: JSON.stringify({ action: "save", items: liste }),
-        });
-        syncGoster("✅ Google Sheets'e kaydedildi", "#4ade80");
+        // Google Apps Script CORS sorununu aşmak için iframe yöntemi
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = API_URL;
+        form.target = "gizli-frame";
+        form.style.display = "none";
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "payload";
+        input.value = JSON.stringify({ action: "save", items: liste });
+        form.appendChild(input);
+        // Gizli iframe oluştur
+        let iframe = document.getElementById("gizli-frame");
+        if (!iframe) {
+          iframe = document.createElement("iframe");
+          iframe.name = "gizli-frame";
+          iframe.id   = "gizli-frame";
+          iframe.style.display = "none";
+          document.body.appendChild(iframe);
+        }
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+        setTimeout(() => syncGoster("✅ Google Sheets'e kaydedildi", "#4ade80"), 1500);
       } catch(e) {
         syncGoster("⚠️ Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
       }
