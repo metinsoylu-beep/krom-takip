@@ -334,29 +334,45 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwMWRXFDcPuU21fBISjhBfK
     }
 
     async function buludanYukle() {
-      syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
-      try {
-        const r = await fetch(API_URL + "?t=" + Date.now());
-        const data = await r.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const liste = data.map(row => ({
-            id:      Number(row.id),
-            no:      String(row.no),
-            tarih:   String(row.tarih),
-            vadeGun: Number(row.vadeGun) || 90,
-            tutar:   String(row.tutar),
-            odendi:  row.odendi === true || row.odendi === "TRUE" || row.odendi === "true",
-          }));
-          faturaKaydet(liste);
-          listeyiGoster(); rozetGuncelle(); ozetGuncelle();
-          syncGoster("✅ " + liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
-        } else {
-          syncGoster("ℹ️ Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
-        }
-      } catch(e) {
-        syncGoster("⚠️ Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
+  syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
+  try {
+    const r = await fetch(API_URL + "?t=" + Date.now());
+    const data = await r.json();
+    if (Array.isArray(data) && data.length > 0) {
+      
+      // ✅ GEÇERLİLİK KONTROLÜ - bozuk veri gelirse yükleme!
+      const gecerli = data.filter(row => 
+        row.id && 
+        row.no && String(row.no) !== "undefined" && 
+        row.tarih && String(row.tarih) !== "undefined" &&
+        row.tutar && String(row.tutar) !== "undefined" &&
+        !isNaN(Number(row.tutar))
+      );
+
+      if (gecerli.length === 0) {
+        syncGoster("⚠️ Sheets'te geçerli veri yok — yerel veriler korundu", "#f59e0b");
+        return;
       }
+
+      const liste = gecerli.map(row => ({
+        id:      Number(row.id),
+        no:      String(row.no),
+        tarih:   String(row.tarih),
+        vadeGun: Number(row.vadeGun) || 90,
+        tutar:   String(row.tutar),
+        odendi:  row.odendi === true || row.odendi === "TRUE" || row.odendi === "true",
+      }));
+
+      faturaKaydet(liste);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      syncGoster("✅ " + liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
+    } else {
+      syncGoster("ℹ️ Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
     }
+  } catch(e) {
+    syncGoster("⚠️ Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
+  }
+}
 
     // ── FİRMA ADI ──
     function firmaAdiniYukle() {
