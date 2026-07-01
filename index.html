@@ -12,6 +12,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background: #0c1220; font-family: Georgia, serif; color: #f1f5f9; min-height: 100vh; }
+
+    /* ── NAVBAR ── */
     .navbar { background: #0f1e35; border-bottom: 2px solid #c9a84c; padding: 12px 1cm; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .arlinoks { font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 3px; font-style: italic; }
     .navbar-sag { display: flex; align-items: center; gap: 16px; }
@@ -20,7 +22,11 @@
     .firma-input { background: #0f172a; border: 1px solid #c9a84c; color: #f1f5f9; border-radius: 6px; padding: 4px 10px; font-size: 13px; outline: none; font-family: Georgia, serif; width: 130px; display: none; }
     .btn-kaydet-firma { background: #c9a84c; color: #0f172a; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; display: none; }
     .baslik-kucuk { color: #64748b; font-size: 10px; letter-spacing: 2px; }
+
+    /* ── KONTEYNER ── */
     .konteyner { max-width: 1400px; margin: 0 auto; padding: 28px 1cm 40px; }
+
+    /* ── ÖZET KARTLAR ── */
     .ozet-kartlar { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
     .ozet-kart { background: #1e293b; border-radius: 12px; padding: 16px 20px; border-left: 4px solid #334155; }
     .ozet-kart.toplam { border-left-color: #c9a84c; }
@@ -31,6 +37,8 @@
     .ozet-kart.toplam .ozet-deger { color: #f1f5f9; }
     .ozet-kart.odenen .ozet-deger { color: #4ade80; }
     .ozet-kart.kalan  .ozet-deger { color: #ef4444; }
+
+    /* ── FORM ── */
     .form-card { background: #1e293b; border: 1.5px solid #c9a84c55; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
     .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
     .form-grid { display: grid; grid-template-columns: 2fr 2fr 1fr 2fr 1fr; gap: 14px; align-items: end; }
@@ -42,6 +50,8 @@
     .btn-kaydet { width: 100%; background: linear-gradient(135deg, #c9a84c, #a07830); color: #0f172a; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
     .btn-kaydet:hover { opacity: 0.9; }
     #msg { font-size: 12px; margin-top: 6px; min-height: 16px; }
+
+    /* ── TABLO ── */
     .liste-baslik { color: #64748b; font-size: 12px; margin-bottom: 10px; }
     .tablo-wrap { border-radius: 12px; border: 1px solid #1e293b; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -63,9 +73,13 @@
     .btn-sil-tablo { font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #334155; background: transparent; color: #ef4444; font-family: Georgia, serif; white-space: nowrap; }
     .btn-sil-tablo:hover { background: #2a1212; }
     .bos { text-align: center; color: #475569; padding: 48px 20px; font-size: 15px; line-height: 2.5; }
+
+    /* ── BİLDİRİM BANNER ── */
     #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; align-items: center; justify-content: space-between; gap: 12px; }
     #bildirim-banner.goster { display: flex; }
     .btn-bildirim { background: #f59e0b; color: #0f172a; border: none; border-radius: 6px; padding: 7px 16px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; white-space: nowrap; }
+
+    /* ── FOOTER ── */
     footer { background: #0a1628; border-top: 1px solid #1e293b; padding: 28px 1cm; margin-top: 40px; }
     .footer-ic { max-width: 1400px; margin: 0 auto; }
     .footer-baslik { color: #c9a84c; font-size: 13px; font-weight: bold; margin-bottom: 14px; letter-spacing: 1px; }
@@ -76,6 +90,8 @@
     .footer-telif { color: #475569; font-size: 11px; }
     .footer-mail { color: #c9a84c; font-size: 12px; text-decoration: none; }
     .footer-mail:hover { text-decoration: underline; }
+
+    /* ── POPUP (Karşılama + Ödeme + Düzenleme) ── */
     .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.80); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
     .popup-overlay.aktif { display: flex; }
     .popup-kutu { background: #1e293b; border-radius: 16px; padding: 30px 32px; width: 100%; max-width: 520px; animation: salla 0.35s ease; }
@@ -86,14 +102,18 @@
     .popup-alt { font-size: 13px; margin-top: 3px; color: #94a3b8; }
     .popup-kapat { background: linear-gradient(135deg,#c9a84c,#a07830); color: #0f172a; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; font-family: Georgia, serif; margin-top: 6px; }
     .popup-kapat:hover { opacity: 0.9; }
+
     #odeme-popup { border: 2px solid #ef4444; }
     #odeme-popup .popup-baslik { color: #ef4444; }
     .odeme-satir { background: #0f172a; border-left: 4px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .odeme-satir .od-no { color: #f1f5f9; font-weight: bold; font-size: 14px; }
     .odeme-satir .od-tutar { color: #c9a84c; font-weight: bold; font-size: 15px; }
     .odeme-satir .od-gun { font-size: 12px; }
+
     #karsılama-popup { border: 2px solid #c9a84c; }
     #karsılama-popup .popup-baslik { color: #c9a84c; }
+
+    /* Düzenleme popup */
     #duzenle-popup { border: 2px solid #c9a84c55; }
     #duzenle-popup .popup-baslik { color: #c9a84c; }
     .duzenle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px; }
@@ -196,7 +216,7 @@
 
     <!-- SYNC BANNER -->
     <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <span id="sync-durum" style="font-size:12px;color:#94a3b8;">☁️ Google Sheets'ten veriler yükleniyor...</span>
+      <span id="sync-durum" style="font-size:12px;color:#94a3b8;">☁️ Google Sheets bağlantısı kontrol ediliyor...</span>
       <button onclick="buludanYukle()" style="background:#1e3a5f;color:#60a5fa;border:1px solid #60a5fa44;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:Georgia,serif;white-space:nowrap;">🔄 Yenile</button>
     </div>
 
@@ -206,7 +226,7 @@
         <div class="ozet-etiket">💰 TOPLAM TUTAR</div>
         <div class="ozet-deger" id="oz-toplam">0 ₺</div>
       </div>
-      <div class="ozet-kart odened">
+      <div class="ozet-kart odenen">
         <div class="ozet-etiket">✅ ÖDENEN</div>
         <div class="ozet-deger" id="oz-odenen">0 ₺</div>
       </div>
@@ -256,11 +276,12 @@
     <div class="footer-ic">
       <div class="footer-baslik">📋 Veri Saklama Bilgisi</div>
       <ul class="footer-maddeler">
-        <li>✅ <span>Tüm fatura verileri Google Sheets'te Bulut Tabanlı ve Senkronize edilir.</span></li>
+        <li>✅ <span>Tüm fatura verileri Google Sheets hafızasında Bulut Tabanlı ve Senkronize edilir.</span></li>
         <li>✅ <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
-        <li>✅ <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
-        <li>⚠️ <span>İnternet bağlantısı yoksa son yerel veriler gösterilir.</span></li>
-        <li>💡 <span>Önemli verilerinizi düzenli aralıklarla yedeklemeniz önerilir.</span></li>
+        <li>⚠️ <span>Tarayıcı geçmişi veya önbellek temizlenirse veriler korunur. </span></li>
+        <li>⚠️ <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler görünür.</span></li>
+        <li>⚠️ <span>verileriniz otomatik olarak Google Drive üzerinde saklanır ve dilediğiniz cihazdan internet tarayıcısı üzerinden erişebilirsiniz..</span></li>
+        <li>💡 <span>Önemli verilerinizi düzenli aralıklarla not alarak yedeklemeniz önerilir.</span></li>
       </ul>
       <div class="footer-alt">
         <div class="footer-telif">© 2025 Arlinoks · Tüm hakları saklıdır. Üretici: Metin Soylu</div>
@@ -272,11 +293,10 @@
   <script>
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
-    const API_URL       = "https://script.google.com/macros/s/AKfycbwMWRXFDcPuU21fBISjhBfK5DB1bLgVTduMpryyxQPKPV0WlJIfKc4BfbhCCm0mDLOtJA/exec";
-
+const API_URL = "https://script.google.com/macros/s/AKfycbwMWRXFDcPuU21fBISjhBfK5DB1bLgVTduMpryyxQPKPV0WlJIfKc4BfbhCCm0mDLOtJA/exec";
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
-    // ── SYNC ──────────────────────────────────────────────────────────────────
+    // ── BULUT SYNC ──
     function syncGoster(mesaj, renk) {
       const el = document.getElementById("sync-durum");
       if (el) { el.textContent = mesaj; el.style.color = renk; }
@@ -284,6 +304,18 @@
 
     async function buludaKaydet(liste) {
       try {
+        // Google Apps Script CORS sorununu aşmak için iframe yöntemi
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = API_URL;
+        form.target = "gizli-frame";
+        form.style.display = "none";
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "payload";
+        input.value = JSON.stringify({ action: "save", items: liste });
+        form.appendChild(input);
+        // Gizli iframe oluştur
         let iframe = document.getElementById("gizli-frame");
         if (!iframe) {
           iframe = document.createElement("iframe");
@@ -292,16 +324,6 @@
           iframe.style.display = "none";
           document.body.appendChild(iframe);
         }
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = API_URL;
-        form.target = "gizli-frame";
-        form.style.display = "none";
-        const input = document.createElement("input");
-        input.type  = "hidden";
-        input.name  = "payload";
-        input.value = JSON.stringify({ action: "save", items: liste });
-        form.appendChild(input);
         document.body.appendChild(form);
         form.submit();
         document.body.removeChild(form);
@@ -311,53 +333,48 @@
       }
     }
 
-    // ── DÜZELTİLDİ: Her cihazda Google Sheets öncelikli yükleme ──
     async function buludanYukle() {
-      syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
-      try {
-        const r = await fetch(API_URL + "?t=" + Date.now());
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        const data = await r.json();
+  syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
+  try {
+    const r = await fetch(API_URL + "?t=" + Date.now());
+    const data = await r.json();
+    if (Array.isArray(data) && data.length > 0) {
+      
+      // ✅ GEÇERLİLİK KONTROLÜ - bozuk veri gelirse yükleme!
+      const gecerli = data.filter(row => 
+        row.id && 
+        row.no && String(row.no) !== "undefined" && 
+        row.tarih && String(row.tarih) !== "undefined" &&
+        row.tutar && String(row.tutar) !== "undefined" &&
+        !isNaN(Number(row.tutar))
+      );
 
-        if (Array.isArray(data) && data.length > 0) {
-          const gecerli = data.filter(row =>
-            row.id &&
-            row.no    && String(row.no)    !== "undefined" &&
-            row.tarih && String(row.tarih) !== "undefined" &&
-            row.tutar && String(row.tutar) !== "undefined" &&
-            !isNaN(Number(row.tutar))
-          );
-
-          if (gecerli.length === 0) {
-            syncGoster("⚠️ Sheets'te geçerli veri yok — yerel veriler korundu", "#f59e0b");
-            listeyiGoster(); ozetGuncelle(); rozetGuncelle();
-            return;
-          }
-
-          const liste = gecerli.map(row => ({
-            id:      Number(row.id),
-            no:      String(row.no),
-            tarih:   String(row.tarih),
-            vadeGun: Number(row.vadeGun) || 90,
-            tutar:   String(row.tutar),
-            odendi:  row.odendi === true || row.odendi === "TRUE" || row.odendi === "true",
-          }));
-
-          // ── Sheets verisi localStorage'ı her zaman günceller ──
-          localStorage.setItem(ANAHTAR, JSON.stringify(liste));
-          listeyiGoster(); ozetGuncelle(); rozetGuncelle();
-          syncGoster("✅ " + liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
-        } else {
-          syncGoster("ℹ️ Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
-          listeyiGoster(); ozetGuncelle(); rozetGuncelle();
-        }
-      } catch(e) {
-        syncGoster("⚠️ Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
-        listeyiGoster(); ozetGuncelle(); rozetGuncelle();
+      if (gecerli.length === 0) {
+        syncGoster("⚠️ Sheets'te geçerli veri yok — yerel veriler korundu", "#f59e0b");
+        return;
       }
-    }
 
-    // ── FİRMA ADI ──────────────────────────────────────────────────────────────
+      const liste = gecerli.map(row => ({
+        id:      Number(row.id),
+        no:      String(row.no),
+        tarih:   String(row.tarih),
+        vadeGun: Number(row.vadeGun) || 90,
+        tutar:   String(row.tutar),
+        odendi:  row.odendi === true || row.odendi === "TRUE" || row.odendi === "true",
+      }));
+
+      faturaKaydet(liste);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      syncGoster("✅ " + liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
+    } else {
+      syncGoster("ℹ️ Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
+    }
+  } catch(e) {
+    syncGoster("⚠️ Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
+  }
+}
+
+    // ── FİRMA ADI ──
     function firmaAdiniYukle() {
       const ad = localStorage.getItem(FIRMA_ANAHTAR) || "X Firması";
       document.getElementById("firma-adi-goster").textContent = ad + " ✎";
@@ -365,26 +382,27 @@
     function firmaAdiniDuzenle() {
       const ad = localStorage.getItem(FIRMA_ANAHTAR) || "X Firması";
       document.getElementById("firma-inp").value = ad;
-      document.getElementById("firma-adi-goster").style.display  = "none";
-      document.getElementById("firma-inp").style.display         = "block";
-      document.getElementById("firma-kaydet-btn").style.display  = "block";
+      document.getElementById("firma-adi-goster").style.display = "none";
+      document.getElementById("firma-inp").style.display = "block";
+      document.getElementById("firma-kaydet-btn").style.display = "block";
       document.getElementById("firma-inp").focus();
     }
     function firmaKaydet() {
       const ad = document.getElementById("firma-inp").value.trim();
       if (ad) { localStorage.setItem(FIRMA_ANAHTAR, ad); document.getElementById("firma-adi-goster").textContent = ad + " ✎"; }
-      document.getElementById("firma-inp").style.display        = "none";
+      document.getElementById("firma-inp").style.display = "none";
       document.getElementById("firma-kaydet-btn").style.display = "none";
       document.getElementById("firma-adi-goster").style.display = "inline";
     }
 
-    // ── VERİ ───────────────────────────────────────────────────────────────────
+    // ── VERİ ──
     function faturaYukle() { try { return JSON.parse(localStorage.getItem(ANAHTAR)||"[]"); } catch { return []; } }
     function faturaKaydet(l) {
       localStorage.setItem(ANAHTAR, JSON.stringify(l));
       buludaKaydet(l);
     }
 
+    // vadeGun: fatura tarihinden kaç gün sonra vade
     function vadeTarihi(tarih, vadeGun) {
       const d = new Date(tarih);
       d.setDate(d.getDate() + (parseInt(vadeGun) || 90));
@@ -402,7 +420,7 @@
       return{label:"⚪ "+g+" gün kaldı",renk:"#6b7280",bg:"#6b728022"};
     }
 
-    // ── SES ────────────────────────────────────────────────────────────────────
+    // ── SES ──
     function sesliBildirim(tip) {
       try {
         const ctx = new(window.AudioContext||window.webkitAudioContext)();
@@ -423,14 +441,14 @@
       } catch(e){}
     }
 
-    // ── KARŞILAMA POPUP ────────────────────────────────────────────────────────
+    // ── KARŞILAMA POPUP ──
     function karsılamaGoster() {
       const saat = new Date().getHours();
       let ikon, mesaj, alt;
-      if      (saat>=6  && saat<12) { ikon="🌅"; mesaj="Günaydın!";    alt="Yeni bir güne başlıyorsunuz. Ödemeleriniz kontrol altında!"; }
-      else if (saat>=12 && saat<18) { ikon="☀️"; mesaj="İyi Günler!";   alt="Hoş Geldiniz. Ödemelerinizi takip etmeyi unutmayın!"; }
-      else if (saat>=18 && saat<22) { ikon="🌆"; mesaj="İyi Akşamlar!"; alt="Günün sonuna geldiniz. Bugünkü ödemeleri kontrol edin!"; }
-      else                           { ikon="🌙"; mesaj="İyi Geceler!";  alt="Geç saatlerde de çalışıyorsunuz. Yarınki ödemeleri gözden geçirin!"; }
+      if      (saat>=6  && saat<12) { ikon="🌅"; mesaj="Günaydın!";     alt="Yeni bir güne başlıyorsunuz. Ödemeleriniz kontrol altında!"; }
+      else if (saat>=12 && saat<18) { ikon="☀️"; mesaj="İyi Günler!";    alt="Hoş Geldiniz. Ödemelerinizi takip etmeyi unutmayın!"; }
+      else if (saat>=18 && saat<22) { ikon="🌆"; mesaj="İyi Akşamlar!";  alt="Günün sonuna geldiniz. Bugünkü ödemeleri kontrol edin!"; }
+      else                           { ikon="🌙"; mesaj="İyi Geceler!";   alt="Geç saatlerde de çalışıyorsunuz. Yarınki ödemeleri gözden geçirin!"; }
       document.getElementById("karsılama-ikon").textContent   = ikon;
       document.getElementById("karsılama-baslik").textContent = mesaj;
       document.getElementById("karsılama-alt").textContent    = alt;
@@ -442,13 +460,13 @@
       setTimeout(odemeUyariKontrol, 400);
     }
 
-    // ── ÖDEME UYARI POPUP ──────────────────────────────────────────────────────
+    // ── ÖDEME UYARI POPUP ──
     function odemeUyariKontrol() {
       const acil = faturaYukle().filter(inv => !inv.odendi && kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) <= 0);
       if (!acil.length) return;
       document.getElementById("odeme-liste").innerHTML = acil.map(inv => {
         const g = kalanGun(vadeTarihi(inv.tarih, inv.vadeGun));
-        const gunMetin = g < 0
+        const gunMetin = g<0
           ? `<span class="od-gun" style="color:#ef4444">⚠️ ${Math.abs(g)} gün gecikmiş</span>`
           : `<span class="od-gun" style="color:#f97316">⏰ Bugün son gün!</span>`;
         return `<div class="odeme-satir">
@@ -461,20 +479,21 @@
     }
     function odemeKapat() { document.getElementById("odeme-overlay").classList.remove("aktif"); }
 
-    // ── DÜZENLEME POPUP ────────────────────────────────────────────────────────
+    // ── DÜZENLEME POPUP ──
     function duzenleAc(id) {
       const inv = faturaYukle().find(i => i.id === id);
       if (!inv) return;
-      document.getElementById("d-id").value       = inv.id;
-      document.getElementById("d-no").value       = inv.no;
-      document.getElementById("d-tarih").value    = inv.tarih;
-      document.getElementById("d-vade-gun").value = inv.vadeGun || 90;
-      document.getElementById("d-tutar").value    = inv.tutar;
+      document.getElementById("d-id").value        = inv.id;
+      document.getElementById("d-no").value        = inv.no;
+      document.getElementById("d-tarih").value     = inv.tarih;
+      document.getElementById("d-vade-gun").value  = inv.vadeGun || 90;
+      document.getElementById("d-tutar").value     = inv.tutar;
       document.getElementById("d-msg").textContent = "";
       duzenleVadeGuncelle();
       document.getElementById("duzenle-overlay").classList.add("aktif");
     }
     function duzenleKapat() { document.getElementById("duzenle-overlay").classList.remove("aktif"); }
+
     function duzenleVadeGuncelle() {
       const t = document.getElementById("d-tarih").value;
       const g = document.getElementById("d-vade-gun").value;
@@ -482,26 +501,27 @@
       if (t && g) { h.textContent = "→ Vade: " + formatTarih(vadeTarihi(t, g)); }
       else { h.textContent = ""; }
     }
+
     function duzenleKaydet() {
-      const id    = Number(document.getElementById("d-id").value);
-      const no    = document.getElementById("d-no").value.trim();
-      const tarih = document.getElementById("d-tarih").value;
-      const vadeG = document.getElementById("d-vade-gun").value;
-      const tutar = document.getElementById("d-tutar").value.trim();
-      const msg   = document.getElementById("d-msg");
+      const id     = Number(document.getElementById("d-id").value);
+      const no     = document.getElementById("d-no").value.trim();
+      const tarih  = document.getElementById("d-tarih").value;
+      const vadeG  = document.getElementById("d-vade-gun").value;
+      const tutar  = document.getElementById("d-tutar").value.trim();
+      const msg    = document.getElementById("d-msg");
       if (!no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="⚠️ Tüm alanları doldurun."; return; }
       faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, no, tarih, vadeGun:parseInt(vadeG), tutar} : i));
       duzenleKapat();
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
-    // ── ROZET ──────────────────────────────────────────────────────────────────
+    // ── ROZET ──
     function rozetGuncelle() {
       const s = faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih,inv.vadeGun))<=0).length;
       if('setAppBadge' in navigator){ s>0?navigator.setAppBadge(s).catch(()=>{}):navigator.clearAppBadge().catch(()=>{}); }
     }
 
-    // ── ÖZET ───────────────────────────────────────────────────────────────────
+    // ── ÖZET ──
     function ozetGuncelle() {
       const liste=faturaYukle(); let toplam=0,odenen=0;
       liste.forEach(inv=>{ const t=Number(inv.tutar)||0; toplam+=t; if(inv.odendi) odenen+=t; });
@@ -510,7 +530,7 @@
       document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
     }
 
-    // ── BİLDİRİM ───────────────────────────────────────────────────────────────
+    // ── BİLDİRİM ──
     function bildirimKontrol() {
       if(!('Notification' in window)) return;
       if(Notification.permission==='default') document.getElementById('bildirim-banner').classList.add('goster');
@@ -524,7 +544,7 @@
       });
     }
 
-    // ── FORM ───────────────────────────────────────────────────────────────────
+    // ── FORM ──
     function gosterVade() {
       const t = document.getElementById("inp-tarih").value;
       const g = document.getElementById("inp-vade-gun").value;
@@ -532,6 +552,7 @@
       if (t && g) { h.textContent = "→ Vade: " + formatTarih(vadeTarihi(t, g)); }
       else { h.textContent = ""; }
     }
+
     function faturaEkle() {
       const no      = document.getElementById("inp-no").value.trim();
       const tarih   = document.getElementById("inp-tarih").value;
@@ -551,10 +572,11 @@
       setTimeout(()=>msg.textContent="",2500);
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
+
     function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
     function odendiBelirle(id,durum) { faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum}:i)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
 
-    // ── TABLO ──────────────────────────────────────────────────────────────────
+    // ── TABLO ──
     function listeyiGoster() {
       const liste = faturaYukle().sort((a,b)=>{
         if(a.odendi&&!b.odendi) return 1;
@@ -576,9 +598,9 @@
           <th>TUTAR</th><th>DURUM</th><th>İŞLEM</th>
         </tr></thead>
         <tbody>${liste.map((inv,i)=>{
-          const vg   = inv.vadeGun || 90;
-          const vade = vadeTarihi(inv.tarih, vg);
-          const g    = kalanGun(vade);
+          const vg    = inv.vadeGun || 90;
+          const vade  = vadeTarihi(inv.tarih, vg);
+          const g     = kalanGun(vade);
           const {label,renk,bg} = durumBilgi(g);
           const odendi = inv.odendi;
           return `<tr class="${odendi?'odendi-satir':''}">
@@ -604,14 +626,13 @@
       </table></div>`;
     }
 
-    // ── BAŞLANGIÇ ─────────────────────────────────────────────────────────────
-    // Önce yerel veriyi göster (hızlı görünüm), sonra Sheets'ten güncelle
+    // ── BAŞLANGIÇ ──
     firmaAdiniYukle();
     listeyiGoster();
-    ozetGuncelle();
     rozetGuncelle();
+    ozetGuncelle();
     bildirimKontrol();
-    buludanYukle(); // Google Sheets'ten yükle — her cihazda güncel veri gelir
+    buludanYukle(); // Google Sheets'ten yükle
     setTimeout(karsılamaGoster, 500);
     setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
   </script>
