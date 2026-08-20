@@ -6,8 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-title" content="Ödeme Takip"/>
   <meta name="theme-color" content="#0f172a"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/icon-192.png"/>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" type="image/png" href="./icon-192.png"/>
+  <link rel="apple-touch-icon" href="./icon-192.png"/>
+  <link rel="stylesheet" href="./assets/fontawesome/css/all.min.css"/>
   <title>Arlinoks – Ödeme Takip</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -20,7 +22,9 @@
     .firma-input { background: #0f172a; border: 1px solid #c9a84c; color: #f1f5f9; border-radius: 6px; padding: 4px 10px; font-size: 13px; outline: none; font-family: Georgia, serif; width: 130px; display: none; }
     .btn-kaydet-firma { background: #c9a84c; color: #0f172a; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; display: none; }
     .baslik-kucuk { color: #64748b; font-size: 10px; letter-spacing: 2px; }
-    .konteyner { max-width: 1400px; margin: 0 auto; padding: 28px 1cm 40px; }
+    .konteyner { width: min(1680px, calc(100vw - 64px)); margin: 0 auto; padding: 28px 0 40px; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; grid-template-areas: "ana hizli"; gap: 24px; align-items: start; }
+    .ana-icerik { grid-area: ana; min-width: 0; }
     .ozet-kartlar { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
     .ozet-kart { background: #1e293b; border-radius: 12px; padding: 16px 20px; border-left: 4px solid #334155; }
     .ozet-kart.toplam { border-left-color: #c9a84c; }
@@ -29,7 +33,7 @@
     .ozet-etiket { font-size: 11px; color: #64748b; letter-spacing: 1px; margin-bottom: 6px; }
     .ozet-deger { font-size: 20px; font-weight: bold; }
     .ozet-kart.toplam .ozet-deger { color: #f1f5f9; }
-    .ozet-kart.odenen .ozet-deger { color: #4ade80; }
+    .ozet-kart.odenen .ozet-deger { color: #f1f5f9; }
     .ozet-kart.kalan  .ozet-deger { color: #ef4444; }
     .form-card { background: #1e293b; border: 1.5px solid #c9a84c55; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
     .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
@@ -102,6 +106,47 @@
     .duzenle-btn-grup { display: flex; gap: 10px; margin-top: 16px; }
     .btn-duzenle-kaydet { flex: 2; background: linear-gradient(135deg,#c9a84c,#a07830); color: #0f172a; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
     .btn-duzenle-iptal  { flex: 1; background: transparent; border: 1px solid #334155; border-radius: 8px; padding: 10px; font-size: 13px; color: #94a3b8; cursor: pointer; font-family: Georgia, serif; }
+    .hizli-panel { grid-area: hizli; min-width: 0; }
+    .hizli-baslik { color: #c9a84c; font-size: 14px; font-weight: bold; letter-spacing: 0.2px; margin: 4px 0 14px; }
+    .hizli-kartlar { display: grid; gap: 12px; }
+    .hizli-kart { width: 100%; min-height: 76px; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto 14px; align-items: center; gap: 12px; background: #1e293b; border: 1px solid #334155; border-left: 4px solid var(--vurgu); border-radius: 10px; padding: 12px 14px; color: #f1f5f9; text-align: left; cursor: pointer; font-family: Georgia, serif; transition: border-color 0.18s, background 0.18s, transform 0.18s; }
+    .hizli-kart:hover { border-color: color-mix(in srgb, var(--vurgu) 60%, #334155); background: #243247; transform: translateY(-1px); }
+    .hizli-kart:focus-visible { outline: 2px solid var(--vurgu); outline-offset: 3px; }
+    .hizli-kart.aktif { background: color-mix(in srgb, var(--vurgu) 10%, #1e293b); border-color: var(--vurgu); }
+    .hizli-ikon { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--vurgu); background: color-mix(in srgb, var(--vurgu) 13%, transparent); font-size: 15px; }
+    .hizli-metin { min-width: 0; }
+    .hizli-etiket { display: block; font-size: 13px; font-weight: bold; line-height: 1.2; white-space: nowrap; }
+    .hizli-alt { display: block; color: #94a3b8; font-size: 10px; line-height: 1.3; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hizli-deger { font-size: 21px; font-weight: bold; color: #f8fafc; text-align: right; }
+    .hizli-ok { color: #94a3b8; font-size: 12px; }
+    .hizli-kart.geciken .hizli-alt, .hizli-kart.geciken .hizli-deger { color: #ef4444; }
+    .hizli-kart.odenen-ay .hizli-alt { color: #4ade80; }
+
+    @media (max-width: 1220px) {
+      .konteyner { width: min(100% - 40px, 1180px); }
+      .dashboard-grid { grid-template-columns: 1fr; grid-template-areas: "hizli" "ana"; }
+      .hizli-baslik { margin-top: 0; }
+      .hizli-kartlar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .hizli-kart { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 9px; padding: 10px; }
+      .hizli-ok { display: none; }
+      .hizli-etiket { font-size: 12px; }
+    }
+    @media (max-width: 900px) {
+      .ozet-kartlar { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .hizli-kartlar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tablo-wrap { overflow-x: auto; }
+      table { min-width: 980px; }
+    }
+    @media (max-width: 620px) {
+      .navbar { padding-inline: 18px; }
+      .navbar-sag { gap: 8px; }
+      .baslik-kucuk { display: none; }
+      .konteyner { width: calc(100% - 28px); padding-top: 18px; }
+      .form-grid, .hizli-kartlar, .duzenle-grid { grid-template-columns: 1fr; }
+      .hizli-kart { min-height: 68px; }
+      .form-card { padding: 18px; }
+    }
   </style>
 </head>
 <body>
@@ -194,6 +239,9 @@
       <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
 
+    <div class="dashboard-grid">
+      <main class="ana-icerik">
+
     <!-- SYNC BANNER -->
     <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <span id="sync-durum" style="font-size:12px;color:#94a3b8;">☁️ Google Sheets'ten veriler yükleniyor...</span>
@@ -206,7 +254,7 @@
         <div class="ozet-etiket">💰 TOPLAM TUTAR</div>
         <div class="ozet-deger" id="oz-toplam">0 ₺</div>
       </div>
-      <div class="ozet-kart odened">
+      <div class="ozet-kart odenen">
         <div class="ozet-etiket">✅ ÖDENEN</div>
         <div class="ozet-deger" id="oz-odenen">0 ₺</div>
       </div>
@@ -249,6 +297,54 @@
     <div id="liste-baslik" class="liste-baslik"></div>
     <div id="liste"></div>
 
+      </main>
+
+      <aside class="hizli-panel" aria-labelledby="hizli-baslik">
+        <h2 class="hizli-baslik" id="hizli-baslik">Hızlı İstatistikler</h2>
+        <div class="hizli-kartlar">
+          <button class="hizli-kart" style="--vurgu:#0ea5e9" type="button" data-filtre="bu-ay" aria-pressed="false" onclick="hizliFiltrele('bu-ay')">
+            <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span>
+            <span class="hizli-metin">
+              <span class="hizli-etiket">Bu Ay Eklenen</span>
+              <span class="hizli-alt" id="hizli-bu-ay-alt">—</span>
+            </span>
+            <span class="hizli-deger" id="hizli-bu-ay">0</span>
+            <span class="hizli-ok" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+          </button>
+
+          <button class="hizli-kart" style="--vurgu:#f59e0b" type="button" data-filtre="yaklasan" aria-pressed="false" onclick="hizliFiltrele('yaklasan')">
+            <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
+            <span class="hizli-metin">
+              <span class="hizli-etiket">7 Gün İçinde Vadesi</span>
+              <span class="hizli-alt" id="hizli-yaklasan-alt">—</span>
+            </span>
+            <span class="hizli-deger" id="hizli-yaklasan">0</span>
+            <span class="hizli-ok" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+          </button>
+
+          <button class="hizli-kart geciken" style="--vurgu:#ef4444" type="button" data-filtre="geciken" aria-pressed="false" onclick="hizliFiltrele('geciken')">
+            <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
+            <span class="hizli-metin">
+              <span class="hizli-etiket">Geciken</span>
+              <span class="hizli-alt" id="hizli-geciken-alt">0 ₺</span>
+            </span>
+            <span class="hizli-deger" id="hizli-geciken">0</span>
+            <span class="hizli-ok" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+          </button>
+
+          <button class="hizli-kart odenen-ay" style="--vurgu:#4ade80" type="button" data-filtre="odenen-ay" aria-pressed="false" onclick="hizliFiltrele('odenen-ay')">
+            <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
+            <span class="hizli-metin">
+              <span class="hizli-etiket">Bu Ay Ödenen</span>
+              <span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span>
+            </span>
+            <span class="hizli-deger" id="hizli-odenen">0</span>
+            <span class="hizli-ok" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+          </button>
+        </div>
+      </aside>
+    </div>
+
   </div>
 
   <!-- FOOTER -->
@@ -273,8 +369,10 @@
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
+    const YEREL_GELISTIRME = ["127.0.0.1", "localhost"].includes(location.hostname);
+    let aktifIstatistikFiltresi = null;
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
     // ── SYNC ──────────────────────────────────────────────────────────────────
     function syncGoster(mesaj, renk) {
@@ -283,6 +381,10 @@
     }
 
     async function buludaKaydet(liste) {
+      if (YEREL_GELISTIRME) {
+        syncGoster("Yerel test modu · Google Sheets'e veri gönderilmedi", "#60a5fa");
+        return;
+      }
       try {
         let iframe = document.getElementById("gizli-frame");
         if (!iframe) {
@@ -313,6 +415,11 @@
 
     // ── DÜZELTİLDİ: Her cihazda Google Sheets öncelikli yükleme ──
     async function buludanYukle() {
+      if (YEREL_GELISTIRME) {
+        syncGoster("Yerel test modu · Veriler yalnızca bu tarayıcıda", "#60a5fa");
+        listeyiGoster(); ozetGuncelle(); rozetGuncelle();
+        return;
+      }
       syncGoster("🔄 Google Sheets'ten yükleniyor...", "#60a5fa");
       try {
         const r = await fetch(API_URL + "?t=" + Date.now());
@@ -401,6 +508,51 @@
     function formatTarih(d) { return new Date(d).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"}); }
     function kalanGun(v) { const b=new Date(); b.setHours(0,0,0,0); const vd=new Date(v); vd.setHours(0,0,0,0); return Math.round((vd-b)/86400000); }
     function formatPara(s) { return Number(s).toLocaleString("tr-TR",{minimumFractionDigits:0})+" ₺"; }
+    function ayniAy(tarih, referans=new Date()) {
+      const d = new Date(tarih);
+      return !Number.isNaN(d.getTime()) && d.getFullYear()===referans.getFullYear() && d.getMonth()===referans.getMonth();
+    }
+    function filtreyeUyar(inv, filtre) {
+      if (!filtre) return true;
+      const gun = kalanGun(vadeTarihi(inv.tarih, inv.vadeGun));
+      if (filtre==='bu-ay') return ayniAy(inv.tarih);
+      if (filtre==='yaklasan') return !inv.odendi && gun>=0 && gun<=7;
+      if (filtre==='geciken') return !inv.odendi && gun<0;
+      if (filtre==='odenen-ay') return inv.odendi && ayniAy(inv.tarih);
+      return true;
+    }
+    function filtreBasligi(filtre) {
+      return ({'bu-ay':'Bu ay eklenen','yaklasan':'7 gün içinde vadesi gelen','geciken':'Geciken','odenen-ay':'Bu ay ödenen'})[filtre] || '';
+    }
+    function hizliFiltrele(filtre) {
+      aktifIstatistikFiltresi = aktifIstatistikFiltresi===filtre ? null : filtre;
+      document.querySelectorAll('.hizli-kart').forEach(kart=>{
+        const aktif = kart.dataset.filtre===aktifIstatistikFiltresi;
+        kart.classList.toggle('aktif', aktif);
+        kart.setAttribute('aria-pressed', String(aktif));
+      });
+      listeyiGoster();
+      document.getElementById('liste-baslik')?.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    function istatistikGuncelle() {
+      const liste = faturaYukle();
+      const buAy = liste.filter(inv=>filtreyeUyar(inv,'bu-ay'));
+      const yaklasan = liste.filter(inv=>filtreyeUyar(inv,'yaklasan'));
+      const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
+      const odenenAy = liste.filter(inv=>filtreyeUyar(inv,'odenen-ay'));
+      const bugun = new Date();
+      const yediGunSonra = new Date(bugun); yediGunSonra.setDate(yediGunSonra.getDate()+7);
+      const ayMetni = bugun.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+      const aralikMetni = bugun.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' – ' + yediGunSonra.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
+      document.getElementById('hizli-bu-ay').textContent = buAy.length;
+      document.getElementById('hizli-bu-ay-alt').textContent = ayMetni;
+      document.getElementById('hizli-yaklasan').textContent = yaklasan.length;
+      document.getElementById('hizli-yaklasan-alt').textContent = aralikMetni;
+      document.getElementById('hizli-geciken').textContent = geciken.length;
+      document.getElementById('hizli-geciken-alt').textContent = formatPara(geciken.reduce((toplam,inv)=>toplam+(Number(inv.tutar)||0),0));
+      document.getElementById('hizli-odenen').textContent = odenenAy.length;
+      document.getElementById('hizli-odenen-alt').textContent = formatPara(odenenAy.reduce((toplam,inv)=>toplam+(Number(inv.tutar)||0),0));
+    }
 
     function durumBilgi(g) {
       if(g<0)   return{label:"🔴 "+Math.abs(g)+" gün gecikti",renk:"#ef4444",bg:"#ef444422"};
@@ -516,6 +668,7 @@
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
       document.getElementById("oz-odenen").textContent=formatPara(odenen);
       document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
+      istatistikGuncelle();
     }
 
     // ── BİLDİRİM ───────────────────────────────────────────────────────────────
@@ -527,7 +680,7 @@
       Notification.requestPermission().then(p=>{
         if(p==='granted'){
           document.getElementById('bildirim-banner').classList.remove('goster');
-          new Notification('Arlinoks Ödeme Takip',{body:'Bildirimler aktif! ✅',icon:'/icon-192.png'});
+          new Notification('Arlinoks Ödeme Takip',{body:'Bildirimler aktif! ✅',icon:'./icon-192.png'});
         }
       });
     }
@@ -564,19 +717,24 @@
 
     // ── TABLO ──────────────────────────────────────────────────────────────────
     function listeyiGoster() {
-      const liste = faturaYukle().sort((a,b)=>{
+      const tumListe = faturaYukle().sort((a,b)=>{
         if(a.odendi&&!b.odendi) return 1;
         if(!a.odendi&&b.odendi) return -1;
         return kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun));
       });
+      const liste = tumListe.filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
       const baslik    = document.getElementById("liste-baslik");
       const konteyner = document.getElementById("liste");
       if (!liste.length) {
-        baslik.textContent="";
-        konteyner.innerHTML='<div class="bos">🗂️<br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#334155">Yukarıdaki formu doldurun.</span></div>';
+        baslik.textContent = aktifIstatistikFiltresi ? filtreBasligi(aktifIstatistikFiltresi) : '';
+        konteyner.innerHTML = aktifIstatistikFiltresi
+          ? '<div class="bos">Bu filtreye uyan fatura bulunamadı.<br><button class="btn-duzenle" onclick="hizliFiltrele(aktifIstatistikFiltresi)">Filtreyi Temizle</button></div>'
+          : '<div class="bos">🗂️<br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#334155">Yukarıdaki formu doldurun.</span></div>';
         return;
       }
-      baslik.textContent = liste.length + " fatura · Vadeye göre sıralı";
+      baslik.textContent = aktifIstatistikFiltresi
+        ? liste.length + " fatura · " + filtreBasligi(aktifIstatistikFiltresi)
+        : liste.length + " fatura · Vadeye göre sıralı";
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
           <th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th>
