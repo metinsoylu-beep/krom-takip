@@ -121,6 +121,29 @@
     .hizli-ok { color: #94a3b8; font-size: 12px; }
     .hizli-kart.geciken .hizli-alt, .hizli-kart.geciken .hizli-deger { color: #ef4444; }
     .hizli-kart.odenen-ay .hizli-alt { color: #4ade80; }
+    .kur-panel { margin-top: 18px; padding: 14px; background: #151f30; border: 1px solid #334155; border-radius: 12px; }
+    .kur-baslik-satir { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .kur-baslik { display: flex; align-items: center; gap: 8px; color: #c9a84c; font-size: 13px; font-weight: bold; }
+    .kur-baslik i { font-size: 12px; }
+    .kur-islemler { display: flex; align-items: center; gap: 6px; }
+    .kur-yenile, .kur-kaynak { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #334155; border-radius: 7px; background: #0f172a; color: #94a3b8; cursor: pointer; text-decoration: none; font-size: 11px; }
+    .kur-yenile { font-family: inherit; }
+    .kur-yenile:hover, .kur-kaynak:hover { color: #c9a84c; border-color: #c9a84c88; }
+    .kur-yenile:focus-visible, .kur-kaynak:focus-visible { outline: 2px solid #c9a84c; outline-offset: 2px; }
+    .kur-yenile.yukleniyor i { animation: kur-don 0.8s linear infinite; }
+    @keyframes kur-don { to { transform: rotate(360deg); } }
+    .kur-satirlar { display: grid; gap: 9px; }
+    .kur-satir { min-width: 0; display: grid; grid-template-columns: 32px minmax(54px,1fr) auto auto; align-items: center; gap: 8px; padding: 10px; background: #1e293b; border: 1px solid #2f3d52; border-radius: 9px; }
+    .kur-ikon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; font-size: 14px; }
+    .kur-ikon.usd { color: #4ade80; background: #4ade8018; }
+    .kur-ikon.eur { color: #60a5fa; background: #60a5fa18; }
+    .kur-para { min-width: 0; }
+    .kur-para strong { display: block; color: #f8fafc; font-size: 12px; line-height: 1.2; white-space: nowrap; }
+    .kur-para small { display: block; color: #64748b; font-size: 9px; margin-top: 3px; white-space: nowrap; }
+    .kur-fiyat { text-align: right; }
+    .kur-fiyat small { display: block; color: #64748b; font-size: 8px; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .kur-fiyat strong { display: block; color: #f1f5f9; font-size: 11px; white-space: nowrap; }
+    .kur-durum { min-height: 14px; color: #64748b; font-size: 9px; line-height: 1.35; margin-top: 10px; text-align: right; }
 
     @media (max-width: 1220px) {
       .konteyner { width: min(100% - 40px, 1180px); }
@@ -130,6 +153,7 @@
       .hizli-kart { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 9px; padding: 10px; }
       .hizli-ok { display: none; }
       .hizli-etiket { font-size: 12px; }
+      .kur-satirlar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 900px) {
       .ozet-kartlar { grid-template-columns: 1fr; }
@@ -144,6 +168,7 @@
       .baslik-kucuk { display: none; }
       .konteyner { width: calc(100% - 28px); padding-top: 18px; }
       .form-grid, .hizli-kartlar, .duzenle-grid { grid-template-columns: 1fr; }
+      .kur-satirlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 68px; }
       .form-card { padding: 18px; }
     }
@@ -342,6 +367,31 @@
             <span class="hizli-ok" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
           </button>
         </div>
+
+        <section class="kur-panel" aria-labelledby="kur-baslik">
+          <div class="kur-baslik-satir">
+            <h3 class="kur-baslik" id="kur-baslik"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> TCMB Döviz Kurları</h3>
+            <div class="kur-islemler">
+              <button class="kur-yenile" id="kur-yenile" type="button" onclick="kurlariYukle(true)" aria-label="Döviz kurlarını yenile" title="Kurları yenile"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
+              <a class="kur-kaynak" href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" rel="noopener noreferrer" aria-label="TCMB güncel döviz kurları sayfasını aç" title="TCMB kaynağını aç"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+            </div>
+          </div>
+          <div class="kur-satirlar">
+            <div class="kur-satir">
+              <span class="kur-ikon usd" aria-hidden="true"><i class="fa-solid fa-dollar-sign"></i></span>
+              <span class="kur-para"><strong>Dolar / TL</strong><small>USD / TRY</small></span>
+              <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-usd-alis">—</strong></span>
+              <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-usd-satis">—</strong></span>
+            </div>
+            <div class="kur-satir">
+              <span class="kur-ikon eur" aria-hidden="true"><i class="fa-solid fa-euro-sign"></i></span>
+              <span class="kur-para"><strong>Euro / TL</strong><small>EUR / TRY</small></span>
+              <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-eur-alis">—</strong></span>
+              <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
+            </div>
+          </div>
+          <p class="kur-durum" id="kur-durum" role="status">TCMB verisi yükleniyor…</p>
+        </section>
       </aside>
     </div>
 
@@ -368,6 +418,7 @@
   <script>
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
+    const KUR_ANAHTAR   = "tcmb-kurlar-son";
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
     const YEREL_GELISTIRME = ["127.0.0.1", "localhost"].includes(location.hostname);
     let aktifIstatistikFiltresi = null;
@@ -378,6 +429,47 @@
     function syncGoster(mesaj, renk) {
       const el = document.getElementById("sync-durum");
       if (el) { el.textContent = mesaj; el.style.color = renk; }
+    }
+
+    // ── TCMB DÖVİZ KURLARI ───────────────────────────────────────────────────
+    function kurFormat(deger) {
+      const sayi = Number(deger);
+      return Number.isFinite(sayi)
+        ? sayi.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 4 })
+        : "—";
+    }
+
+    function kurVerisiniGoster(veri, sonKayit=false) {
+      const usd = veri?.rates?.USD;
+      const eur = veri?.rates?.EUR;
+      if (!usd || !eur) throw new Error("Kur verisi eksik");
+      document.getElementById("kur-usd-alis").textContent  = kurFormat(usd.buying);
+      document.getElementById("kur-usd-satis").textContent = kurFormat(usd.selling);
+      document.getElementById("kur-eur-alis").textContent  = kurFormat(eur.buying);
+      document.getElementById("kur-eur-satis").textContent = kurFormat(eur.selling);
+      document.getElementById("kur-durum").textContent = `TCMB · ${veri.sourceDate || "son iş günü"}${sonKayit ? " · son kayıt" : ""}`;
+    }
+
+    async function kurlariYukle(manuel=false) {
+      const yenile = document.getElementById("kur-yenile");
+      if (manuel) yenile?.classList.add("yukleniyor");
+      try {
+        const yanit = await fetch("./rates.json", { cache: "no-store" });
+        if (!yanit.ok) throw new Error("HTTP " + yanit.status);
+        const veri = await yanit.json();
+        kurVerisiniGoster(veri);
+        localStorage.setItem(KUR_ANAHTAR, JSON.stringify(veri));
+      } catch (hata) {
+        try {
+          const sonVeri = JSON.parse(localStorage.getItem(KUR_ANAHTAR) || "null");
+          if (!sonVeri) throw new Error("Kayıtlı kur yok");
+          kurVerisiniGoster(sonVeri, true);
+        } catch {
+          document.getElementById("kur-durum").textContent = "Kur verisi şu anda alınamadı";
+        }
+      } finally {
+        yenile?.classList.remove("yukleniyor");
+      }
     }
 
     async function buludaKaydet(liste) {
@@ -778,8 +870,10 @@
     rozetGuncelle();
     bildirimKontrol();
     buludanYukle(); // Google Sheets'ten yükle — her cihazda güncel veri gelir
+    kurlariYukle();
     setTimeout(karsılamaGoster, 500);
     setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
+    setInterval(kurlariYukle, 30 * 60 * 1000);
   </script>
 </body>
 </html>

@@ -1,0 +1,76 @@
+name: TCMB Kurlarını Güncelle
+
+on:
+  schedule:
+    - cron: "15 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-tcmb-rates
+  cancel-in-progress: true
+
+jobs:
+  update-rates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: TCMB verisini güncelle
+        shell: python
+        run: |
+          import json
+          import sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from xml.etree import ElementTree
+
+          source_url = "https://www.tcmb.gov.tr/kurlar/today.xml"
+          request = Request(source_url, headers={"User-Agent": "Arlinoks-Odeme-Takip/1.0"})
+          with urlopen(request, timeout=30) as response:
+              root = ElementTree.fromstring(response.read())
+
+          def get_rate(code):
+              currency = root.find(f".//Currency[@CurrencyCode='{code}']")
+              if currency is None:
+                  raise RuntimeError(f"{code} kuru bulunamadı")
+              buying = (currency.findtext("ForexBuying") or "").strip()
+              selling = (currency.findtext("ForexSelling") or "").strip()
+              if not buying or not selling:
+                  raise RuntimeError(f"{code} alış/satış değeri eksik")
+              return {"buying": buying, "selling": selling}
+
+          payload = {
+              "source": "Türkiye Cumhuriyet Merkez Bankası",
+              "sourceUrl": source_url,
+              "sourceDate": root.attrib.get("Tarih", ""),
+              "updatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+              "rates": {"USD": get_rate("USD"), "EUR": get_rate("EUR")},
+          }
+
+          output = Path("rates.json")
+          if output.exists():
+              current = json.loads(output.read_text(encoding="utf-8"))
+              if current.get("sourceDate") == payload["sourceDate"] and current.get("rates") == payload["rates"]:
+                  print("Kur değerleri değişmedi.")
+                  sys.exit(0)
+
+          output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(f"TCMB kurları güncellendi: {payload['sourceDate']}")
+
+      - name: Değişikliği kaydet
+        shell: bash
+        run: |
+          if git diff --quiet -- rates.json; then
+            echo "Kaydedilecek yeni kur yok."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rates.json
+          git commit -m "TCMB kurlarını güncelle"
+          git push

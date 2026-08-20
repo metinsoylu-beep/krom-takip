@@ -1,4 +1,4 @@
-const CACHE = 'odeme-takip-v3';
+const CACHE = 'odeme-takip-v4';
 const BASE = self.registration.scope;
 const FILES = [
   BASE,
@@ -8,6 +8,7 @@ const FILES = [
   `${BASE}icon-512.png`,
   `${BASE}assets/fontawesome/css/all.min.css`,
   `${BASE}assets/fontawesome/webfonts/fa-solid-900.woff2`,
+  `${BASE}rates.json`,
 ];
 
 self.addEventListener('install', e => {
@@ -24,7 +25,21 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  if (url.pathname.endsWith('/rates.json')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          if (response.ok) caches.open(CACHE).then(cache => cache.put(e.request, response.clone()));
+          return response;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match(`${BASE}index.html`)))
+    caches.match(e.request).then(r => r || fetch(e.request).catch(() =>
+      e.request.mode === 'navigate' ? caches.match(`${BASE}index.html`) : Response.error()
+    ))
   );
 });
