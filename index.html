@@ -536,8 +536,13 @@
             return;
           }
 
+          const yerelOdemeTarihleri = new Map(
+            faturaYukle().map(inv => [Number(inv.id), String(inv.odemeTarihi || "")])
+          );
           const liste = gecerli.map(row => {
             const odemeD = row["Ödeme Durumu"] || row["odendi"] || "";
+            const odendi = odemeD === "Ödendi" || odemeD === true || odemeD === "TRUE" || odemeD === "true";
+            const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || yerelOdemeTarihleri.get(Number(row["id"])) || "";
             const vadeGunHam = row["Vade Günü"] || row["vadeGun"] || "90";
             const vadeGunSayi = parseInt(String(vadeGunHam).replace(/[^0-9]/g,"")) || 90;
             return {
@@ -546,7 +551,8 @@
               tarih:   String(row["Tarih"]      || row["tarih"] || ""),
               vadeGun: vadeGunSayi,
               tutar:   String(row["Tutar"]      || row["tutar"] || "0"),
-              odendi:  odemeD === "Ödendi" || odemeD === true || odemeD === "TRUE" || odemeD === "true",
+              odendi,
+              odemeTarihi: odendi ? String(odemeTarihi) : "",
             };
           });
 
@@ -600,17 +606,39 @@
     function formatTarih(d) { return new Date(d).toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"}); }
     function kalanGun(v) { const b=new Date(); b.setHours(0,0,0,0); const vd=new Date(v); vd.setHours(0,0,0,0); return Math.round((vd-b)/86400000); }
     function formatPara(s) { return Number(s).toLocaleString("tr-TR",{minimumFractionDigits:0})+" ₺"; }
+    function bugununTarihi(referans=new Date()) {
+      const yil = referans.getFullYear();
+      const ay = String(referans.getMonth()+1).padStart(2,"0");
+      const gun = String(referans.getDate()).padStart(2,"0");
+      return `${yil}-${ay}-${gun}`;
+    }
     function ayniAy(tarih, referans=new Date()) {
       const d = new Date(tarih);
       return !Number.isNaN(d.getTime()) && d.getFullYear()===referans.getFullYear() && d.getMonth()===referans.getMonth();
     }
+    function haftaAraligi(referans=new Date()) {
+      const baslangic = new Date(referans);
+      baslangic.setHours(0,0,0,0);
+      baslangic.setDate(baslangic.getDate() - ((baslangic.getDay() + 6) % 7));
+      const sonrakiHafta = new Date(baslangic);
+      sonrakiHafta.setDate(sonrakiHafta.getDate() + 7);
+      const bitis = new Date(sonrakiHafta);
+      bitis.setDate(bitis.getDate() - 1);
+      return { baslangic, bitis, sonrakiHafta };
+    }
     function filtreyeUyar(inv, filtre) {
       if (!filtre) return true;
-      const gun = kalanGun(vadeTarihi(inv.tarih, inv.vadeGun));
+      const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+      const gun = kalanGun(vade);
       if (filtre==='bu-ay') return ayniAy(inv.tarih);
-      if (filtre==='yaklasan') return !inv.odendi && gun>=0 && gun<=7;
+      if (filtre==='yaklasan') {
+        const { baslangic, sonrakiHafta } = haftaAraligi();
+        const vadeGunu = new Date(vade);
+        vadeGunu.setHours(0,0,0,0);
+        return !inv.odendi && vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
+      }
       if (filtre==='geciken') return !inv.odendi && gun<0;
-      if (filtre==='odenen-ay') return inv.odendi && ayniAy(inv.tarih);
+      if (filtre==='odenen-ay') return inv.odendi && Boolean(inv.odemeTarihi) && ayniAy(inv.odemeTarihi);
       return true;
     }
     function filtreBasligi(filtre) {
@@ -633,9 +661,9 @@
       const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
       const odenenAy = liste.filter(inv=>filtreyeUyar(inv,'odenen-ay'));
       const bugun = new Date();
-      const yediGunSonra = new Date(bugun); yediGunSonra.setDate(yediGunSonra.getDate()+7);
+      const { baslangic: haftaBaslangici, bitis: haftaBitisi } = haftaAraligi(bugun);
       const ayMetni = bugun.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
-      const aralikMetni = bugun.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' – ' + yediGunSonra.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
+      const aralikMetni = haftaBaslangici.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' – ' + haftaBitisi.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
       document.getElementById('hizli-bu-ay').textContent = buAy.length;
       document.getElementById('hizli-bu-ay-alt').textContent = ayMetni;
       document.getElementById('hizli-yaklasan').textContent = yaklasan.length;
@@ -793,7 +821,7 @@
       const msg     = document.getElementById("msg");
       if (!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="⚠️ Lütfen tüm alanları doldurun."; return; }
       const liste = faturaYukle();
-      liste.push({ id:Date.now(), no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false });
+      liste.push({ id:Date.now(), no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"" });
       faturaKaydet(liste);
       document.getElementById("inp-no").value       = "";
       document.getElementById("inp-tarih").value    = "";
@@ -805,7 +833,11 @@
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
     function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
-    function odendiBelirle(id,durum) { faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum}:i)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
+    function odendiBelirle(id,durum) {
+      const odemeTarihi = durum ? bugununTarihi() : "";
+      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum,odemeTarihi}:i));
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+    }
 
     // ── TABLO ──────────────────────────────────────────────────────────────────
     function listeyiGoster() {
