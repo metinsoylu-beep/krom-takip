@@ -121,9 +121,9 @@
     .hizli-ok { color: #94a3b8; font-size: 12px; }
     .hizli-kart.geciken .hizli-alt, .hizli-kart.geciken .hizli-deger { color: #ef4444; }
     .hizli-kart.odenen-ay .hizli-alt { color: #4ade80; }
-    .kur-panel { width: min(100%, 480px); margin: 22px auto 0; padding: 0; overflow: hidden; background: #151f30; border: 1px solid #334155; border-radius: 13px; box-shadow: 0 14px 34px #02061724; }
-    .kur-baslik-satir { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #334155; }
-    .kur-baslik { display: flex; align-items: center; gap: 8px; color: #c9a84c; font-size: 13px; font-weight: bold; }
+    .kur-panel { width: min(100%, 480px); margin: 16px auto 0; padding: 0; overflow: hidden; background: #151f30; border: 1px solid #334155; border-radius: 13px; box-shadow: 0 14px 34px #02061724; }
+    .kur-baslik-satir { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 13px 12px; border-bottom: 1px solid #334155; }
+    .kur-baslik { display: flex; align-items: center; gap: 8px; color: #c9a84c; font-size: 12px; font-weight: bold; }
     .kur-baslik i { font-size: 12px; }
     .kur-islemler { display: flex; align-items: center; gap: 6px; }
     .kur-yenile, .kur-kaynak { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: #94a3b8; cursor: pointer; text-decoration: none; font-size: 11px; }
@@ -133,9 +133,9 @@
     .kur-yenile.yukleniyor i { animation: kur-don 0.8s linear infinite; }
     @keyframes kur-don { to { transform: rotate(360deg); } }
     .kur-satirlar { min-width: 0; }
-    .kur-satir { min-width: 0; display: grid; grid-template-columns: 38px minmax(112px,1fr) minmax(64px,auto) minmax(64px,auto); align-items: center; gap: 12px; padding: 15px 16px; }
+    .kur-satir { min-width: 0; display: grid; grid-template-columns: 36px minmax(76px,1fr) minmax(56px,auto) minmax(56px,auto); align-items: center; gap: 8px; padding: 14px 12px; }
     .kur-satir + .kur-satir { border-top: 1px solid #334155; }
-    .kur-ikon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 17px; }
+    .kur-ikon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; font-size: 16px; }
     .kur-ikon.usd { color: #4ade80; background: #4ade8018; }
     .kur-ikon.eur { color: #60a5fa; background: #60a5fa18; }
     .kur-para { min-width: 0; }
@@ -143,8 +143,8 @@
     .kur-para small { display: block; color: #64748b; font-size: 9px; margin-top: 4px; white-space: nowrap; }
     .kur-fiyat { text-align: right; }
     .kur-fiyat small { display: block; color: #64748b; font-size: 8px; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .kur-fiyat strong { display: block; color: #f1f5f9; font-size: 12px; white-space: nowrap; }
-    .kur-durum { max-width: 104px; min-height: 14px; overflow: hidden; color: #64748b; font-size: 9px; line-height: 1.35; margin: 0; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+    .kur-fiyat strong { display: block; color: #f1f5f9; font-size: 11px; white-space: nowrap; }
+    .kur-durum { max-width: 72px; min-height: 14px; overflow: hidden; color: #64748b; font-size: 9px; line-height: 1.35; margin: 0; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 
     @media (max-width: 1220px) {
       .konteyner { width: min(100% - 40px, 1180px); }
@@ -168,12 +168,6 @@
       .baslik-kucuk { display: none; }
       .konteyner { width: calc(100% - 28px); padding-top: 18px; }
       .form-grid, .hizli-kartlar, .duzenle-grid { grid-template-columns: 1fr; }
-      .kur-baslik-satir { gap: 8px; padding-inline: 12px; }
-      .kur-baslik { font-size: 12px; }
-      .kur-durum { max-width: 72px; }
-      .kur-satir { grid-template-columns: 36px minmax(86px,1fr) minmax(58px,auto) minmax(58px,auto); gap: 8px; padding: 14px 12px; }
-      .kur-ikon { width: 34px; height: 34px; font-size: 16px; }
-      .kur-fiyat strong { font-size: 11px; }
       .hizli-kart { min-height: 68px; }
       .form-card { padding: 18px; }
     }
@@ -373,33 +367,33 @@
           </button>
         </div>
 
+        <section class="kur-panel" aria-labelledby="kur-baslik">
+          <div class="kur-baslik-satir">
+            <h3 class="kur-baslik" id="kur-baslik"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> TCMB Döviz Kurları</h3>
+            <p class="kur-durum" id="kur-durum" role="status">TCMB verisi yükleniyor…</p>
+            <div class="kur-islemler">
+              <button class="kur-yenile" id="kur-yenile" type="button" onclick="kurlariYukle(true)" aria-label="Döviz kurlarını yenile" title="Kurları yenile"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
+              <a class="kur-kaynak" href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" rel="noopener noreferrer" aria-label="TCMB güncel döviz kurları sayfasını aç" title="TCMB kaynağını aç"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+            </div>
+          </div>
+          <div class="kur-satirlar">
+            <div class="kur-satir">
+              <span class="kur-ikon usd" aria-hidden="true"><i class="fa-solid fa-dollar-sign"></i></span>
+              <span class="kur-para"><strong>Dolar / TL</strong><small>USD / TRY</small></span>
+              <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-usd-alis">—</strong></span>
+              <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-usd-satis">—</strong></span>
+            </div>
+            <div class="kur-satir">
+              <span class="kur-ikon eur" aria-hidden="true"><i class="fa-solid fa-euro-sign"></i></span>
+              <span class="kur-para"><strong>Euro / TL</strong><small>EUR / TRY</small></span>
+              <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-eur-alis">—</strong></span>
+              <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
+            </div>
+          </div>
+        </section>
+
       </aside>
     </div>
-
-    <section class="kur-panel" aria-labelledby="kur-baslik">
-      <div class="kur-baslik-satir">
-        <h3 class="kur-baslik" id="kur-baslik"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> TCMB Döviz Kurları</h3>
-        <p class="kur-durum" id="kur-durum" role="status">TCMB verisi yükleniyor…</p>
-        <div class="kur-islemler">
-          <button class="kur-yenile" id="kur-yenile" type="button" onclick="kurlariYukle(true)" aria-label="Döviz kurlarını yenile" title="Kurları yenile"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
-          <a class="kur-kaynak" href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" rel="noopener noreferrer" aria-label="TCMB güncel döviz kurları sayfasını aç" title="TCMB kaynağını aç"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
-        </div>
-      </div>
-      <div class="kur-satirlar">
-        <div class="kur-satir">
-          <span class="kur-ikon usd" aria-hidden="true"><i class="fa-solid fa-dollar-sign"></i></span>
-          <span class="kur-para"><strong>Dolar / TL</strong><small>USD / TRY</small></span>
-          <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-usd-alis">—</strong></span>
-          <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-usd-satis">—</strong></span>
-        </div>
-        <div class="kur-satir">
-          <span class="kur-ikon eur" aria-hidden="true"><i class="fa-solid fa-euro-sign"></i></span>
-          <span class="kur-para"><strong>Euro / TL</strong><small>EUR / TRY</small></span>
-          <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-eur-alis">—</strong></span>
-          <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
-        </div>
-      </div>
-    </section>
 
   </div>
 
