@@ -121,29 +121,30 @@
     .hizli-ok { color: #94a3b8; font-size: 12px; }
     .hizli-kart.geciken .hizli-alt, .hizli-kart.geciken .hizli-deger { color: #ef4444; }
     .hizli-kart.odenen-ay .hizli-alt { color: #4ade80; }
-    .kur-panel { margin-top: 22px; padding: 12px 14px; display: grid; grid-template-columns: minmax(210px,0.8fr) minmax(0,2fr) auto; align-items: center; gap: 18px; background: #151f30; border: 1px solid #334155; border-radius: 12px; }
-    .kur-baslik-satir { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .kur-panel { width: min(100%, 480px); margin: 22px auto 0; padding: 0; overflow: hidden; background: #151f30; border: 1px solid #334155; border-radius: 13px; box-shadow: 0 14px 34px #02061724; }
+    .kur-baslik-satir { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #334155; }
     .kur-baslik { display: flex; align-items: center; gap: 8px; color: #c9a84c; font-size: 13px; font-weight: bold; }
     .kur-baslik i { font-size: 12px; }
     .kur-islemler { display: flex; align-items: center; gap: 6px; }
-    .kur-yenile, .kur-kaynak { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #334155; border-radius: 7px; background: #0f172a; color: #94a3b8; cursor: pointer; text-decoration: none; font-size: 11px; }
+    .kur-yenile, .kur-kaynak { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: #94a3b8; cursor: pointer; text-decoration: none; font-size: 11px; }
     .kur-yenile { font-family: inherit; }
     .kur-yenile:hover, .kur-kaynak:hover { color: #c9a84c; border-color: #c9a84c88; }
     .kur-yenile:focus-visible, .kur-kaynak:focus-visible { outline: 2px solid #c9a84c; outline-offset: 2px; }
     .kur-yenile.yukleniyor i { animation: kur-don 0.8s linear infinite; }
     @keyframes kur-don { to { transform: rotate(360deg); } }
-    .kur-satirlar { min-width: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0; }
-    .kur-satir { min-width: 0; display: grid; grid-template-columns: 32px minmax(76px,1fr) auto auto; align-items: center; gap: 10px; padding: 4px 18px; border-left: 1px solid #334155; }
-    .kur-ikon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; font-size: 14px; }
+    .kur-satirlar { min-width: 0; }
+    .kur-satir { min-width: 0; display: grid; grid-template-columns: 38px minmax(112px,1fr) minmax(64px,auto) minmax(64px,auto); align-items: center; gap: 12px; padding: 15px 16px; }
+    .kur-satir + .kur-satir { border-top: 1px solid #334155; }
+    .kur-ikon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 17px; }
     .kur-ikon.usd { color: #4ade80; background: #4ade8018; }
     .kur-ikon.eur { color: #60a5fa; background: #60a5fa18; }
     .kur-para { min-width: 0; }
-    .kur-para strong { display: block; color: #f8fafc; font-size: 12px; line-height: 1.2; white-space: nowrap; }
-    .kur-para small { display: block; color: #64748b; font-size: 9px; margin-top: 3px; white-space: nowrap; }
+    .kur-para strong { display: block; color: #f8fafc; font-size: 13px; line-height: 1.2; white-space: nowrap; }
+    .kur-para small { display: block; color: #64748b; font-size: 9px; margin-top: 4px; white-space: nowrap; }
     .kur-fiyat { text-align: right; }
     .kur-fiyat small { display: block; color: #64748b; font-size: 8px; letter-spacing: 0.5px; margin-bottom: 3px; }
-    .kur-fiyat strong { display: block; color: #f1f5f9; font-size: 11px; white-space: nowrap; }
-    .kur-durum { min-width: 116px; min-height: 14px; color: #64748b; font-size: 9px; line-height: 1.35; margin: 0; text-align: right; }
+    .kur-fiyat strong { display: block; color: #f1f5f9; font-size: 12px; white-space: nowrap; }
+    .kur-durum { max-width: 104px; min-height: 14px; overflow: hidden; color: #64748b; font-size: 9px; line-height: 1.35; margin: 0; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 
     @media (max-width: 1220px) {
       .konteyner { width: min(100% - 40px, 1180px); }
@@ -160,9 +161,6 @@
       .hizli-kartlar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .tablo-wrap { overflow-x: auto; }
       table { min-width: 980px; }
-      .kur-panel { grid-template-columns: 1fr; gap: 12px; }
-      .kur-satir { padding-block: 8px; }
-      .kur-durum { min-width: 0; text-align: left; }
     }
     @media (max-width: 620px) {
       .navbar { padding-inline: 18px; }
@@ -170,7 +168,12 @@
       .baslik-kucuk { display: none; }
       .konteyner { width: calc(100% - 28px); padding-top: 18px; }
       .form-grid, .hizli-kartlar, .duzenle-grid { grid-template-columns: 1fr; }
-      .kur-satirlar { grid-template-columns: 1fr; }
+      .kur-baslik-satir { gap: 8px; padding-inline: 12px; }
+      .kur-baslik { font-size: 12px; }
+      .kur-durum { max-width: 72px; }
+      .kur-satir { grid-template-columns: 36px minmax(86px,1fr) minmax(58px,auto) minmax(58px,auto); gap: 8px; padding: 14px 12px; }
+      .kur-ikon { width: 34px; height: 34px; font-size: 16px; }
+      .kur-fiyat strong { font-size: 11px; }
       .hizli-kart { min-height: 68px; }
       .form-card { padding: 18px; }
     }
@@ -376,6 +379,7 @@
     <section class="kur-panel" aria-labelledby="kur-baslik">
       <div class="kur-baslik-satir">
         <h3 class="kur-baslik" id="kur-baslik"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> TCMB Döviz Kurları</h3>
+        <p class="kur-durum" id="kur-durum" role="status">TCMB verisi yükleniyor…</p>
         <div class="kur-islemler">
           <button class="kur-yenile" id="kur-yenile" type="button" onclick="kurlariYukle(true)" aria-label="Döviz kurlarını yenile" title="Kurları yenile"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
           <a class="kur-kaynak" href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" rel="noopener noreferrer" aria-label="TCMB güncel döviz kurları sayfasını aç" title="TCMB kaynağını aç"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
@@ -395,7 +399,6 @@
           <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
         </div>
       </div>
-      <p class="kur-durum" id="kur-durum" role="status">TCMB verisi yükleniyor…</p>
     </section>
 
   </div>
@@ -450,7 +453,7 @@
       document.getElementById("kur-usd-satis").textContent = kurFormat(usd.selling);
       document.getElementById("kur-eur-alis").textContent  = kurFormat(eur.buying);
       document.getElementById("kur-eur-satis").textContent = kurFormat(eur.selling);
-      document.getElementById("kur-durum").textContent = `TCMB · ${veri.sourceDate || "son iş günü"}${sonKayit ? " · son kayıt" : ""}`;
+      document.getElementById("kur-durum").textContent = `${veri.sourceDate || "son iş günü"}${sonKayit ? " · son kayıt" : ""}`;
     }
 
     async function kurlariYukle(manuel=false) {
