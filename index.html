@@ -604,11 +604,27 @@
       const d = new Date(tarih);
       return !Number.isNaN(d.getTime()) && d.getFullYear()===referans.getFullYear() && d.getMonth()===referans.getMonth();
     }
+    function haftaAraligi(referans=new Date()) {
+      const baslangic = new Date(referans);
+      baslangic.setHours(0,0,0,0);
+      baslangic.setDate(baslangic.getDate() - ((baslangic.getDay() + 6) % 7));
+      const sonrakiHafta = new Date(baslangic);
+      sonrakiHafta.setDate(sonrakiHafta.getDate() + 7);
+      const bitis = new Date(sonrakiHafta);
+      bitis.setDate(bitis.getDate() - 1);
+      return { baslangic, bitis, sonrakiHafta };
+    }
     function filtreyeUyar(inv, filtre) {
       if (!filtre) return true;
-      const gun = kalanGun(vadeTarihi(inv.tarih, inv.vadeGun));
+      const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+      const gun = kalanGun(vade);
       if (filtre==='bu-ay') return ayniAy(inv.tarih);
-      if (filtre==='yaklasan') return !inv.odendi && gun>=0 && gun<=7;
+      if (filtre==='yaklasan') {
+        const { baslangic, sonrakiHafta } = haftaAraligi();
+        const vadeGunu = new Date(vade);
+        vadeGunu.setHours(0,0,0,0);
+        return !inv.odendi && vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
+      }
       if (filtre==='geciken') return !inv.odendi && gun<0;
       if (filtre==='odenen-ay') return inv.odendi && ayniAy(inv.tarih);
       return true;
@@ -633,9 +649,9 @@
       const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
       const odenenAy = liste.filter(inv=>filtreyeUyar(inv,'odenen-ay'));
       const bugun = new Date();
-      const yediGunSonra = new Date(bugun); yediGunSonra.setDate(yediGunSonra.getDate()+7);
+      const { baslangic: haftaBaslangici, bitis: haftaBitisi } = haftaAraligi(bugun);
       const ayMetni = bugun.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
-      const aralikMetni = bugun.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' – ' + yediGunSonra.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
+      const aralikMetni = haftaBaslangici.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'}) + ' – ' + haftaBitisi.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'});
       document.getElementById('hizli-bu-ay').textContent = buAy.length;
       document.getElementById('hizli-bu-ay-alt').textContent = ayMetni;
       document.getElementById('hizli-yaklasan').textContent = yaklasan.length;
