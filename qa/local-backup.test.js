@@ -17,6 +17,7 @@ const context = {
   ANAHTAR: "faturalar",
   YEDEK_ANAHTAR: "yedekler",
   YEDEK_SINIR: 10,
+  kullaniciRolu: "admin",
   localStorage: {
     getItem: anahtar => depo.has(anahtar) ? depo.get(anahtar) : null,
     setItem: (anahtar, deger) => depo.set(anahtar, String(deger)),
