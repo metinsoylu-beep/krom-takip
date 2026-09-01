@@ -345,6 +345,13 @@
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
       border: 0; background: transparent; color: #9aabbc; font-family: inherit; cursor: pointer;
     }
+    #son-islem-geri-al {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+      border: 1px solid #c9a84c55; border-radius: 6px; background: #c9a84c12;
+      color: #e5bd57; font-family: inherit; font-size: 11px; cursor: pointer;
+    }
+    #son-islem-geri-al:hover { background: #c9a84c24; border-color: #c9a84c88; }
+    #son-islem-geri-al[hidden] { display: none; }
     button:disabled { opacity: .55; cursor: wait; }
 
     .kur-panel {
@@ -596,6 +603,10 @@
         <!-- EŞİTLEME DURUMU -->
         <div class="sync-satir">
           <span id="sync-durum"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Google Sheets'ten veriler yükleniyor...</span>
+          <button id="son-islem-geri-al" type="button" onclick="sonIslemiGeriAl()" hidden>
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            Son İşlemi Geri Al
+          </button>
           <button id="sync-yenile-btn" type="button" onclick="buludanYukle()">
             <i class="fa-solid fa-rotate" aria-hidden="true"></i>
             Yenile
@@ -662,7 +673,7 @@
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
         <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı yoksa son yerel veriler gösterilir.</span></li>
-        <li><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> <span>Önemli verilerinizi düzenli aralıklarla yedeklemeniz önerilir.</span></li>
+        <li><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> <span>Son 10 değişiklik bu cihazda otomatik yedeklenir ve geri alınabilir.</span></li>
       </ul>
       <div class="footer-alt">
         <div class="footer-telif">© 2025 Arlinoks · Tüm hakları saklıdır. Üretici: Metin Soylu</div>
@@ -677,6 +688,8 @@
     const KUR_ANAHTAR   = "tcmb-kurlar-son";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
+    const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
+    const YEDEK_SINIR = 10;
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
     const YEREL_GELISTIRME = ["127.0.0.1", "localhost"].includes(location.hostname);
     let aktifIstatistikFiltresi = null;
@@ -1105,10 +1118,65 @@
         return sonuc.liste;
       } catch { return []; }
     }
-    function faturaKaydet(l) {
+
+    function yedekleriYukle() {
+      try {
+        const ham = JSON.parse(localStorage.getItem(YEDEK_ANAHTAR) || "[]");
+        return Array.isArray(ham)
+          ? ham.filter(yedek => yedek && Array.isArray(yedek.liste)).slice(-YEDEK_SINIR)
+          : [];
+      } catch { return []; }
+    }
+
+    function yedekDugmesiniGuncelle() {
+      const dugme = document.getElementById("son-islem-geri-al");
+      if (!dugme) return;
+      const yedekler = yedekleriYukle();
+      const sonYedek = yedekler[yedekler.length - 1];
+      dugme.hidden = !sonYedek;
+      dugme.title = sonYedek
+        ? `${sonYedek.neden || "Son değişiklik"} · ${new Date(sonYedek.kayitZamani).toLocaleString("tr-TR")}`
+        : "";
+    }
+
+    function otomatikYedekOlustur(liste, neden) {
+      const guvenliListe = faturalariTekillestir(liste).liste;
+      const yedekler = yedekleriYukle();
+      const sonYedek = yedekler[yedekler.length - 1];
+      if (!sonYedek || JSON.stringify(sonYedek.liste) !== JSON.stringify(guvenliListe)) {
+        yedekler.push({
+          kayitZamani: new Date().toISOString(),
+          neden: String(neden || "Fatura verisi değiştirildi"),
+          liste: guvenliListe
+        });
+        localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler.slice(-YEDEK_SINIR)));
+      }
+      yedekDugmesiniGuncelle();
+    }
+
+    function faturaKaydet(l, neden="Fatura verisi değiştirildi") {
       const tekilListe = faturalariTekillestir(l).liste;
+      const mevcutListe = faturaYukle();
+      if (JSON.stringify(mevcutListe) === JSON.stringify(tekilListe)) return;
+      otomatikYedekOlustur(mevcutListe, neden);
       localStorage.setItem(ANAHTAR, JSON.stringify(tekilListe));
       buludaKaydet(tekilListe);
+    }
+
+    function sonIslemiGeriAl() {
+      const yedekler = yedekleriYukle();
+      const sonYedek = yedekler.pop();
+      if (!sonYedek) return;
+      const geriYuklenecek = faturalariTekillestir(sonYedek.liste).liste;
+      if (yedekler.length) localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler));
+      else localStorage.removeItem(YEDEK_ANAHTAR);
+      localStorage.setItem(ANAHTAR, JSON.stringify(geriYuklenecek));
+      buludaKaydet(geriYuklenecek);
+      listeyiGoster();
+      rozetGuncelle();
+      ozetGuncelle();
+      yedekDugmesiniGuncelle();
+      syncGoster(`${sonYedek.neden || "Son değişiklik"} geri alındı`, "#4ade80");
     }
 
     function vadeTarihi(tarih, vadeGun) {
@@ -1321,7 +1389,7 @@
       const tutar = document.getElementById("d-tutar").value.trim();
       const msg   = document.getElementById("d-msg");
       if (!no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Tüm alanları doldurun."; return; }
-      faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, no, tarih, vadeGun:parseInt(vadeG), tutar} : i));
+      faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
       duzenleKapat();
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
@@ -1391,7 +1459,7 @@
       const kaydetBtn = document.getElementById("fatura-kaydet-btn");
       if (kaydetBtn) { kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor…"; }
       liste.push(yeniFatura);
-      faturaKaydet(liste);
+      faturaKaydet(liste, "Fatura eklendi");
       document.getElementById("inp-no").value       = "";
       document.getElementById("inp-tarih").value    = "";
       document.getElementById("inp-vade-gun").value = "90";
@@ -1406,10 +1474,10 @@
       }, 900);
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
-    function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id)); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
+    function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi"); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
     function odendiBelirle(id,durum) {
       const odemeTarihi = durum ? bugununTarihi() : "";
-      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum,odemeTarihi}:i));
+      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum,odemeTarihi}:i), durum ? "Fatura ödendi olarak işaretlendi" : "Ödeme durumu geri alındı");
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
@@ -1475,6 +1543,7 @@
     listeyiGoster();
     ozetGuncelle();
     rozetGuncelle();
+    yedekDugmesiniGuncelle();
     bildirimKontrol();
     buludanYukle(); // Google Sheets'ten yükle — her cihazda güncel veri gelir
     kurlariYukle();
