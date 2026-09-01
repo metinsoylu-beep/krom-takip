@@ -107,6 +107,8 @@ const context = {
 vm.createContext(context);
 vm.runInContext(code, context);
 
+assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
+
 const read = output => JSON.parse(output.text);
 const post = (payload, idToken = "admin-token") => read(context.doPost({
   parameter: { payload: JSON.stringify({ ...payload, idToken }) }
