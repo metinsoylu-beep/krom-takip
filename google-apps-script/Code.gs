@@ -1,6 +1,9 @@
 const SHEET_NAME = "Faturalar";
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
+const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
+const YONETICI_EPOSTALARI_ANAHTAR = "ADMIN_EMAILS";
+const FIREBASE_API_KEY = "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk";
 const VERI_BASLIK = [
   "id",
   "Fatura No",
@@ -21,6 +24,80 @@ function jsonCevabi(deger) {
 function bulutSurumuOku(properties) {
   const surum = parseInt(properties.getProperty(SURUM_ANAHTAR) || "0", 10);
   return isFinite(surum) && surum >= 0 ? surum : 0;
+}
+
+function epostaListesi() {
+  const sonuc = {};
+  Array.prototype.slice.call(arguments).forEach(function(deger) {
+    String(deger || "").split(/[;,\n]/).forEach(function(eposta) {
+      const temiz = eposta.trim().toLowerCase();
+      if (temiz) sonuc[temiz] = true;
+    });
+  });
+  return sonuc;
+}
+
+function kullaniciYetkisiniBul(eposta) {
+  const properties = PropertiesService.getScriptProperties();
+  let sahipEpostasi = "";
+  try {
+    sahipEpostasi = Session.getEffectiveUser().getEmail();
+  } catch (err) {}
+
+  const yoneticiler = epostaListesi(
+    sahipEpostasi,
+    properties.getProperty(YONETICI_EPOSTALARI_ANAHTAR)
+  );
+  const izleyiciler = epostaListesi(
+    properties.getProperty(IZLEYICI_EPOSTALARI_ANAHTAR)
+  );
+  const temizEposta = String(eposta || "").trim().toLowerCase();
+
+  if (yoneticiler[temizEposta]) return "admin";
+  if (izleyiciler[temizEposta]) return "viewer";
+  return "";
+}
+
+function firebaseKullanicisiniDogrula(idToken) {
+  const token = String(idToken || "").trim();
+  if (!token) {
+    return { ok: false, code: "AUTH_REQUIRED", message: "Google hesabıyla giriş yapın." };
+  }
+
+  try {
+    const yanit = UrlFetchApp.fetch(
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + encodeURIComponent(FIREBASE_API_KEY),
+      {
+        method: "post",
+        contentType: "application/json",
+        payload: JSON.stringify({ idToken: token }),
+        muteHttpExceptions: true
+      }
+    );
+    if (yanit.getResponseCode() !== 200) {
+      return { ok: false, code: "AUTH_INVALID", message: "Oturum doğrulanamadı. Yeniden giriş yapın." };
+    }
+
+    const veri = JSON.parse(yanit.getContentText() || "{}");
+    const kullanici = veri.users && veri.users[0];
+    const eposta = String(kullanici && kullanici.email || "").trim().toLowerCase();
+    if (!kullanici || !eposta || kullanici.emailVerified !== true) {
+      return { ok: false, code: "AUTH_INVALID", message: "Doğrulanmış bir Google hesabı gerekli." };
+    }
+
+    const role = kullaniciYetkisiniBul(eposta);
+    if (!role) {
+      return { ok: false, code: "ACCESS_DENIED", message: "Bu hesabın uygulamaya erişim yetkisi yok." };
+    }
+    return {
+      ok: true,
+      role: role,
+      email: eposta,
+      uid: String(kullanici.localId || "")
+    };
+  } catch (err) {
+    return { ok: false, code: "AUTH_ERROR", message: "Kimlik doğrulama servisine ulaşılamadı." };
+  }
 }
 
 function tarihMetni(deger) {
@@ -132,60 +209,52 @@ function durumHesapla(tarih, vadeGun, odendi) {
   return "⚪ " + gun + " gün kaldı";
 }
 
-function doGet(e) {
-  const kilit = LockService.getScriptLock();
-  try {
-    kilit.waitLock(30000);
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    let items = [];
+function faturaVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  let items = [];
 
-    if (sheet) {
-      const data = sheet.getDataRange().getValues();
-      const baslikSatiri = data.findIndex(function(row) {
-        return String(row[0]).trim() === "id";
-      });
-
-      if (baslikSatiri >= 0) {
-        const rows = data.slice(baslikSatiri + 1)
-          .filter(function(row) {
-            return row[0] && String(row[0]).trim() !== "id";
-          })
-          .map(function(row) {
-            return {
-              id: String(row[0]),
-              no: String(row[1] || ""),
-              tarih: tarihMetni(row[2]),
-              vadeGun: parseInt(String(row[3]).replace(/[^0-9]/g, ""), 10) || 90,
-              tutar: String(row[5] || "0"),
-              odendi: String(row[6]).trim() === "Ödendi",
-              odemeTarihi: tarihMetni(row[7])
-            };
-          });
-        items = faturalariTekillestir(rows);
-      }
-    }
-
-    // Eski ön yüzler dizi almaya devam eder. Yeni ön yüz sürüm bilgisini
-    // yalnızca format=v2 istediğinde alır; böylece dağıtım sırası güvenlidir.
-    const v2 = e && e.parameter && String(e.parameter.format) === "v2";
-    if (v2) {
-      const properties = PropertiesService.getScriptProperties();
-      return jsonCevabi({
-        ok: true,
-        revision: bulutSurumuOku(properties),
-        lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
-        items: items
-      });
-    }
-
-    return jsonCevabi(items);
-  } catch (err) {
-    return jsonCevabi({
-      error: String(err)
+  if (sheet) {
+    const data = sheet.getDataRange().getValues();
+    const baslikSatiri = data.findIndex(function(row) {
+      return String(row[0]).trim() === "id";
     });
-  } finally {
-    if (kilit.hasLock()) kilit.releaseLock();
+
+    if (baslikSatiri >= 0) {
+      const rows = data.slice(baslikSatiri + 1)
+        .filter(function(row) {
+          return row[0] && String(row[0]).trim() !== "id";
+        })
+        .map(function(row) {
+          return {
+            id: String(row[0]),
+            no: String(row[1] || ""),
+            tarih: tarihMetni(row[2]),
+            vadeGun: parseInt(String(row[3]).replace(/[^0-9]/g, ""), 10) || 90,
+            tutar: String(row[5] || "0"),
+            odendi: String(row[6]).trim() === "Ödendi",
+            odemeTarihi: tarihMetni(row[7])
+          };
+        });
+      items = faturalariTekillestir(rows);
+    }
   }
+
+  const properties = PropertiesService.getScriptProperties();
+  return {
+    revision: bulutSurumuOku(properties),
+    lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
+    items: items
+  };
+}
+
+function doGet() {
+  // Fatura verisi URL parametreleriyle veya anonim GET isteğiyle verilmez.
+  // Kimlik jetonu yalnızca POST gövdesinde kabul edilir.
+  return jsonCevabi({
+    ok: false,
+    code: "AUTH_REQUIRED",
+    message: "Google hesabıyla giriş yapın."
+  });
 }
 
 function doPost(e) {
@@ -193,8 +262,26 @@ function doPost(e) {
   try {
     const hamPayload = e && e.parameter ? e.parameter.payload : "";
     const payload = JSON.parse(hamPayload || "{}");
+    const yetki = firebaseKullanicisiniDogrula(payload.idToken);
+    if (!yetki.ok) return jsonCevabi(yetki);
+
+    if (payload.action === "read") {
+      kilit.waitLock(30000);
+      const durum = faturaVerileriniOku();
+      return jsonCevabi({
+        ok: true,
+        role: yetki.role,
+        revision: durum.revision,
+        lastRequestId: durum.lastRequestId,
+        items: durum.items
+      });
+    }
+
     if (payload.action !== "save") {
-      return ContentService.createTextOutput("ok");
+      return jsonCevabi({ ok: false, code: "INVALID_ACTION", message: "Geçersiz işlem." });
+    }
+    if (yetki.role !== "admin") {
+      return jsonCevabi({ ok: false, code: "FORBIDDEN", message: "Salt görüntüleme hesabı değişiklik yapamaz." });
     }
 
     const items = faturalariTekillestir(payload.items);
@@ -292,6 +379,7 @@ function doPost(e) {
 
     return jsonCevabi({
       ok: true,
+      role: yetki.role,
       revision: yeniSurum,
       requestId: requestId,
       count: items.length
