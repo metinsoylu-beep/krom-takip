@@ -659,6 +659,8 @@
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
     const KUR_ANAHTAR   = "tcmb-kurlar-son";
+    const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
+    const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
     const YEREL_GELISTIRME = ["127.0.0.1", "localhost"].includes(location.hostname);
     let aktifIstatistikFiltresi = null;
@@ -668,6 +670,14 @@
     let bulutKaydiCalisiyor = false;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
+    const kayitliBulutSurumMetni = localStorage.getItem(BULUT_SURUM_ANAHTAR);
+    const kayitliBulutSurumu = kayitliBulutSurumMetni === null
+      ? Number.NaN
+      : Number(kayitliBulutSurumMetni);
+    let bulutSurumu = Number.isInteger(kayitliBulutSurumu) && kayitliBulutSurumu >= 0
+      ? kayitliBulutSurumu
+      : null;
+    let bulutCakismaUyarildi = false;
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
@@ -724,13 +734,93 @@
         : islem();
     }
 
+    function bulutSurumunuKaydet(surum) {
+      if (!Number.isInteger(surum) || surum < 0) return;
+      bulutSurumu = surum;
+      localStorage.setItem(BULUT_SURUM_ANAHTAR, String(surum));
+    }
+
+    function istekKimligiOlustur() {
+      return globalThis.crypto?.randomUUID
+        ? globalThis.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function listeSurumImzasi(liste) {
+      return JSON.stringify(
+        faturalariTekillestir(liste).liste
+          .map(inv => ({
+            id: Number(inv.id),
+            no: String(inv.no),
+            tarih: String(inv.tarih),
+            vadeGun: Number(inv.vadeGun),
+            tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
+            odendi: Boolean(inv.odendi),
+            odemeTarihi: String(inv.odemeTarihi || "")
+          }))
+          .sort((a, b) => a.id - b.id)
+      );
+    }
+
+    async function bulutDurumunuGetir() {
+      const ayirici = API_URL.includes("?") ? "&" : "?";
+      const r = await fetch(`${API_URL}${ayirici}format=v2&t=${Date.now()}`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const ham = await r.json();
+
+      // Apps Script'in eski sürümü dağıtım sırasında hâlâ dizi döndürebilir.
+      if (Array.isArray(ham)) {
+        return { revision: null, lastRequestId: "", items: ham };
+      }
+      if (!ham || ham.ok === false || !Array.isArray(ham.items)) {
+        throw new Error(ham?.error || "Geçersiz bulut yanıtı");
+      }
+      const revision = Number(ham.revision);
+      return {
+        revision: Number.isInteger(revision) && revision >= 0 ? revision : null,
+        lastRequestId: String(ham.lastRequestId || ""),
+        items: ham.items
+      };
+    }
+
+    function bulutCakismasiniKaydet(yerelListe, uzakDurum) {
+      localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify({
+        kayitZamani: new Date().toISOString(),
+        cihazSurumu: bulutSurumu,
+        bulutSurumu: uzakDurum.revision,
+        yerelListe: faturalariTekillestir(yerelListe).liste,
+        bulutListe: faturalariTekillestir(uzakDurum.items).liste
+      }));
+      syncGoster("Başka cihazda değişiklik algılandı · Bu cihazdaki değişiklik yedeklendi", "#ef4444");
+      if (!bulutCakismaUyarildi) {
+        bulutCakismaUyarildi = true;
+        alert("Başka bir cihazda daha yeni kayıt bulundu. Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel verileri almak için Yenile düğmesini kullanın.");
+      }
+    }
+
     async function bulutKaydiniGonder(liste) {
       if (YEREL_GELISTIRME) {
         syncGoster("Yerel test modu · Google Sheets'e veri gönderilmedi", "#60a5fa");
-        return;
+        return false;
       }
       try {
+        let kaydedildi = false;
         await bulutKilidiyleCalistir(async () => {
+          const uzakOnce = await bulutDurumunuGetir();
+          const listelerAyni = listeSurumImzasi(uzakOnce.items) === listeSurumImzasi(liste);
+
+          if (uzakOnce.revision !== null) {
+            if (bulutSurumu === null || (uzakOnce.revision !== bulutSurumu && listelerAyni)) {
+              bulutSurumunuKaydet(uzakOnce.revision);
+            }
+            if (uzakOnce.revision !== bulutSurumu) {
+              bulutCakismasiniKaydet(liste, uzakOnce);
+              return;
+            }
+          }
+
+          const baseRevision = bulutSurumu;
+          const requestId = istekKimligiOlustur();
           let iframe = document.getElementById("gizli-frame");
           if (!iframe) {
             iframe = document.createElement("iframe");
@@ -747,18 +837,47 @@
           const input = document.createElement("input");
           input.type  = "hidden";
           input.name  = "payload";
-          input.value = JSON.stringify({ action: "save", items: faturalariTekillestir(liste).liste });
+          input.value = JSON.stringify({
+            action: "save",
+            baseRevision,
+            requestId,
+            items: faturalariTekillestir(liste).liste
+          });
           form.appendChild(input);
           document.body.appendChild(form);
           form.submit();
           document.body.removeChild(form);
-          // Apps Script yanıtı gizli iframe'e gelir. Aynı tarayıcıdaki diğer
-          // sekmeler bu kısa süre boyunca aynı kilidi bekler.
-          await new Promise(tamam => setTimeout(tamam, 1800));
+
+          // Gizli iframe'in çapraz kaynak yanıtı okunamaz. Aynı requestId'nin
+          // sunucuda görünmesini bekleyerek kaydın gerçekten uygulandığını doğrula.
+          if (baseRevision === null) {
+            await new Promise(tamam => setTimeout(tamam, 1800));
+            kaydedildi = true; // Eski Apps Script sürümüyle geçiş uyumluluğu.
+            return;
+          }
+
+          for (let deneme = 0; deneme < 8; deneme++) {
+            await new Promise(tamam => setTimeout(tamam, 500));
+            const uzakSonra = await bulutDurumunuGetir();
+            if (uzakSonra.lastRequestId === requestId) {
+              bulutSurumunuKaydet(uzakSonra.revision);
+              localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
+              bulutCakismaUyarildi = false;
+              kaydedildi = true;
+              return;
+            }
+            if (uzakSonra.revision !== null && uzakSonra.revision !== baseRevision) {
+              bulutCakismasiniKaydet(liste, uzakSonra);
+              return;
+            }
+          }
+          throw new Error("Bulut kaydı doğrulanamadı");
         });
-        syncGoster("Google Sheets'e kaydedildi", "#4ade80");
+        if (kaydedildi) syncGoster("Google Sheets'e kaydedildi", "#4ade80");
+        return kaydedildi;
       } catch(e) {
         syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
+        return false;
       }
     }
 
@@ -795,9 +914,9 @@
       if (yenileBtn) yenileBtn.disabled = true;
       syncGoster("Google Sheets'ten yükleniyor...", "#60a5fa");
       try {
-        const r = await bulutKilidiyleCalistir(() => fetch(API_URL + "?t=" + Date.now()));
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        const data = await r.json();
+        const uzakDurum = await bulutKilidiyleCalistir(bulutDurumunuGetir);
+        const data = uzakDurum.items;
+        if (uzakDurum.revision !== null) bulutSurumunuKaydet(uzakDurum.revision);
 
         if (Array.isArray(data) && data.length > 0) {
           // Sheets sütun adları: id, "Fatura No", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
