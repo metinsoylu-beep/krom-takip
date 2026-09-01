@@ -18,6 +18,21 @@ alanından tanımlanır:
 
 Örnek değer: `muhasebe@example.com,yonetim@example.com`
 
+Yetki kuralları:
+
+- `ADMIN_EMAILS` içindeki hesaplar tüm işlemleri yapabilir.
+- `VIEWER_EMAILS` içindeki hesaplar yalnızca görüntüleyebilir.
+- İki listede de olmayan hesapların uygulamaya erişimi reddedilir.
+- Bir hesabın rolünü değiştirmek için adresi eski listeden çıkarıp yeni listeye
+  ekleyin; aynı adresi iki listede birden tutmayın.
+
+Firebase doğrulaması ilk kez eklendiğinde proje sahibi Apps Script
+düzenleyicisindeki işlev listesinden `firebaseBaglantisiniYetkilendir` işlevini
+seçip **Çalıştır** düğmesine bir kez basmalıdır. Google izin ekranında dış
+hizmetlere bağlanma izni onaylandıktan sonra canlı uygulamadaki Google girişi
+çalışır. Bu işlem yalnızca ilk kurulumda veya Google izinleri kaldırıldığında
+tekrarlanır.
+
 Kod ayrıca eşzamanlı kayıtların faturaları çoğaltmasını önlemek için
 `LockService` kullanır. Veri kümesindeki `revision`, eski veriye sahip bir
 cihazın daha yeni kayıtları sessizce ezmesini engeller. Her isteğin `requestId`
