@@ -4,6 +4,26 @@ Bu klasördeki `Code.gs`, aynı anda gelen kayıtların faturaları çoğaltmas�
 önlemek için `LockService` kullanır. Gelen listede aynı kimliğe veya aynı
 fatura no + tarih + vade + tutar birleşimine sahip kayıtları da tekilleştirir.
 
+Yeni eşitleme protokolü ayrıca veri kümesine bir `revision` numarası verir.
+Ön yüz kayıt yaparken okuduğu sürümü `baseRevision` olarak gönderir. Buluttaki
+sürüm bu sırada değişmişse Apps Script kaydı reddeder; böylece eski veriye sahip
+bir cihaz daha yeni kayıtları sessizce ezemez. Her isteğin `requestId` değeri de
+ağ tekrarlarında aynı kaydın yeniden uygulanmasını önler.
+
+`doGet?format=v2` yanıtı şu yapıyı döndürür:
+
+```json
+{
+  "ok": true,
+  "revision": 1,
+  "lastRequestId": "...",
+  "items": []
+}
+```
+
+`format=v2` verilmezse eski ön yüzlerle uyumluluk için yalnızca fatura dizisi
+döndürülmeye devam eder.
+
 Değişikliğin canlı Google Sheets hizmetinde çalışması için:
 
 1. Apps Script düzenleyicisindeki mevcut kodun tamamını `Code.gs` içeriğiyle değiştirin.

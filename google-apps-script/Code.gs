@@ -1,4 +1,6 @@
 const SHEET_NAME = "Faturalar";
+const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
+const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const VERI_BASLIK = [
   "id",
   "Fatura No",
@@ -10,6 +12,16 @@ const VERI_BASLIK = [
   "Ödeme Tarihi",
   "Durum"
 ];
+
+function jsonCevabi(deger) {
+  return ContentService.createTextOutput(JSON.stringify(deger))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function bulutSurumuOku(properties) {
+  const surum = parseInt(properties.getProperty(SURUM_ANAHTAR) || "0", 10);
+  return isFinite(surum) && surum >= 0 ? surum : 0;
+}
 
 function tarihMetni(deger) {
   if (!deger) return "";
@@ -120,47 +132,57 @@ function durumHesapla(tarih, vadeGun, odendi) {
   return "⚪ " + gun + " gün kaldı";
 }
 
-function doGet() {
+function doGet(e) {
   const kilit = LockService.getScriptLock();
   try {
     kilit.waitLock(30000);
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-    if (!sheet) {
-      return ContentService.createTextOutput("[]")
-        .setMimeType(ContentService.MimeType.JSON);
-    }
+    let items = [];
 
-    const data = sheet.getDataRange().getValues();
-    const baslikSatiri = data.findIndex(function(row) {
-      return String(row[0]).trim() === "id";
-    });
-    if (baslikSatiri < 0) {
-      return ContentService.createTextOutput("[]")
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    const rows = data.slice(baslikSatiri + 1)
-      .filter(function(row) {
-        return row[0] && String(row[0]).trim() !== "id";
-      })
-      .map(function(row) {
-        return {
-          id: String(row[0]),
-          no: String(row[1] || ""),
-          tarih: tarihMetni(row[2]),
-          vadeGun: parseInt(String(row[3]).replace(/[^0-9]/g, ""), 10) || 90,
-          tutar: String(row[5] || "0"),
-          odendi: String(row[6]).trim() === "Ödendi",
-          odemeTarihi: tarihMetni(row[7])
-        };
+    if (sheet) {
+      const data = sheet.getDataRange().getValues();
+      const baslikSatiri = data.findIndex(function(row) {
+        return String(row[0]).trim() === "id";
       });
 
-    return ContentService.createTextOutput(JSON.stringify(faturalariTekillestir(rows)))
-      .setMimeType(ContentService.MimeType.JSON);
+      if (baslikSatiri >= 0) {
+        const rows = data.slice(baslikSatiri + 1)
+          .filter(function(row) {
+            return row[0] && String(row[0]).trim() !== "id";
+          })
+          .map(function(row) {
+            return {
+              id: String(row[0]),
+              no: String(row[1] || ""),
+              tarih: tarihMetni(row[2]),
+              vadeGun: parseInt(String(row[3]).replace(/[^0-9]/g, ""), 10) || 90,
+              tutar: String(row[5] || "0"),
+              odendi: String(row[6]).trim() === "Ödendi",
+              odemeTarihi: tarihMetni(row[7])
+            };
+          });
+        items = faturalariTekillestir(rows);
+      }
+    }
+
+    // Eski ön yüzler dizi almaya devam eder. Yeni ön yüz sürüm bilgisini
+    // yalnızca format=v2 istediğinde alır; böylece dağıtım sırası güvenlidir.
+    const v2 = e && e.parameter && String(e.parameter.format) === "v2";
+    if (v2) {
+      const properties = PropertiesService.getScriptProperties();
+      return jsonCevabi({
+        ok: true,
+        revision: bulutSurumuOku(properties),
+        lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
+        items: items
+      });
+    }
+
+    return jsonCevabi(items);
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
+    return jsonCevabi({
       error: String(err)
-    })).setMimeType(ContentService.MimeType.JSON);
+    });
   } finally {
     if (kilit.hasLock()) kilit.releaseLock();
   }
@@ -176,10 +198,42 @@ function doPost(e) {
     }
 
     const items = faturalariTekillestir(payload.items);
+    const requestId = String(payload.requestId || "").trim().slice(0, 120);
+    const baseRevisionHam = payload.baseRevision;
+    const baseRevision = baseRevisionHam === null || baseRevisionHam === undefined || baseRevisionHam === ""
+      ? null
+      : parseInt(baseRevisionHam, 10);
     kilit.waitLock(30000);
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    const properties = PropertiesService.getScriptProperties();
+    const mevcutSurum = bulutSurumuOku(properties);
+    const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
+
+    // Ağ tekrarları aynı isteği ikinci kez uygulamasın.
+    if (requestId && requestId === sonRequestId) {
+      return jsonCevabi({
+        ok: true,
+        replayed: true,
+        revision: mevcutSurum,
+        requestId: requestId,
+        count: items.length
+      });
+    }
+
+    // Eski bir cihaz, daha yeni bulut verisini sessizce ezemez. baseRevision
+    // göndermeyen eski ön yüzler geçiş dönemi boyunca çalışmaya devam eder.
+    if (baseRevision !== null && (!isFinite(baseRevision) || baseRevision !== mevcutSurum)) {
+      return jsonCevabi({
+        ok: false,
+        conflict: true,
+        revision: mevcutSurum,
+        requestId: requestId,
+        message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
     let toplam = 0;
     let odenen = 0;
     items.forEach(function(item) {
@@ -230,12 +284,23 @@ function doPost(e) {
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
 
-    return ContentService.createTextOutput(JSON.stringify({
+    const yeniSurum = mevcutSurum + 1;
+    const yeniProperties = {};
+    yeniProperties[SURUM_ANAHTAR] = String(yeniSurum);
+    if (requestId) yeniProperties[SON_ISTEK_ANAHTAR] = requestId;
+    properties.setProperties(yeniProperties, false);
+
+    return jsonCevabi({
       ok: true,
+      revision: yeniSurum,
+      requestId: requestId,
       count: items.length
-    })).setMimeType(ContentService.MimeType.JSON);
+    });
   } catch (err) {
-    return ContentService.createTextOutput("hata: " + err);
+    return jsonCevabi({
+      ok: false,
+      error: String(err)
+    });
   } finally {
     if (kilit.hasLock()) kilit.releaseLock();
   }
