@@ -11,6 +11,8 @@
   <link rel="apple-touch-icon" href="./icon-192.png"/>
   <link rel="stylesheet" href="./assets/fontawesome/css/all.min.css"/>
   <link rel="stylesheet" href="https://metinsoylu-beep.github.io/krom-takip/assets/fontawesome/css/all.min.css"/>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <title>Arlinoks – Ödeme Takip</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -422,9 +424,60 @@
       .form-grid { grid-template-columns: 1fr; }
       table { min-width: 920px; }
     }
+    body.auth-bekliyor .navbar,
+    body.auth-bekliyor .konteyner,
+    body.auth-bekliyor footer,
+    body.auth-bekliyor .popup-overlay:not(#giris-overlay) { display: none !important; }
+    .giris-overlay {
+      position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center;
+      padding: 24px; background:
+        radial-gradient(circle at 50% 18%, #173959 0, #071525 42%, #05101d 100%);
+    }
+    .giris-overlay[hidden] { display: none; }
+    .giris-kart {
+      width: min(430px, 100%); padding: 34px; text-align: center;
+      background: #10243af2; border: 1px solid #36516b; border-top: 3px solid #e6a91f;
+      border-radius: 14px; box-shadow: 0 28px 90px #020914aa;
+    }
+    .giris-logo { color: #fff; font: italic bold 27px Georgia, serif; letter-spacing: 4px; }
+    .giris-baslik { margin-top: 18px; color: #eef4fa; font-size: 20px; }
+    .giris-aciklama { margin: 9px 0 22px; color: #9aaabd; font-size: 13px; line-height: 1.6; }
+    .giris-google {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 12px 18px; border: 1px solid #d8e0e8; border-radius: 8px;
+      background: #fff; color: #1f2937; font: 600 14px "Segoe UI", Arial, sans-serif; cursor: pointer;
+    }
+    .giris-google:hover { background: #f4f7fa; }
+    .giris-google:disabled { opacity: .65; cursor: wait; }
+    .giris-durum { min-height: 20px; margin-top: 14px; color: #f6c95c; font-size: 12px; line-height: 1.5; }
+    .oturum-bilgi { display: flex; align-items: center; gap: 8px; }
+    .oturum-eposta { max-width: 210px; overflow: hidden; color: #9aaabd; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .rol-rozet { padding: 4px 7px; border-radius: 999px; color: #4ade80; background: #4ade8018; border: 1px solid #4ade8040; font-size: 9px; font-weight: 700; }
+    body[data-role="viewer"] .rol-rozet { color: #67cdfa; background: #38bdf812; border-color: #38bdf844; }
+    .cikis-dugmesi { border: 0; background: transparent; color: #9aaabd; font: inherit; font-size: 10px; cursor: pointer; }
+    .cikis-dugmesi:hover { color: #f1f5f9; }
+    body[data-role="viewer"] .yalnizca-yonetici { display: none !important; }
+    body[data-role="viewer"] #firma-adi-goster { cursor: default; border-bottom: 0; }
+    @media (max-width: 760px) {
+      .oturum-eposta { display: none; }
+      .giris-kart { padding: 28px 22px; }
+    }
   </style>
 </head>
-<body>
+<body class="auth-bekliyor">
+
+  <section class="giris-overlay" id="giris-overlay" aria-labelledby="giris-baslik">
+    <div class="giris-kart">
+      <div class="giris-logo">Arlinoks</div>
+      <h1 class="giris-baslik" id="giris-baslik">Vadeli Ödeme Takibi</h1>
+      <p class="giris-aciklama">Fatura bilgilerini görüntülemek için yetkili Google hesabınızla giriş yapın.</p>
+      <button class="giris-google" id="giris-dugmesi" type="button" onclick="girisYap()">
+        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+        Google ile Giriş Yap
+      </button>
+      <p class="giris-durum" id="giris-durum" role="status">Oturum kontrol ediliyor…</p>
+    </div>
+  </section>
 
   <!-- KARŞILAMA POPUP -->
   <div class="popup-overlay" id="karsılama-overlay">
@@ -456,7 +509,7 @@
   </div>
 
   <!-- DÜZENLEME POPUP -->
-  <div class="popup-overlay" id="duzenle-overlay">
+  <div class="popup-overlay yalnızca-yonetici" id="duzenle-overlay">
     <div class="popup-kutu" id="duzenle-popup">
       <div class="popup-header">
         <div class="popup-ikon"><i class="fa-solid fa-pen" aria-hidden="true"></i></div>
@@ -499,18 +552,23 @@
     <div class="navbar-sag">
       <div class="firma-duzenle">
         <span id="firma-adi-goster" onclick="firmaAdiniDuzenle()" title="Düzenlemek için tıklayın"></span>
-        <input class="firma-input" id="firma-inp" type="text" placeholder="Firma adı"/>
-        <button class="btn-kaydet-firma" id="firma-kaydet-btn" onclick="firmaKaydet()">✓</button>
+        <input class="firma-input yalnızca-yonetici" id="firma-inp" type="text" placeholder="Firma adı"/>
+        <button class="btn-kaydet-firma yalnızca-yonetici" id="firma-kaydet-btn" onclick="firmaKaydet()">✓</button>
       </div>
       <div class="baslik-kucuk">VADELİ ÖDEME TAKİBİ</div>
       <div class="navbar-tarih" id="navbar-tarih"></div>
+      <div class="oturum-bilgi">
+        <span class="oturum-eposta" id="oturum-eposta"></span>
+        <span class="rol-rozet" id="rol-rozet"></span>
+        <button class="cikis-dugmesi" type="button" onclick="cikisYap()">Çıkış</button>
+      </div>
     </div>
   </div>
 
   <div class="konteyner">
 
     <!-- BİLDİRİM BANNER -->
-    <div id="bildirim-banner">
+    <div id="bildirim-banner" class="yalnizca-yonetici">
       <span style="color:#f59e0b;font-size:13px;"><i class="fa-solid fa-bell" aria-hidden="true"></i> Ödeme uyarıları alabilmek için bildirim iznine ihtiyaç var.</span>
       <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
@@ -549,7 +607,7 @@
               <input id="filtre-tutar-max" type="number" min="0" placeholder="Maks. tutar" aria-label="Maksimum tutar" oninput="filtreleriGuncelle()"/>
             </div>
           </div>
-          <button class="btn-yeni-fatura" type="button" onclick="yeniFaturaAc()">
+          <button class="btn-yeni-fatura yalnızca-yonetici" type="button" onclick="yeniFaturaAc()">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>
             Yeni Fatura
           </button>
@@ -610,11 +668,11 @@
         <!-- EŞİTLEME DURUMU -->
         <div class="sync-satir">
           <span id="sync-durum"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Google Sheets'ten veriler yükleniyor...</span>
-          <button id="csv-indir-btn" type="button" onclick="csvRaporIndir()" title="Ekrandaki filtrelenmiş faturaları CSV olarak indir">
+          <button id="csv-indir-btn" class="yalnizca-yonetici" type="button" onclick="csvRaporIndir()" title="Ekrandaki filtrelenmiş faturaları CSV olarak indir">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
             CSV İndir
           </button>
-          <button id="son-islem-geri-al" type="button" onclick="sonIslemiGeriAl()" hidden>
+          <button id="son-islem-geri-al" class="yalnizca-yonetici" type="button" onclick="sonIslemiGeriAl()" hidden>
             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
             Son İşlemi Geri Al
           </button>
@@ -652,7 +710,7 @@
       </main>
 
       <!-- YENİ FATURA -->
-      <div class="popup-overlay" id="yeni-fatura-overlay">
+      <div class="popup-overlay yalnızca-yonetici" id="yeni-fatura-overlay">
         <div class="form-card yeni-fatura-panel" role="dialog" aria-modal="true" aria-labelledby="yeni-fatura-baslik">
           <div class="form-baslik-satir">
             <div class="form-title" id="yeni-fatura-baslik"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i> Yeni Fatura Ekle</div>
@@ -702,6 +760,14 @@
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
     const YEDEK_SINIR = 10;
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk",
+      authDomain: "arlinoks-krom-takip-38186.firebaseapp.com",
+      projectId: "arlinoks-krom-takip-38186",
+      storageBucket: "arlinoks-krom-takip-38186.firebasestorage.app",
+      messagingSenderId: "158447302312",
+      appId: "1:158447302312:web:80e6846196df80512ff49d"
+    };
     const YEREL_GELISTIRME = ["127.0.0.1", "localhost"].includes(location.hostname);
     let aktifIstatistikFiltresi = null;
     const BULUT_KILIT_ADI = "krom-takip-bulut-kayit";
@@ -718,6 +784,11 @@
       ? kayitliBulutSurumu
       : null;
     let bulutCakismaUyarildi = false;
+    let firebaseAuth = null;
+    let oturumKullanici = null;
+    let kullaniciRolu = null;
+    let uygulamaBaslatildi = false;
+    let sonGirisHatasi = "";
 
     if ('serviceWorker' in navigator) {
       let servisCalisaniYenileniyor = false;
@@ -816,20 +887,13 @@
     }
 
     async function bulutDurumunuGetir() {
-      const ayirici = API_URL.includes("?") ? "&" : "?";
-      const r = await fetch(`${API_URL}${ayirici}format=v2&t=${Date.now()}`, { cache: "no-store" });
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      const ham = await r.json();
-
-      // Apps Script'in eski sürümü dağıtım sırasında hâlâ dizi döndürebilir.
-      if (Array.isArray(ham)) {
-        return { revision: null, lastRequestId: "", items: ham };
-      }
-      if (!ham || ham.ok === false || !Array.isArray(ham.items)) {
-        throw new Error(ham?.error || "Geçersiz bulut yanıtı");
+      const ham = await apiIstegi({ action: "read" });
+      if (!Array.isArray(ham.items)) {
+        throw new Error("Geçersiz bulut yanıtı");
       }
       const revision = Number(ham.revision);
       return {
+        role: String(ham.role || ""),
         revision: Number.isInteger(revision) && revision >= 0 ? revision : null,
         lastRequestId: String(ham.lastRequestId || ""),
         items: ham.items
@@ -852,6 +916,7 @@
     }
 
     async function bulutKaydiniGonder(liste) {
+      if (!yoneticiGerekli()) return false;
       if (YEREL_GELISTIRME) {
         syncGoster("Yerel test modu · Google Sheets'e veri gönderilmedi", "#60a5fa");
         return false;
@@ -874,61 +939,33 @@
 
           const baseRevision = bulutSurumu;
           const requestId = istekKimligiOlustur();
-          let iframe = document.getElementById("gizli-frame");
-          if (!iframe) {
-            iframe = document.createElement("iframe");
-            iframe.name = "gizli-frame";
-            iframe.id   = "gizli-frame";
-            iframe.style.display = "none";
-            document.body.appendChild(iframe);
-          }
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = API_URL;
-          form.target = "gizli-frame";
-          form.style.display = "none";
-          const input = document.createElement("input");
-          input.type  = "hidden";
-          input.name  = "payload";
-          input.value = JSON.stringify({
+          const yanit = await apiIstegi({
             action: "save",
             baseRevision,
             requestId,
             items: faturalariTekillestir(liste).liste
           });
-          form.appendChild(input);
-          document.body.appendChild(form);
-          form.submit();
-          document.body.removeChild(form);
-
-          // Gizli iframe'in çapraz kaynak yanıtı okunamaz. Aynı requestId'nin
-          // sunucuda görünmesini bekleyerek kaydın gerçekten uygulandığını doğrula.
-          if (baseRevision === null) {
-            await new Promise(tamam => setTimeout(tamam, 1800));
-            kaydedildi = true; // Eski Apps Script sürümüyle geçiş uyumluluğu.
-            return;
-          }
-
-          for (let deneme = 0; deneme < 8; deneme++) {
-            await new Promise(tamam => setTimeout(tamam, 500));
-            const uzakSonra = await bulutDurumunuGetir();
-            if (uzakSonra.lastRequestId === requestId) {
-              bulutSurumunuKaydet(uzakSonra.revision);
-              localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
-              bulutCakismaUyarildi = false;
-              kaydedildi = true;
-              return;
-            }
-            if (uzakSonra.revision !== null && uzakSonra.revision !== baseRevision) {
-              bulutCakismasiniKaydet(liste, uzakSonra);
-              return;
-            }
-          }
-          throw new Error("Bulut kaydı doğrulanamadı");
+          bulutSurumunuKaydet(Number(yanit.revision));
+          localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
+          bulutCakismaUyarildi = false;
+          kaydedildi = true;
         });
         if (kaydedildi) syncGoster("Google Sheets'e kaydedildi", "#4ade80");
         return kaydedildi;
       } catch(e) {
+        if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED", "FORBIDDEN"].includes(e?.code)) {
+          sonGirisHatasi = e.message;
+          await firebaseAuth?.signOut();
+          return false;
+        }
+        if (e?.response?.conflict) {
+          try {
+            bulutCakismasiniKaydet(liste, await bulutDurumunuGetir());
+          } catch (_) {
+            syncGoster("Başka cihazda değişiklik algılandı · Yenileyin", "#ef4444");
+          }
+          return false;
+        }
         syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
         return false;
       }
@@ -949,13 +986,14 @@
     }
 
     function buludaKaydet(liste) {
+      if (!yoneticiMi()) return;
       bekleyenBulutKaydi = faturalariTekillestir(liste).liste;
       clearTimeout(bulutKayitZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
     }
 
     // ── DÜZELTİLDİ: Her cihazda Google Sheets öncelikli yükleme ──
-    async function buludanYukle() {
+    async function buludanYukle(ilkDurum=null) {
       if (bulutYuklemeDevamEdiyor) return;
       if (YEREL_GELISTIRME) {
         syncGoster("Yerel test modu · Veriler yalnızca bu tarayıcıda", "#60a5fa");
@@ -967,7 +1005,7 @@
       if (yenileBtn) yenileBtn.disabled = true;
       syncGoster("Google Sheets'ten yükleniyor...", "#60a5fa");
       try {
-        const uzakDurum = await bulutKilidiyleCalistir(bulutDurumunuGetir);
+        const uzakDurum = ilkDurum || await bulutKilidiyleCalistir(bulutDurumunuGetir);
         const data = uzakDurum.items;
         if (uzakDurum.revision !== null) bulutSurumunuKaydet(uzakDurum.revision);
 
@@ -1015,7 +1053,7 @@
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
           if (kaldirilan > 0) {
             syncGoster(`${liste.length} fatura yüklendi · ${kaldirilan} yinelenen kayıt temizlendi`, "#4ade80");
-            buludaKaydet(liste);
+            if (yoneticiMi()) buludaKaydet(liste);
           } else {
             syncGoster(liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
           }
@@ -1024,6 +1062,11 @@
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
         }
       } catch(e) {
+        if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED"].includes(e?.code)) {
+          sonGirisHatasi = e.message;
+          await firebaseAuth?.signOut();
+          return;
+        }
         syncGoster("Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
         listeyiGoster(); ozetGuncelle(); rozetGuncelle();
       } finally {
@@ -1038,6 +1081,7 @@
       document.getElementById("firma-adi-goster").textContent = ad + " ✎";
     }
     function firmaAdiniDuzenle() {
+      if (!yoneticiGerekli()) return;
       const ad = localStorage.getItem(FIRMA_ANAHTAR) || "X Firması";
       document.getElementById("firma-inp").value = ad;
       document.getElementById("firma-adi-goster").style.display  = "none";
@@ -1046,6 +1090,7 @@
       document.getElementById("firma-inp").focus();
     }
     function firmaKaydet() {
+      if (!yoneticiGerekli()) return;
       const ad = document.getElementById("firma-inp").value.trim();
       if (ad) { localStorage.setItem(FIRMA_ANAHTAR, ad); document.getElementById("firma-adi-goster").textContent = ad + " ✎"; }
       document.getElementById("firma-inp").style.display        = "none";
@@ -1130,6 +1175,96 @@
       } catch { return []; }
     }
 
+    // ── OTURUM VE YETKİ ──────────────────────────────────────────────────────
+    function yoneticiMi() { return kullaniciRolu === "admin"; }
+
+    function girisDurumuGoster(mesaj, hata=false) {
+      const durum = document.getElementById("giris-durum");
+      if (durum) {
+        durum.textContent = mesaj;
+        durum.style.color = hata ? "#f87171" : "#f6c95c";
+      }
+    }
+
+    function yetkiyiArayuzeUygula() {
+      document.body.dataset.role = kullaniciRolu || "";
+      document.getElementById("oturum-eposta").textContent = oturumKullanici?.email || "";
+      document.getElementById("rol-rozet").textContent = yoneticiMi() ? "YÖNETİCİ" : "SALT GÖRÜNTÜLEME";
+      const firma = document.getElementById("firma-adi-goster");
+      if (firma) firma.title = yoneticiMi() ? "Düzenlemek için tıklayın" : "Salt görüntüleme modu";
+      if (!yoneticiMi()) {
+        document.getElementById("duzenle-overlay")?.classList.remove("aktif");
+        document.getElementById("yeni-fatura-overlay")?.classList.remove("aktif");
+      }
+      yedekDugmesiniGuncelle();
+      listeyiGoster();
+    }
+
+    function yoneticiGerekli() {
+      if (yoneticiMi()) return true;
+      syncGoster("Salt görüntüleme modu · Değişiklik yapma yetkiniz yok", "#67cdfa");
+      return false;
+    }
+
+    async function girisYap() {
+      if (!firebaseAuth) {
+        girisDurumuGoster("Giriş servisi yüklenemedi. İnternet bağlantınızı kontrol edin.", true);
+        return;
+      }
+      const dugme = document.getElementById("giris-dugmesi");
+      if (dugme) dugme.disabled = true;
+      girisDurumuGoster("Google giriş ekranı açılıyor…");
+      const saglayici = new firebase.auth.GoogleAuthProvider();
+      saglayici.setCustomParameters({ prompt: "select_account" });
+      try {
+        if (window.matchMedia("(max-width: 760px)").matches) {
+          await firebaseAuth.signInWithRedirect(saglayici);
+        } else {
+          await firebaseAuth.signInWithPopup(saglayici);
+        }
+      } catch (hata) {
+        if (hata?.code !== "auth/popup-closed-by-user") {
+          girisDurumuGoster("Google girişi tamamlanamadı. Lütfen yeniden deneyin.", true);
+        } else {
+          girisDurumuGoster("Giriş penceresi kapatıldı.");
+        }
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
+    }
+
+    async function cikisYap() {
+      sonGirisHatasi = "Oturum kapatıldı.";
+      await firebaseAuth?.signOut();
+    }
+
+    async function kimlikJetonuGetir(zorla=false) {
+      if (!oturumKullanici) throw new Error("Oturum bulunamadı.");
+      return oturumKullanici.getIdToken(zorla);
+    }
+
+    async function apiIstegi(payload, tekrar=false) {
+      const idToken = await kimlikJetonuGetir(tekrar);
+      const govde = new URLSearchParams({
+        payload: JSON.stringify({ ...payload, idToken })
+      });
+      const yanit = await fetch(API_URL, {
+        method: "POST",
+        body: govde,
+        cache: "no-store"
+      });
+      if (!yanit.ok) throw new Error("HTTP " + yanit.status);
+      const veri = await yanit.json();
+      if (veri?.code === "AUTH_INVALID" && !tekrar) return apiIstegi(payload, true);
+      if (!veri || veri.ok === false) {
+        const hata = new Error(veri?.message || veri?.error || "Sunucu isteği başarısız.");
+        hata.code = veri?.code || "API_ERROR";
+        hata.response = veri;
+        throw hata;
+      }
+      return veri;
+    }
+
     function yedekleriYukle() {
       try {
         const ham = JSON.parse(localStorage.getItem(YEDEK_ANAHTAR) || "[]");
@@ -1166,15 +1301,18 @@
     }
 
     function faturaKaydet(l, neden="Fatura verisi değiştirildi") {
+      if (!yoneticiGerekli()) return false;
       const tekilListe = faturalariTekillestir(l).liste;
       const mevcutListe = faturaYukle();
-      if (JSON.stringify(mevcutListe) === JSON.stringify(tekilListe)) return;
+      if (JSON.stringify(mevcutListe) === JSON.stringify(tekilListe)) return false;
       otomatikYedekOlustur(mevcutListe, neden);
       localStorage.setItem(ANAHTAR, JSON.stringify(tekilListe));
       buludaKaydet(tekilListe);
+      return true;
     }
 
     function sonIslemiGeriAl() {
+      if (!yoneticiGerekli()) return;
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler.pop();
       if (!sonYedek) return;
@@ -1284,6 +1422,7 @@
       return `"${metin.replace(/"/g, '""')}"`;
     }
     function csvRaporIndir() {
+      if (!yoneticiGerekli()) return;
       const liste = goruntulenenFaturalariGetir();
       if (!liste.length) {
         syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
@@ -1420,6 +1559,7 @@
 
     // ── DÜZENLEME POPUP ────────────────────────────────────────────────────────
     function duzenleAc(id) {
+      if (!yoneticiGerekli()) return;
       const inv = faturaYukle().find(i => i.id === id);
       if (!inv) return;
       document.getElementById("d-id").value       = inv.id;
@@ -1440,6 +1580,7 @@
       else { h.textContent = ""; }
     }
     function duzenleKaydet() {
+      if (!yoneticiGerekli()) return;
       const id    = Number(document.getElementById("d-id").value);
       const no    = document.getElementById("d-no").value.trim();
       const tarih = document.getElementById("d-tarih").value;
@@ -1474,6 +1615,7 @@
       if(Notification.permission==='default') document.getElementById('bildirim-banner').classList.add('goster');
     }
     function bildirimIzniIste() {
+      if (!yoneticiGerekli()) return;
       Notification.requestPermission().then(p=>{
         if(p==='granted'){
           document.getElementById('bildirim-banner').classList.remove('goster');
@@ -1491,6 +1633,7 @@
       else { h.textContent = ""; }
     }
     function yeniFaturaAc() {
+      if (!yoneticiGerekli()) return;
       document.getElementById("yeni-fatura-overlay")?.classList.add("aktif");
       setTimeout(() => document.getElementById("inp-no")?.focus(), 60);
     }
@@ -1499,6 +1642,7 @@
       document.getElementById("yeni-fatura-overlay")?.classList.remove("aktif");
     }
     function faturaEkle() {
+      if (!yoneticiGerekli()) return;
       if (faturaEklemeKilidi) return;
       const no      = document.getElementById("inp-no").value.trim();
       const tarih   = document.getElementById("inp-tarih").value;
@@ -1532,8 +1676,13 @@
       }, 900);
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
-    function faturasSil(id) { faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi"); listeyiGoster(); rozetGuncelle(); ozetGuncelle(); }
+    function faturasSil(id) {
+      if (!yoneticiGerekli()) return;
+      faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi");
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+    }
     function odendiBelirle(id,durum) {
+      if (!yoneticiGerekli()) return;
       const odemeTarihi = durum ? bugununTarihi() : "";
       faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum,odemeTarihi}:i), durum ? "Fatura ödendi olarak işaretlendi" : "Ödeme durumu geri alındı");
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
@@ -1558,7 +1707,7 @@
         <thead><tr>
           <th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th>
           <th>VADE GÜNÜ</th><th>VADE TARİHİ</th>
-          <th>TUTAR</th><th>DURUM</th><th>İŞLEM</th>
+          <th>TUTAR</th><th>DURUM</th>${yoneticiMi() ? '<th>İŞLEM</th>' : ''}
         </tr></thead>
         <tbody>${liste.map((inv,i)=>{
           const vg   = inv.vadeGun || 90;
@@ -1577,38 +1726,89 @@
               ? '<span class="durum" style="color:#4ade80;background:#4ade8022"><i class="fa-solid fa-circle-check durum-nokta" aria-hidden="true"></i>Ödendi</span>'
               : `<span class="durum" style="color:${renk};background:${bg}"><i class="fa-solid fa-circle durum-nokta" aria-hidden="true"></i>${label}</span>`}
             </td>
-            <td><div class="islem-grup">
+            ${yoneticiMi() ? `<td><div class="islem-grup">
               ${odendi
                 ? `<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>`
                 : `<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Öde</button>`}
               <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${inv.no} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
               <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${inv.no} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
-            </div></td>
+            </div></td>` : ''}
           </tr>`;
         }).join("")}</tbody>
       </table></div>`;
     }
 
     // ── BAŞLANGIÇ ─────────────────────────────────────────────────────────────
-    // Önce yerel veriyi göster (hızlı görünüm), sonra Sheets'ten güncelle
-    firmaAdiniYukle();
-    document.getElementById("navbar-tarih").textContent = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
-    listeyiGoster();
-    ozetGuncelle();
-    rozetGuncelle();
-    yedekDugmesiniGuncelle();
-    bildirimKontrol();
-    buludanYukle(); // Google Sheets'ten yükle — her cihazda güncel veri gelir
-    kurlariYukle();
-    setTimeout(karsılamaGoster, 500);
-    setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
-    setInterval(kurlariYukle, 30 * 60 * 1000);
-    document.getElementById("yeni-fatura-overlay")?.addEventListener("click", e => {
-      if (e.target.id === "yeni-fatura-overlay") yeniFaturaKapat();
-    });
-    window.addEventListener("keydown", e => {
-      if (e.key === "Escape") yeniFaturaKapat();
-    });
+    async function uygulamayiBaslat(ilkUzakDurum) {
+      if (uygulamaBaslatildi) {
+        await buludanYukle(ilkUzakDurum);
+        return;
+      }
+      uygulamaBaslatildi = true;
+      firmaAdiniYukle();
+      document.getElementById("navbar-tarih").textContent = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
+      listeyiGoster();
+      ozetGuncelle();
+      rozetGuncelle();
+      yedekDugmesiniGuncelle();
+      if (yoneticiMi()) bildirimKontrol();
+      await buludanYukle(ilkUzakDurum);
+      kurlariYukle();
+      setTimeout(karsılamaGoster, 500);
+      setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
+      setInterval(kurlariYukle, 30 * 60 * 1000);
+      document.getElementById("yeni-fatura-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "yeni-fatura-overlay") yeniFaturaKapat();
+      });
+      window.addEventListener("keydown", e => {
+        if (e.key === "Escape") yeniFaturaKapat();
+      });
+    }
+
+    async function oturumDegisti(kullanici) {
+      if (!kullanici) {
+        oturumKullanici = null;
+        kullaniciRolu = null;
+        document.body.dataset.role = "";
+        document.body.classList.add("auth-bekliyor");
+        document.getElementById("giris-overlay").hidden = false;
+        document.getElementById("giris-dugmesi").disabled = false;
+        girisDurumuGoster(sonGirisHatasi || "Yetkili Google hesabınızla giriş yapın.", Boolean(sonGirisHatasi));
+        return;
+      }
+
+      oturumKullanici = kullanici;
+      document.getElementById("giris-dugmesi").disabled = true;
+      girisDurumuGoster("Hesap yetkisi doğrulanıyor…");
+      try {
+        const ilkUzakDurum = await bulutDurumunuGetir();
+        if (!["admin", "viewer"].includes(ilkUzakDurum.role)) throw new Error("Geçersiz kullanıcı rolü.");
+        kullaniciRolu = ilkUzakDurum.role;
+        sonGirisHatasi = "";
+        yetkiyiArayuzeUygula();
+        document.body.classList.remove("auth-bekliyor");
+        document.getElementById("giris-overlay").hidden = true;
+        await uygulamayiBaslat(ilkUzakDurum);
+        if (!yoneticiMi()) syncGoster("Salt görüntüleme modu · Veriler değiştirilemez", "#67cdfa");
+      } catch (hata) {
+        sonGirisHatasi = hata?.message || "Bu hesabın uygulamaya erişim yetkisi yok.";
+        await firebaseAuth.signOut();
+      }
+    }
+
+    function firebaseOturumunuBaslat() {
+      if (typeof firebase === "undefined") {
+        girisDurumuGoster("Giriş servisi yüklenemedi. İnternet bağlantınızı kontrol edin.", true);
+        return;
+      }
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      firebaseAuth = firebase.auth();
+      firebaseAuth.useDeviceLanguage();
+      firebaseAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+      firebaseAuth.onAuthStateChanged(oturumDegisti);
+    }
+
+    firebaseOturumunuBaslat();
   </script>
 </body>
 </html>
