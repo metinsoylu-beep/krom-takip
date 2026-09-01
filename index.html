@@ -257,34 +257,57 @@
     .ozet-kart.kalan .ozet-deger { color: var(--kirmizi); }
 
     .hizli-panel {
-      margin: 0 0 13px; background: var(--panel); border: 1px solid var(--cizgi-yumusak);
-      border-radius: 7px; overflow: hidden;
+      margin: 0 0 13px; background: transparent; border: 0;
+      border-radius: 10px; overflow: visible;
     }
     .hizli-baslik {
       position: absolute; width: 1px; height: 1px; overflow: hidden;
       clip: rect(0 0 0 0); white-space: nowrap;
     }
-    .hizli-kartlar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+    .hizli-kartlar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     .hizli-kart {
-      min-height: 64px; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px;
-      padding: 10px 16px; background: transparent; border: 0;
-      border-left: 1px solid var(--cizgi-yumusak); border-radius: 0;
+      position: relative; min-height: 78px; grid-template-columns: 38px minmax(0, 1fr); gap: 11px;
+      padding: 12px 14px; overflow: hidden;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--vurgu) 15%, var(--panel)) 0%, var(--panel-koyu) 100%);
+      border: 1px solid color-mix(in srgb, var(--vurgu) 45%, var(--cizgi-yumusak));
+      border-left: 4px solid var(--vurgu); border-radius: 10px;
+      box-shadow: inset 0 1px 0 #ffffff0a, 0 5px 16px #02061722;
       font-family: inherit; transform: none;
     }
-    .hizli-kart:first-child { border-left: 0; }
-    .hizli-kart:hover { background: #17304a; transform: none; }
+    .hizli-kart::before {
+      content: ""; position: absolute; width: 54px; height: 54px; right: -18px; top: -22px;
+      border-radius: 50%; background: var(--vurgu); opacity: .08; pointer-events: none;
+    }
+    .hizli-kart:hover {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--vurgu) 22%, var(--panel)) 0%, #10243a 100%);
+      border-color: color-mix(in srgb, var(--vurgu) 75%, var(--cizgi));
+      transform: translateY(-2px); box-shadow: 0 9px 22px #02061742;
+    }
     .hizli-kart.aktif {
-      background: color-mix(in srgb, var(--vurgu) 10%, var(--panel)); border-color: var(--vurgu);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--vurgu) 28%, var(--panel)) 0%, var(--panel-koyu) 100%);
+      border-color: var(--vurgu); box-shadow: 0 0 0 2px color-mix(in srgb, var(--vurgu) 34%, transparent), 0 10px 24px #02061755;
     }
-    .hizli-ikon { width: 28px; height: 28px; border-radius: 50%; background: transparent; font-size: 15px; }
+    .hizli-kart.aktif::after {
+      content: "✓"; position: absolute; right: 8px; top: 7px; width: 18px; height: 18px;
+      display: grid; place-items: center; border-radius: 50%; background: var(--vurgu);
+      color: #071525; font: 800 11px/1 Arial, sans-serif;
+    }
+    .hizli-ikon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: color-mix(in srgb, var(--vurgu) 18%, #081525); border: 1px solid color-mix(in srgb, var(--vurgu) 30%, transparent);
+      font-size: 16px; box-shadow: inset 0 0 16px color-mix(in srgb, var(--vurgu) 9%, transparent);
+    }
+    .hizli-metin { display: grid; align-content: center; gap: 5px; min-width: 0; }
     .hizli-etiket {
-      color: #8999aa; font-size: 10px; font-weight: 500;
-      text-transform: uppercase; letter-spacing: .3px;
+      color: #d7e0e9; font-size: 11px; font-weight: 700; line-height: 1.2;
+      text-transform: none; letter-spacing: .1px;
     }
+    .hizli-sonuc { display: flex; align-items: baseline; flex-wrap: wrap; gap: 5px 9px; min-width: 0; }
     .hizli-alt {
-      color: var(--vurgu); font-family: Georgia, serif; font-size: 14px; font-weight: 700;
+      color: #9fb0c1; font-family: inherit; font-size: 10px; font-weight: 500;
+      margin: 0; line-height: 1.2;
     }
-    .hizli-deger { color: var(--vurgu); font-size: 18px; }
+    .hizli-deger { color: var(--vurgu); font-size: 20px; line-height: 1; text-align: left; }
     .hizli-ok { display: none; }
 
     .liste-baslik {
@@ -367,8 +390,6 @@
       .tutar-araligi { grid-column: span 2; }
       .btn-yeni-fatura { grid-column: 3; grid-row: 2; }
       .hizli-kartlar { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .hizli-kart:nth-child(3) { border-left: 0; border-top: 1px solid var(--cizgi-yumusak); }
-      .hizli-kart:nth-child(4) { border-top: 1px solid var(--cizgi-yumusak); }
     }
     @media (max-width: 760px) {
       .navbar { padding-inline: 16px; }
@@ -379,8 +400,7 @@
       .btn-yeni-fatura { grid-column: 2; grid-row: auto; }
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
-      .hizli-kart { border-left: 0; border-top: 1px solid var(--cizgi-yumusak); }
-      .hizli-kart:first-child { border-top: 0; }
+      .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
       .kur-panel { grid-template-columns: 1fr; }
       .kur-baslik-satir { border-right: 0; border-bottom: 1px solid var(--cizgi-yumusak); }
       .kur-satirlar { grid-template-columns: 1fr; }
@@ -552,23 +572,19 @@
           <div class="hizli-kartlar">
             <button class="hizli-kart" style="--vurgu:#38bdf8" type="button" data-filtre="bu-ay" aria-pressed="false" onclick="hizliFiltrele('bu-ay')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Eklenen</span><span class="hizli-alt" id="hizli-bu-ay-alt">—</span></span>
-              <span class="hizli-deger" id="hizli-bu-ay">0</span>
+              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Eklenen</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-bu-ay">0</span><span class="hizli-alt" id="hizli-bu-ay-alt">—</span></span></span>
             </button>
             <button class="hizli-kart" style="--vurgu:#f59e0b" type="button" data-filtre="yaklasan" aria-pressed="false" onclick="hizliFiltrele('yaklasan')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">7 Gün İçinde Vadesi</span><span class="hizli-alt" id="hizli-yaklasan-alt">—</span></span>
-              <span class="hizli-deger" id="hizli-yaklasan">0</span>
+              <span class="hizli-metin"><span class="hizli-etiket">7 Gün İçinde Vadesi</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-yaklasan">0</span><span class="hizli-alt" id="hizli-yaklasan-alt">—</span></span></span>
             </button>
             <button class="hizli-kart geciken" style="--vurgu:#ef4444" type="button" data-filtre="geciken" aria-pressed="false" onclick="hizliFiltrele('geciken')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-xmark"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">Geciken</span><span class="hizli-alt" id="hizli-geciken-alt">0 ₺</span></span>
-              <span class="hizli-deger" id="hizli-geciken">0</span>
+              <span class="hizli-metin"><span class="hizli-etiket">Geciken</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-geciken">0</span><span class="hizli-alt" id="hizli-geciken-alt">0 ₺</span></span></span>
             </button>
             <button class="hizli-kart odenen-ay" style="--vurgu:#4ade80" type="button" data-filtre="odenen-ay" aria-pressed="false" onclick="hizliFiltrele('odenen-ay')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Ödenen</span><span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span></span>
-              <span class="hizli-deger" id="hizli-odenen">0</span>
+              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Ödenen</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-odenen">0</span><span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span></span></span>
             </button>
           </div>
         </section>
