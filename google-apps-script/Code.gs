@@ -96,8 +96,30 @@ function firebaseKullanicisiniDogrula(idToken) {
       uid: String(kullanici.localId || "")
     };
   } catch (err) {
+    console.error("Firebase kimlik doğrulama hatası: " + (err && err.stack ? err.stack : err));
     return { ok: false, code: "AUTH_ERROR", message: "Kimlik doğrulama servisine ulaşılamadı." };
   }
+}
+
+/**
+ * Proje sahibi bu işlevi Apps Script düzenleyicisinden yalnızca bir kez
+ * çalıştırır. Google'ın dış bağlantı iznini istemesini ve Firebase doğrulama
+ * servisine erişimin etkinleşmesini sağlar. Geçersiz deneme jetonu nedeniyle
+ * 200 dışındaki bir HTTP sonucu beklenir; önemli olan isteğin yapılabilmesidir.
+ */
+function firebaseBaglantisiniYetkilendir() {
+  const yanit = UrlFetchApp.fetch(
+    "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + encodeURIComponent(FIREBASE_API_KEY),
+    {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({ idToken: "yetkilendirme-kontrolu" }),
+      muteHttpExceptions: true
+    }
+  );
+  const kod = yanit.getResponseCode();
+  console.log("Firebase dış bağlantı izni etkin. Kontrol HTTP kodu: " + kod);
+  return kod;
 }
 
 function tarihMetni(deger) {
