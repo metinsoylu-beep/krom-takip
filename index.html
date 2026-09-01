@@ -695,7 +695,20 @@
       : null;
     let bulutCakismaUyarildi = false;
 
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    if ('serviceWorker' in navigator) {
+      let servisCalisaniYenileniyor = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (servisCalisaniYenileniyor) return;
+        servisCalisaniYenileniyor = true;
+        location.reload();
+      });
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./sw.js', { updateViaCache: 'none' })
+          .then(kayit => kayit.update())
+          .catch(() => {});
+      });
+    }
 
     // ── SYNC ──────────────────────────────────────────────────────────────────
     function syncGoster(mesaj, renk) {
