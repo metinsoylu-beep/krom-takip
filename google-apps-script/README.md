@@ -1,35 +1,36 @@
-# Google Sheets eşitleme kodu
+# Google Sheets eşitleme ve erişim yetkileri
 
-Bu klasördeki `Code.gs`, aynı anda gelen kayıtların faturaları çoğaltmasını
-önlemek için `LockService` kullanır. Gelen listede aynı kimliğe veya aynı
-fatura no + tarih + vade + tutar birleşimine sahip kayıtları da tekilleştirir.
+Bu klasördeki `Code.gs`, Firebase Authentication ile alınan kimlik jetonunu
+sunucuda doğrular. Fatura verisi anonim `GET` isteklerine açılmaz; okuma ve
+yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 
-Yeni eşitleme protokolü ayrıca veri kümesine bir `revision` numarası verir.
-Ön yüz kayıt yaparken okuduğu sürümü `baseRevision` olarak gönderir. Buluttaki
-sürüm bu sırada değişmişse Apps Script kaydı reddeder; böylece eski veriye sahip
-bir cihaz daha yeni kayıtları sessizce ezemez. Her isteğin `requestId` değeri de
-ağ tekrarlarında aynı kaydın yeniden uygulanmasını önler.
+İki rol vardır:
 
-`doGet?format=v2` yanıtı şu yapıyı döndürür:
+- `admin`: Verileri görüntüler; fatura ekler, düzenler, öder, geri alır ve siler.
+- `viewer`: Verileri görüntüler ve filtreler; hiçbir kayıt değişikliği yapamaz.
 
-```json
-{
-  "ok": true,
-  "revision": 1,
-  "lastRequestId": "...",
-  "items": []
-}
-```
+Web uygulamasını dağıtan Google hesabı otomatik olarak `admin` kabul edilir.
+Ek hesaplar Apps Script içindeki **Proje Ayarları > Komut Dosyası Özellikleri**
+alanından tanımlanır:
 
-`format=v2` verilmezse eski ön yüzlerle uyumluluk için yalnızca fatura dizisi
-döndürülmeye devam eder.
+- `ADMIN_EMAILS`: Virgülle ayrılmış ek yönetici e-posta adresleri.
+- `VIEWER_EMAILS`: Virgülle ayrılmış salt görüntüleyici e-posta adresleri.
 
-Değişikliğin canlı Google Sheets hizmetinde çalışması için:
+Örnek değer: `muhasebe@example.com,yonetim@example.com`
 
-1. Apps Script düzenleyicisindeki mevcut kodun tamamını `Code.gs` içeriğiyle değiştirin.
+Kod ayrıca eşzamanlı kayıtların faturaları çoğaltmasını önlemek için
+`LockService` kullanır. Veri kümesindeki `revision`, eski veriye sahip bir
+cihazın daha yeni kayıtları sessizce ezmesini engeller. Her isteğin `requestId`
+değeri ağ tekrarlarında aynı kaydın yeniden uygulanmasını önler.
+
+Canlı Google Sheets hizmetini güncellemek için:
+
+1. Apps Script düzenleyicisindeki mevcut kodun tamamını `Code.gs` ile değiştirin.
 2. **Dağıt > Dağıtımları yönet > Düzenle > Yeni sürüm > Dağıt** adımlarını uygulayın.
-3. Web uygulamasının URL'si değişirse `index.html` içindeki `API_URL` değerini güncelleyin.
+3. Dağıtım **ben olarak çalıştır** ve erişim **herkes** olacak şekilde kalmalıdır.
+   Veri güvenliği herkese açık URL'ye değil, Firebase jetonu ve sunucu rolüne dayanır.
+4. Web uygulamasının URL'si değişirse `index.html` içindeki `API_URL` değerini güncelleyin.
 
-Ön yüzdeki korumalar tek tarayıcıdaki hızlı/çift tıklamaları ve sekmeler arası
-yarışları önler. Bu Apps Script kilidi ise farklı cihazlardan aynı anda gelen
-istekleri güvenli biçimde sıraya koyar.
+Yeni bir kişiye görüntüleme yetkisi vermek için önce e-posta adresini
+`VIEWER_EMAILS` özelliğine ekleyin. Kişi daha sonra uygulamada aynı Google
+hesabıyla giriş yapar.
