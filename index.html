@@ -338,8 +338,9 @@
 
     .sync-satir {
       min-height: 44px; display: flex; justify-content: flex-end; align-items: center;
-      gap: 12px; color: #8596a9; font-size: 11px;
+      flex-wrap: wrap; gap: 8px 12px; color: #8596a9; font-size: 11px;
     }
+    #sync-durum { margin-right: auto; min-width: 0; }
     #sync-durum i { margin-right: 6px; }
     #sync-yenile-btn {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
@@ -352,6 +353,12 @@
     }
     #son-islem-geri-al:hover { background: #c9a84c24; border-color: #c9a84c88; }
     #son-islem-geri-al[hidden] { display: none; }
+    #csv-indir-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+      border: 1px solid #38bdf855; border-radius: 6px; background: #38bdf812;
+      color: #67cdfa; font-family: inherit; font-size: 11px; white-space: nowrap; cursor: pointer;
+    }
+    #csv-indir-btn:hover { background: #38bdf824; border-color: #38bdf888; }
     button:disabled { opacity: .55; cursor: wait; }
 
     .kur-panel {
@@ -603,6 +610,10 @@
         <!-- EŞİTLEME DURUMU -->
         <div class="sync-satir">
           <span id="sync-durum"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Google Sheets'ten veriler yükleniyor...</span>
+          <button id="csv-indir-btn" type="button" onclick="csvRaporIndir()" title="Ekrandaki filtrelenmiş faturaları CSV olarak indir">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+            CSV İndir
+          </button>
           <button id="son-islem-geri-al" type="button" onclick="sonIslemiGeriAl()" hidden>
             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
             Son İşlemi Geri Al
@@ -1260,6 +1271,53 @@
       return true;
     }
     function filtreleriGuncelle() { listeyiGoster(); }
+    function goruntulenenFaturalariGetir() {
+      return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>{
+        if(a.odendi&&!b.odendi) return 1;
+        if(!a.odendi&&b.odendi) return -1;
+        return kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun));
+      }).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
+    }
+    function csvHucre(deger) {
+      let metin = String(deger ?? "");
+      if (/^[=+\-@]/.test(metin)) metin = "'" + metin;
+      return `"${metin.replace(/"/g, '""')}"`;
+    }
+    function csvRaporIndir() {
+      const liste = goruntulenenFaturalariGetir();
+      if (!liste.length) {
+        syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
+        return;
+      }
+      const basliklar = ["Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödeme Durumu","Ödeme Tarihi","Vade Durumu"];
+      const satirlar = liste.map(inv=>{
+        const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+        const gun = kalanGun(vade);
+        const vadeDurumu = inv.odendi
+          ? "Ödendi"
+          : gun < 0 ? `${Math.abs(gun)} gün gecikti` : gun === 0 ? "Bugün vadeli" : `${gun} gün kaldı`;
+        return [
+          inv.no,
+          inv.tarih,
+          inv.vadeGun || 90,
+          bugununTarihi(vade),
+          tutarSayiyaCevir(inv.tutar).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
+          inv.odendi ? "Ödendi" : "Ödenmedi",
+          inv.odemeTarihi || "",
+          vadeDurumu
+        ].map(csvHucre).join(";");
+      });
+      const icerik = "\uFEFF" + [basliklar.map(csvHucre).join(";"), ...satirlar].join("\r\n");
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-fatura-raporu-${bugununTarihi()}.csv`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      setTimeout(()=>URL.revokeObjectURL(adres), 1000);
+      syncGoster(`${liste.length} fatura CSV raporuna aktarıldı`, "#4ade80");
+    }
     function filtreBasligi(filtre) {
       return ({'bu-ay':'Bu ay eklenen','yaklasan':'7 gün içinde vadesi gelen','geciken':'Geciken','odenen-ay':'Bu ay ödenen'})[filtre] || '';
     }
@@ -1483,12 +1541,7 @@
 
     // ── TABLO ──────────────────────────────────────────────────────────────────
     function listeyiGoster() {
-      const tumListe = faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>{
-        if(a.odendi&&!b.odendi) return 1;
-        if(!a.odendi&&b.odendi) return -1;
-        return kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun));
-      });
-      const liste = tumListe.filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
+      const liste = goruntulenenFaturalariGetir();
       const baslik    = document.getElementById("liste-baslik");
       const konteyner = document.getElementById("liste");
       if (!liste.length) {
