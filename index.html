@@ -2384,10 +2384,17 @@
       secimiTemizle(false);
       listeyiGoster();
     }
+    function faturaListeSirasiniKarsilastir(a,b) {
+      const aTakipKapali = faturaTakibiKapali(a);
+      const bTakipKapali = faturaTakibiKapali(b);
+      if (aTakipKapali !== bTakipKapali) return aTakipKapali ? 1 : -1;
+      const vadeFarki = vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun);
+      return vadeFarki || Number(b.id) - Number(a.id);
+    }
     function goruntulenenFaturalariGetir() {
-      return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>
-        tarihOlusturYerel(b.tarih) - tarihOlusturYerel(a.tarih) || Number(b.id) - Number(a.id)
-      ).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
+      return faturaYukle().filter(arayuzFiltresineUyar)
+        .sort(faturaListeSirasiniKarsilastir)
+        .filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
     }
 
     // ── TOPLU İŞLEMLER ──────────────────────────────────────────────────────
@@ -3247,7 +3254,7 @@
       }
       baslik.textContent = aktifIstatistikFiltresi
         ? liste.length + " fatura · " + filtreBasligi(aktifIstatistikFiltresi)
-        : liste.length + " fatura · Fatura tarihine göre yeni → eski";
+        : liste.length + " fatura · Duruma göre · Yaklaşan vade önce";
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
           ${yoneticiMi() ? '<th class="secim-hucre"><input class="fatura-secim" id="gorunenlerin-tumunu-sec" type="checkbox" onchange="gorunenlerinSeciminiDegistir(this.checked)" aria-label="Görünen tüm faturaları seç" title="Görünen tüm faturaları seç"/></th>' : ''}
