@@ -215,7 +215,7 @@
 
     .filtre-panel {
       display: grid;
-      grid-template-columns: minmax(220px, 1.7fr) minmax(120px, .65fr) minmax(240px, 1.2fr) minmax(200px, 1fr) auto;
+      grid-template-columns: minmax(220px, 1.4fr) minmax(280px, 1.2fr) minmax(240px, 1.2fr) minmax(200px, 1fr) auto;
       align-items: end; gap: 14px; margin-bottom: 22px;
     }
     .arama-kutusu {
@@ -235,6 +235,7 @@
       border-radius: 7px; color: var(--metin); font-family: inherit; font-size: 13px; outline: none;
     }
     .filtre-alan select { width: 100%; padding: 0 12px; }
+    .filtre-secimler { display: grid; grid-template-columns: minmax(120px,.8fr) minmax(160px,1.2fr); gap: 10px; }
     .ikili-input { display: flex; align-items: center; gap: 6px; color: #7e91a5; }
     .ikili-input input { min-width: 0; width: 100%; padding: 0 10px; }
     input:focus, select:focus, .arama-kutusu:focus-within {
@@ -667,7 +668,7 @@
       .navbar-tarih, .baslik-kucuk { display: none; }
       .konteyner { width: calc(100vw - 24px); padding-top: 16px; }
       .filtre-panel { grid-template-columns: 1fr 1fr; }
-      .arama-kutusu, .tarih-araligi, .tutar-araligi { grid-column: 1 / -1; }
+      .arama-kutusu, .filtre-secimler, .tarih-araligi, .tutar-araligi { grid-column: 1 / -1; }
       .filtre-islemler { grid-column: 1 / -1; grid-row: auto; display: grid; grid-template-columns: 1fr 1fr; }
       .filtre-islemler .btn-yeni-fatura { grid-column: 1 / -1; }
       .btn-cari-islem, .btn-yeni-fatura { width: 100%; min-width: 0; }
@@ -1025,15 +1026,27 @@
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input id="filtre-arama" type="search" placeholder="Cari veya fatura no ara" oninput="filtreleriGuncelle()"/>
           </div>
-          <div class="filtre-alan">
-            <label for="filtre-durum">Durum</label>
-            <select id="filtre-durum" onchange="filtreleriGuncelle()">
-              <option value="tumu">Tümü</option>
-              <option value="acik">Takibi Açık</option>
-              <option value="kapali">Takibi Kapalı</option>
-              <option value="geciken">Vadesi Geçen</option>
-              <option value="yaklasan">Bu Hafta Vadeli</option>
-            </select>
+          <div class="filtre-secimler">
+            <div class="filtre-alan">
+              <label for="filtre-durum">Durum</label>
+              <select id="filtre-durum" onchange="filtreleriGuncelle()">
+                <option value="tumu">Tümü</option>
+                <option value="acik">Takibi Açık</option>
+                <option value="kapali">Takibi Kapalı</option>
+                <option value="geciken">Vadesi Geçen</option>
+                <option value="yaklasan">Bu Hafta Vadeli</option>
+              </select>
+            </div>
+            <div class="filtre-alan">
+              <label for="filtre-siralama">Sıralama</label>
+              <select id="filtre-siralama" onchange="filtreleriGuncelle()">
+                <option value="durum-vade">Durum + Yaklaşan Vade</option>
+                <option value="tarih-yeni">Fatura Tarihi (Yeni → Eski)</option>
+                <option value="tarih-eski">Fatura Tarihi (Eski → Yeni)</option>
+                <option value="tutar-buyuk">Tutar (Büyük → Küçük)</option>
+                <option value="cari-az">Cari (A → Z)</option>
+              </select>
+            </div>
           </div>
           <div class="filtre-alan tarih-araligi">
             <label>Vade aralığı</label>
@@ -2384,16 +2397,44 @@
       secimiTemizle(false);
       listeyiGoster();
     }
-    function faturaListeSirasiniKarsilastir(a,b) {
+    function aktifSiralamaTuru() {
+      return document.getElementById("filtre-siralama")?.value || "durum-vade";
+    }
+    function siralamaAciklamasi(tur=aktifSiralamaTuru()) {
+      const aciklamalar = {
+        "durum-vade": "Duruma göre · Yaklaşan vade önce",
+        "tarih-yeni": "Fatura tarihi · Yeni tarih önce",
+        "tarih-eski": "Fatura tarihi · Eski tarih önce",
+        "tutar-buyuk": "Tutar · Büyük tutar önce",
+        "cari-az": "Cari adına göre · A–Z"
+      };
+      return aciklamalar[tur] || aciklamalar["durum-vade"];
+    }
+    function faturaListeSirasiniKarsilastir(a,b,tur="durum-vade") {
+      const kimlikFarki = Number(b.id) - Number(a.id);
+      if (tur === "tarih-yeni") {
+        return tarihOlusturYerel(b.tarih) - tarihOlusturYerel(a.tarih) || kimlikFarki;
+      }
+      if (tur === "tarih-eski") {
+        return tarihOlusturYerel(a.tarih) - tarihOlusturYerel(b.tarih) || kimlikFarki;
+      }
+      if (tur === "tutar-buyuk") {
+        return tutarSayiyaCevir(b.tutar) - tutarSayiyaCevir(a.tutar) || kimlikFarki;
+      }
+      if (tur === "cari-az") {
+        return String(a.cari || "Belirtilmedi").localeCompare(
+          String(b.cari || "Belirtilmedi"), "tr", { sensitivity:"base" }
+        ) || kimlikFarki;
+      }
       const aTakipKapali = faturaTakibiKapali(a);
       const bTakipKapali = faturaTakibiKapali(b);
       if (aTakipKapali !== bTakipKapali) return aTakipKapali ? 1 : -1;
       const vadeFarki = vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun);
-      return vadeFarki || Number(b.id) - Number(a.id);
+      return vadeFarki || kimlikFarki;
     }
     function goruntulenenFaturalariGetir() {
       return faturaYukle().filter(arayuzFiltresineUyar)
-        .sort(faturaListeSirasiniKarsilastir)
+        .sort((a,b)=>faturaListeSirasiniKarsilastir(a,b,aktifSiralamaTuru()))
         .filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
     }
 
@@ -3254,7 +3295,7 @@
       }
       baslik.textContent = aktifIstatistikFiltresi
         ? liste.length + " fatura · " + filtreBasligi(aktifIstatistikFiltresi)
-        : liste.length + " fatura · Duruma göre · Yaklaşan vade önce";
+        : liste.length + " fatura · " + siralamaAciklamasi();
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
           ${yoneticiMi() ? '<th class="secim-hucre"><input class="fatura-secim" id="gorunenlerin-tumunu-sec" type="checkbox" onchange="gorunenlerinSeciminiDegistir(this.checked)" aria-label="Görünen tüm faturaları seç" title="Görünen tüm faturaları seç"/></th>' : ''}
