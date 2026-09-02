@@ -2498,10 +2498,22 @@
     function secilenGecmisOdemeleriDuzelt() {
       if (!yoneticiGerekli()) return;
       const liste = faturaYukle();
+      const mevcutHareketler = cariHareketleriYukle();
+      const hareketiOlanFaturalar = new Set(
+        mevcutHareketler
+          .map(hareket => String(hareket.kaynakFaturaId || "").trim())
+          .filter(Boolean)
+      );
+      const mevcutKimlikler = new Set(mevcutHareketler.map(hareket => String(hareket.id)));
       const secilenler = seciliFaturalariGetir(liste, seciliFaturaKimlikleri)
-        .filter(inv => !faturaTakibiKapali(inv) && kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) < 0);
+        .filter(inv => {
+          const faturaId = String(inv.id);
+          return kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) < 0 &&
+            !hareketiOlanFaturalar.has(faturaId) &&
+            !mevcutKimlikler.has(`gecmis-odeme-${faturaId}`);
+        });
       if (!secilenler.length) {
-        syncGoster("Seçimde takibi açık, vadesi geçmiş fatura yok", "#f59e0b");
+        syncGoster("Seçimde cari harekete aktarılacak vadesi geçmiş fatura yok", "#f59e0b");
         return;
       }
       const toplam = secilenler.reduce((deger, inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
@@ -2513,8 +2525,6 @@
 
       const bugun = bugununTarihi();
       const kimlikler = new Set(secilenler.map(inv => String(inv.id)));
-      const mevcutHareketler = cariHareketleriYukle();
-      const mevcutKimlikler = new Set(mevcutHareketler.map(hareket => String(hareket.id)));
       const yeniHareketler = secilenler.map(inv => cariHareketiniNormallestir({
         id:`gecmis-odeme-${inv.id}`,
         cari:inv.cari || "Belirtilmedi",
