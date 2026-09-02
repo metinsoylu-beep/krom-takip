@@ -33,11 +33,15 @@
     .ozet-kart.toplam { border-left-color: #c9a84c; }
     .ozet-kart.odenen { border-left-color: #4ade80; }
     .ozet-kart.kalan  { border-left-color: #ef4444; }
+    .ozet-kart.kalan.alacak { border-left-color: #4ade80; }
+    .ozet-kart.kalan.kapali { border-left-color: #94a3b8; }
     .ozet-etiket { font-size: 11px; color: #64748b; letter-spacing: 1px; margin-bottom: 6px; }
     .ozet-deger { font-size: 20px; font-weight: bold; }
     .ozet-kart.toplam .ozet-deger { color: #f1f5f9; }
     .ozet-kart.odenen .ozet-deger { color: #f1f5f9; }
     .ozet-kart.kalan  .ozet-deger { color: #ef4444; }
+    .ozet-kart.kalan.alacak .ozet-deger { color: #4ade80; }
+    .ozet-kart.kalan.kapali .ozet-deger { color: #cbd5e1; }
     .form-card { background: #1e293b; border: 1.5px solid #c9a84c55; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
     .form-title { color: #c9a84c; font-weight: bold; font-size: 14px; margin-bottom: 14px; }
     .form-grid { display: grid; grid-template-columns: 2fr 2fr 1fr 2fr 1fr; gap: 14px; align-items: end; }
@@ -210,7 +214,7 @@
 
     .filtre-panel {
       display: grid;
-      grid-template-columns: minmax(240px, 2fr) minmax(130px, .75fr) minmax(260px, 1.35fr) minmax(220px, 1.1fr) auto;
+      grid-template-columns: minmax(220px, 1.7fr) minmax(120px, .65fr) minmax(240px, 1.2fr) minmax(200px, 1fr) auto;
       align-items: end; gap: 14px; margin-bottom: 22px;
     }
     .arama-kutusu {
@@ -242,6 +246,15 @@
       font-family: inherit; font-weight: 650; cursor: pointer;
     }
     .btn-yeni-fatura:hover { background: #ffd064; }
+    .filtre-islemler { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .btn-cari-islem {
+      height: 48px; min-width: 132px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 14px; border: 1px solid #38bdf866; border-radius: 7px; background: #38bdf812;
+      color: #7dd3fc; font-family: inherit; font-weight: 650; white-space: nowrap; cursor: pointer;
+    }
+    .btn-cari-islem.odeme { border-color: #4ade8066; background: #4ade8012; color: #79e79d; }
+    .btn-cari-islem:hover { background: #38bdf824; }
+    .btn-cari-islem.odeme:hover { background: #4ade8024; }
 
     .ozet-kartlar { gap: 14px; margin-bottom: 14px; }
     .ozet-kart {
@@ -256,6 +269,8 @@
     .ozet-kart.toplam .ozet-ikon { color: var(--altin); background: #c98b1638; }
     .ozet-kart.odenen .ozet-ikon { color: var(--yesil); background: #2caf5738; }
     .ozet-kart.kalan .ozet-ikon { color: var(--kirmizi); background: #db35423b; }
+    .ozet-kart.kalan.alacak .ozet-ikon { color: var(--yesil); background: #2caf5738; }
+    .ozet-kart.kalan.kapali .ozet-ikon { color: #cbd5e1; background: #94a3b829; }
     .ozet-kart .ozet-etiket {
       display: block; margin: 0 0 4px; color: #b8c3cf; font-size: 12px;
       letter-spacing: 0; text-transform: none;
@@ -273,7 +288,7 @@
       position: absolute; width: 1px; height: 1px; overflow: hidden;
       clip: rect(0 0 0 0); white-space: nowrap;
     }
-    .hizli-kartlar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .hizli-kartlar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
     .hizli-kart {
       position: relative; min-height: 78px; grid-template-columns: 38px minmax(0, 1fr); gap: 11px;
       padding: 12px 14px; overflow: hidden;
@@ -473,6 +488,26 @@
     .durum.kismi { color: #fbbf24; background: #f59e0b1a; border-color: #f59e0b33; }
     .odeme-ilerleme { display: block; margin-top: 4px; color: #8ea0b2; font-size: 9px; text-decoration: none !important; }
     .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
+    .cek-alanlari { display: contents; }
+    .cek-alanlari[hidden] { display: none; }
+    .cari-hesap-kart { width: min(1080px,100%); max-width: 1080px; }
+    .cari-hesap-arama { padding: 12px 18px; border-bottom: 1px solid var(--cizgi-yumusak); }
+    .cari-hesap-arama input { width: 100%; padding: 0 12px; }
+    .cari-hesap-tablo-wrap { max-height: 62vh; overflow: auto; margin: 14px 18px 18px; border: 1px solid var(--cizgi); border-radius: 8px; }
+    .cari-hesap-tablo { min-width: 820px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
+    .cari-hesap-tablo th, .cari-hesap-tablo td { padding: 10px 12px; }
+    .cari-hesap-tablo .bakiye-borc { color: #ff6b77; font-weight: 750; }
+    .cari-hesap-tablo .bakiye-alacak { color: #4ade80; font-weight: 750; }
+    .cari-hesap-tablo .bakiye-kapali { color: #94a3b8; font-weight: 750; }
+    .cari-ekstre-btn { padding: 6px 9px; border: 1px solid #38bdf855; border-radius: 6px; background: #38bdf810; color: #7dd3fc; cursor: pointer; }
+    .hareket-tur { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
+    .hareket-tur.borc { color: #ff6b77; }
+    .hareket-tur.alacak { color: #4ade80; }
+    .hareket-sonuc { display: flex; align-items: center; justify-content: flex-end; gap: 8px; white-space: nowrap; }
+    .hareket-bakiye { color: #cbd5e1; font-size: 9px; font-weight: 700; text-align: right; }
+    .hareket-bakiye.bakiye-borc { color: #ff7a85; }
+    .hareket-bakiye.bakiye-alacak { color: #4ade80; }
+    .odeme-kaydi.iptal { opacity: .55; text-decoration: line-through; }
 
     .veri-kontrol-panel {
       margin: 0 0 13px; overflow: hidden; background: var(--panel-koyu);
@@ -618,10 +653,12 @@
     .btn-kaydet { background: var(--altin-acik); color: #152031; }
     footer { background: var(--zemin-derin); border-top-color: var(--cizgi-yumusak); }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1320px) {
       .filtre-panel { grid-template-columns: 2fr 1fr 1.5fr; }
       .tutar-araligi { grid-column: span 2; }
-      .btn-yeni-fatura { grid-column: 3; grid-row: 2; }
+      .filtre-islemler { grid-column: 3; grid-row: 2; }
+    }
+    @media (max-width: 1180px) {
       .hizli-kartlar { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
     @media (max-width: 760px) {
@@ -630,7 +667,9 @@
       .konteyner { width: calc(100vw - 24px); padding-top: 16px; }
       .filtre-panel { grid-template-columns: 1fr 1fr; }
       .arama-kutusu, .tarih-araligi, .tutar-araligi { grid-column: 1 / -1; }
-      .btn-yeni-fatura { grid-column: 2; grid-row: auto; }
+      .filtre-islemler { grid-column: 1 / -1; grid-row: auto; display: grid; grid-template-columns: 1fr 1fr; }
+      .filtre-islemler .btn-yeni-fatura { grid-column: 1 / -1; }
+      .btn-cari-islem, .btn-yeni-fatura { width: 100%; min-width: 0; }
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
@@ -655,7 +694,9 @@
       .odeme-kaydi { grid-template-columns: 1fr auto; gap: 5px 10px; }
       .odeme-kaydi-tutar { grid-column: 2; grid-row: 1; }
       .odeme-kaydi-yontem, .odeme-kaydi-detay { grid-column: 1; }
-      .odeme-kaydi-sil { grid-column: 2; grid-row: 2 / span 2; }
+      .hareket-sonuc { grid-column: 2; grid-row: 2 / span 2; }
+      .cari-hesap-arama { padding: 12px; }
+      .cari-hesap-tablo-wrap { margin: 12px; }
       .rapor-overlay { padding: 0; }
       .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
@@ -764,8 +805,8 @@
       <div class="popup-header">
         <div class="popup-ikon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
         <div>
-          <div class="popup-baslik">Ödeme Uyarısı!</div>
-          <div class="popup-alt">Bugün ödenmesi gereken veya gecikmiş faturalar:</div>
+          <div class="popup-baslik">Vade Uyarısı</div>
+          <div class="popup-alt">Cari borcu bulunan firmalara ait bugün vadeli veya vadesi geçmiş faturalar:</div>
         </div>
       </div>
       <div id="odeme-liste" style="margin-bottom:16px;"></div>
@@ -774,7 +815,7 @@
   </div>
 
   <!-- DÜZENLEME POPUP -->
-  <div class="popup-overlay yalnızca-yonetici" id="duzenle-overlay">
+  <div class="popup-overlay yalnizca-yonetici" id="duzenle-overlay">
     <div class="popup-kutu" id="duzenle-popup">
       <div class="popup-header">
         <div class="popup-ikon"><i class="fa-solid fa-pen" aria-hidden="true"></i></div>
@@ -815,42 +856,64 @@
     </div>
   </div>
 
-  <!-- MANUEL ÖDEME GİRİŞİ VE GEÇMİŞİ -->
-  <div class="popup-overlay odeme-yonetim-overlay yalnızca-yonetici" id="odeme-yonetim-overlay">
+  <!-- CARİ HESAPLAR -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="cari-hesaplar-overlay">
+    <section class="popup-kutu odeme-yonetim-kart cari-hesap-kart" role="dialog" aria-modal="true" aria-labelledby="cari-hesaplar-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="cari-hesaplar-baslik"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Cari Hesaplar</h2>
+          <p class="odeme-yonetim-alt">Faturalar borç, ödeme ve verilen çekler alacak hareketidir.</p>
+        </div>
+        <button class="modal-kapat" type="button" onclick="cariHesaplariKapat()" aria-label="Cari hesapları kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="cari-hesap-arama"><input id="cari-hesap-arama" type="search" placeholder="Cari/firma ara" oninput="cariHesaplariniGoster()"/></div>
+      <div class="cari-hesap-tablo-wrap" id="cari-hesap-tablo-wrap"></div>
+    </section>
+  </div>
+
+  <!-- CARİ ÖDEME / ÇEK GİRİŞİ VE HESAP EKSTRESİ -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="odeme-yonetim-overlay">
     <section class="popup-kutu odeme-yonetim-kart" role="dialog" aria-modal="true" aria-labelledby="odeme-yonetim-baslik">
       <div class="odeme-yonetim-ust">
         <div>
-          <h2 class="odeme-yonetim-baslik" id="odeme-yonetim-baslik"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Manuel Ödeme Girişi</h2>
-          <p class="odeme-yonetim-alt" id="odeme-fatura-bilgisi">Fatura bilgileri hazırlanıyor…</p>
+          <h2 class="odeme-yonetim-baslik" id="odeme-yonetim-baslik"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Cari Ödeme / Çek Girişi</h2>
+          <p class="odeme-yonetim-alt" id="odeme-fatura-bilgisi">İşlem bir faturaya değil, seçilen cari hesaba işlenir.</p>
         </div>
         <button class="modal-kapat" type="button" onclick="odemeYonetiminiKapat()" aria-label="Ödeme penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="odeme-ozetler">
-        <div class="odeme-ozet" style="--odeme-renk:#f3be3e"><span>FATURA TUTARI</span><strong id="odeme-fatura-tutari">0 ₺</strong></div>
-        <div class="odeme-ozet" style="--odeme-renk:#4ade80"><span>ÖDENEN TUTAR</span><strong id="odeme-odenen-tutar">0 ₺</strong></div>
-        <div class="odeme-ozet" style="--odeme-renk:#ff6b77"><span>KALAN TUTAR</span><strong id="odeme-kalan-tutar">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#f3be3e"><span>FATURA BORCU</span><strong id="odeme-fatura-tutari">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#4ade80"><span>ÖDEME / ÇEK</span><strong id="odeme-odenen-tutar">0 ₺</strong></div>
+        <div class="odeme-ozet" id="odeme-bakiye-kart" style="--odeme-renk:#ff6b77"><span id="odeme-bakiye-etiket">BORÇ BAKİYESİ</span><strong id="odeme-kalan-tutar">0 ₺</strong></div>
       </div>
-      <div class="odeme-formu">
-        <input id="odeme-fatura-id" type="hidden"/>
-        <div class="odeme-form-alan"><label for="odeme-tarih">ÖDEME TARİHİ</label><input id="odeme-tarih" type="date"/></div>
-        <div class="odeme-form-alan"><label for="odeme-tutar">ÖDENEN TUTAR (₺)</label><input id="odeme-tutar" type="number" min="0.01" step="0.01" placeholder="0,00"/></div>
-        <div class="odeme-form-alan"><label for="odeme-yontem">ÖDEME YÖNTEMİ</label><select id="odeme-yontem"><option>Havale / EFT</option><option>Çek</option><option>Nakit</option><option>Kredi Kartı</option><option>Mahsup</option><option>Diğer</option></select></div>
+      <div class="odeme-formu yalnizca-yonetici">
+        <div class="odeme-form-alan genis"><label for="odeme-cari">CARİ / FİRMA</label><input id="odeme-cari" type="text" list="odeme-cari-listesi" maxlength="120" placeholder="Firma seçin veya yazın" oninput="odemeYonetiminiGuncelle()"/><datalist id="odeme-cari-listesi"></datalist></div>
+        <div class="odeme-form-alan"><label for="odeme-tur">İŞLEM TÜRÜ</label><select id="odeme-tur" onchange="odemeTuruDegisti()"><option value="odeme">Ödeme</option><option value="cek">Çek Verme</option></select></div>
+        <div class="odeme-form-alan"><label for="odeme-tarih">İŞLEM TARİHİ</label><input id="odeme-tarih" type="date"/></div>
+        <div class="odeme-form-alan"><label for="odeme-tutar">TUTAR (₺)</label><input id="odeme-tutar" type="number" min="0.01" step="0.01" placeholder="0,00"/></div>
+        <div class="odeme-form-alan" id="odeme-yontem-alani"><label for="odeme-yontem">ÖDEME YÖNTEMİ</label><select id="odeme-yontem"><option>Havale / EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Mahsup</option><option>Diğer</option></select></div>
         <div class="odeme-form-alan"><label for="odeme-referans">DEKONT / REFERANS NO</label><input id="odeme-referans" type="text" maxlength="160" placeholder="İsteğe bağlı"/></div>
+        <div class="cek-alanlari" id="cek-alanlari" hidden>
+          <div class="odeme-form-alan"><label for="cek-no">ÇEK NUMARASI</label><input id="cek-no" type="text" maxlength="120" placeholder="Çek no"/></div>
+          <div class="odeme-form-alan"><label for="cek-banka">BANKA</label><input id="cek-banka" type="text" maxlength="120" placeholder="Banka adı"/></div>
+          <div class="odeme-form-alan"><label for="cek-vade">ÇEK VADE TARİHİ</label><input id="cek-vade" type="date"/></div>
+          <div class="odeme-form-alan"><label for="cek-durum">ÇEK DURUMU</label><select id="cek-durum"><option>Verildi</option><option>Ödendi</option><option>İptal</option></select></div>
+        </div>
         <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
         <div class="odeme-form-islem">
           <span class="odeme-form-mesaj" id="odeme-form-mesaj" role="status"></span>
-          <button class="odeme-kaydet-btn" id="odeme-kaydet-btn" type="button" onclick="manuelOdemeKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet</button>
+          <button class="odeme-kaydet-btn" id="odeme-kaydet-btn" type="button" onclick="cariHareketKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Cari Hareketi Kaydet</button>
         </div>
       </div>
       <div class="odeme-gecmisi">
-        <div class="odeme-gecmisi-baslik"><strong>Ödeme Geçmişi</strong><span id="odeme-gecmisi-sayisi">0 kayıt</span></div>
+        <div class="odeme-gecmisi-baslik"><strong>Cari Hesap Ekstresi</strong><span id="odeme-gecmisi-sayisi">0 hareket</span></div>
         <div class="odeme-gecmisi-liste" id="odeme-gecmisi-liste"></div>
       </div>
     </section>
   </div>
 
   <!-- TOPLU SİLME ONAYI -->
-  <div class="popup-overlay yalnızca-yonetici" id="toplu-sil-overlay">
+  <div class="popup-overlay yalnizca-yonetici" id="toplu-sil-overlay">
     <div class="popup-kutu toplu-sil-kart" role="dialog" aria-modal="true" aria-labelledby="toplu-sil-baslik">
       <div class="popup-header">
         <div class="popup-ikon" style="color:#ff5b67"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
@@ -895,11 +958,8 @@
           <label for="rapor-durum">DURUM</label>
           <select id="rapor-durum" onchange="raporuGuncelle()">
             <option value="tumu">Tümü</option>
-            <option value="odenmedi">Ödenmedi</option>
-            <option value="kismi">Kısmi Ödendi</option>
-            <option value="odendi">Ödendi</option>
-            <option value="geciken">Geciken</option>
-            <option value="yaklasan">30 gün içinde</option>
+            <option value="geciken">Vadesi geçen</option>
+            <option value="yaklasan">30 gün içinde vadeli</option>
           </select>
         </div>
         <div class="rapor-alan"><label for="rapor-arama">CARİ / FATURA NO</label><input id="rapor-arama" type="search" placeholder="Cari veya fatura numarası ara" oninput="raporuGuncelle()"/></div>
@@ -907,14 +967,14 @@
       <div class="rapor-ozetler">
         <div class="rapor-ozet" style="--rapor-renk:#67cdfa"><i class="fa-solid fa-file-invoice"></i><span><span>KAYIT</span><strong id="rapor-kayit">0</strong></span></div>
         <div class="rapor-ozet" style="--rapor-renk:#f3be3e"><i class="fa-solid fa-coins"></i><span><span>TOPLAM</span><strong id="rapor-toplam">0 ₺</strong></span></div>
-        <div class="rapor-ozet" style="--rapor-renk:#4ade80"><i class="fa-solid fa-circle-check"></i><span><span>ÖDENEN</span><strong id="rapor-odenen">0 ₺</strong></span></div>
-        <div class="rapor-ozet" style="--rapor-renk:#ff5b67"><i class="fa-solid fa-triangle-exclamation"></i><span><span>KALAN</span><strong id="rapor-kalan">0 ₺</strong></span></div>
+        <div class="rapor-ozet" style="--rapor-renk:#ff5b67"><i class="fa-solid fa-calendar-xmark"></i><span><span>VADESİ GEÇEN</span><strong id="rapor-odenen">0 ₺</strong></span></div>
+        <div class="rapor-ozet" style="--rapor-renk:#4ade80"><i class="fa-solid fa-scale-balanced"></i><span><span>CARİ NET BAKİYE</span><strong id="rapor-kalan">0 ₺</strong></span></div>
       </div>
       <div class="rapor-tablo-wrap" id="rapor-tablo-wrap"></div>
       <div class="rapor-alt">
         <span class="rapor-kapsam" id="rapor-kapsam">Rapor hazırlanıyor…</span>
         <div class="rapor-butonlar">
-          <button class="rapor-btn yalnızca-yonetici" type="button" onclick="raporCsvIndir()"><i class="fa-solid fa-file-csv"></i> Raporu CSV İndir</button>
+          <button class="rapor-btn yalnizca-yonetici" type="button" onclick="raporCsvIndir()"><i class="fa-solid fa-file-csv"></i> Raporu CSV İndir</button>
           <button class="rapor-btn birincil" type="button" onclick="raporYazdir()"><i class="fa-solid fa-print"></i> Yazdır / PDF</button>
         </div>
       </div>
@@ -927,8 +987,8 @@
     <div class="navbar-sag">
       <div class="firma-duzenle">
         <span id="firma-adi-goster" onclick="firmaAdiniDuzenle()" title="Düzenlemek için tıklayın"></span>
-        <input class="firma-input yalnızca-yonetici" id="firma-inp" type="text" placeholder="Firma adı"/>
-        <button class="btn-kaydet-firma yalnızca-yonetici" id="firma-kaydet-btn" onclick="firmaKaydet()">✓</button>
+        <input class="firma-input yalnizca-yonetici" id="firma-inp" type="text" placeholder="Firma adı"/>
+        <button class="btn-kaydet-firma yalnizca-yonetici" id="firma-kaydet-btn" onclick="firmaKaydet()">✓</button>
       </div>
       <div class="baslik-kucuk">VADELİ ÖDEME TAKİBİ</div>
       <div class="navbar-tarih" id="navbar-tarih"></div>
@@ -961,10 +1021,8 @@
             <label for="filtre-durum">Durum</label>
             <select id="filtre-durum" onchange="filtreleriGuncelle()">
               <option value="tumu">Tümü</option>
-              <option value="odenmedi">Ödenmedi</option>
-              <option value="kismi">Kısmi Ödendi</option>
-              <option value="odendi">Ödendi</option>
-              <option value="geciken">Geciken</option>
+              <option value="geciken">Vadesi Geçen</option>
+              <option value="yaklasan">Bu Hafta Vadeli</option>
             </select>
           </div>
           <div class="filtre-alan tarih-araligi">
@@ -983,10 +1041,11 @@
               <input id="filtre-tutar-max" type="number" min="0" placeholder="Maks. tutar" aria-label="Maksimum tutar" oninput="filtreleriGuncelle()"/>
             </div>
           </div>
-          <button class="btn-yeni-fatura yalnızca-yonetici" type="button" onclick="yeniFaturaAc()">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            Yeni Fatura
-          </button>
+          <div class="filtre-islemler">
+            <button class="btn-cari-islem" type="button" onclick="cariHesaplariAc()"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Cari Hesaplar</button>
+            <button class="btn-cari-islem odeme yalnizca-yonetici" type="button" onclick="odemeYonetiminiAc()"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Ödeme / Çek</button>
+            <button class="btn-yeni-fatura yalnizca-yonetici" type="button" onclick="yeniFaturaAc()"><i class="fa-solid fa-plus" aria-hidden="true"></i> Yeni Fatura</button>
+          </div>
         </section>
 
         <!-- ÖZET KARTLAR -->
@@ -994,21 +1053,21 @@
           <div class="ozet-kart toplam">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
             <span>
-              <span class="ozet-etiket">Toplam</span>
+              <span class="ozet-etiket">Fatura Borcu</span>
               <span class="ozet-deger" id="oz-toplam">0 ₺</span>
             </span>
           </div>
           <div class="ozet-kart odenen">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
             <span>
-              <span class="ozet-etiket">Ödenen</span>
+              <span class="ozet-etiket">Ödeme / Çek</span>
               <span class="ozet-deger" id="oz-odenen">0 ₺</span>
             </span>
           </div>
-          <div class="ozet-kart kalan">
+          <div class="ozet-kart kalan" id="oz-bakiye-kart">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <span>
-              <span class="ozet-etiket">Kalan</span>
+              <span class="ozet-etiket" id="oz-bakiye-etiket">Net Borç Bakiyesi</span>
               <span class="ozet-deger" id="oz-kalan">0 ₺</span>
             </span>
           </div>
@@ -1024,15 +1083,19 @@
             </button>
             <button class="hizli-kart" style="--vurgu:#f59e0b" type="button" data-filtre="yaklasan" aria-pressed="false" onclick="hizliFiltrele('yaklasan')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-clock"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">7 Gün İçinde Vadesi</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-yaklasan">0</span><span class="hizli-alt" id="hizli-yaklasan-alt">—</span></span></span>
+              <span class="hizli-metin"><span class="hizli-etiket">Bu Hafta Vadesi</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-yaklasan">0</span><span class="hizli-alt" id="hizli-yaklasan-alt">—</span></span></span>
             </button>
             <button class="hizli-kart geciken" style="--vurgu:#ef4444" type="button" data-filtre="geciken" aria-pressed="false" onclick="hizliFiltrele('geciken')">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-xmark"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">Geciken</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-geciken">0</span><span class="hizli-alt" id="hizli-geciken-alt">0 ₺</span></span></span>
+              <span class="hizli-metin"><span class="hizli-etiket">Vadesi Geçen Faturalar</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-geciken">0</span><span class="hizli-alt" id="hizli-geciken-alt">0 ₺</span></span></span>
             </button>
-            <button class="hizli-kart odenen-ay" style="--vurgu:#4ade80" type="button" data-filtre="odenen-ay" aria-pressed="false" onclick="hizliFiltrele('odenen-ay')">
+            <button class="hizli-kart odenen-ay" style="--vurgu:#4ade80" type="button" onclick="cariHesaplariAc()">
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
-              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Ödenen</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-odenen">0</span><span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span></span></span>
+              <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Yapılan Ödemeler</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-odenen">0</span><span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span></span></span>
+            </button>
+            <button class="hizli-kart" style="--vurgu:#a78bfa" type="button" onclick="cariHesaplariAc()">
+              <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-money-check"></i></span>
+              <span class="hizli-metin"><span class="hizli-etiket">Vadesi Bekleyen Çekler</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-cekler">0</span><span class="hizli-alt" id="hizli-cekler-alt">0 ₺</span></span></span>
             </button>
           </div>
         </section>
@@ -1061,7 +1124,7 @@
         </section>
 
         <!-- LİSTE -->
-        <section class="toplu-islem-panel yalnızca-yonetici" id="toplu-islem-panel" aria-label="Toplu fatura işlemleri" aria-live="polite" hidden>
+        <section class="toplu-islem-panel yalnizca-yonetici" id="toplu-islem-panel" aria-label="Toplu fatura işlemleri" aria-live="polite" hidden>
           <div class="toplu-islem-bilgi">
             <span class="toplu-islem-ikon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
             <span class="toplu-islem-metin">
@@ -1069,9 +1132,6 @@
               <span id="toplu-secim-toplami">Toplam 0 ₺</span>
             </span>
           </div>
-          <button class="toplu-islem-btn odendi" id="toplu-odendi-btn" type="button" onclick="secilenleriOdendiYap()">
-            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Tam Ödeme Kaydet
-          </button>
           <button class="toplu-islem-btn csv" type="button" onclick="secilenleriCsvIndir()">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Seçilen CSV
           </button>
@@ -1134,7 +1194,7 @@
       </main>
 
       <!-- YENİ FATURA -->
-      <div class="popup-overlay yalnızca-yonetici" id="yeni-fatura-overlay">
+      <div class="popup-overlay yalnizca-yonetici" id="yeni-fatura-overlay">
         <div class="form-card yeni-fatura-panel" role="dialog" aria-modal="true" aria-labelledby="yeni-fatura-baslik">
           <div class="form-baslik-satir">
             <div class="form-title" id="yeni-fatura-baslik"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i> Yeni Fatura Ekle</div>
@@ -1163,7 +1223,7 @@
     <div class="footer-ic">
       <div class="footer-baslik"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> Veri Saklama Bilgisi</div>
       <ul class="footer-maddeler">
-        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Tüm fatura verileri Google Sheets'te Bulut Tabanlı ve Senkronize edilir.</span></li>
+        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari ödeme ve çek verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
         <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı yoksa son yerel veriler gösterilir.</span></li>
@@ -1180,6 +1240,9 @@
     const ANAHTAR       = "x-firma-odeme-takip";
     const FIRMA_ANAHTAR = "x-firma-adi";
     const KUR_ANAHTAR   = "tcmb-kurlar-son";
+    const CARI_HAREKET_ANAHTAR = "krom-takip-cari-hareketler";
+    const CEK_ANAHTAR = "krom-takip-cekler";
+    const ESKI_ODEME_GECIS_ANAHTAR = "krom-takip-eski-odeme-gecisi";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
@@ -1298,32 +1361,34 @@
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     }
 
-    function listeSurumImzasi(liste) {
-      return JSON.stringify(
-        faturalariTekillestir(liste).liste
+    function uygulamaDurumuOlustur(faturalar=faturaYukle()) {
+      return {
+        items:faturalariTekillestir(faturalar).liste,
+        cariHareketler:cariHareketleriYukle(),
+        cekler:cekleriYukle()
+      };
+    }
+
+    function listeSurumImzasi(durum) {
+      const kaynak = Array.isArray(durum) ? { items:durum } : (durum || {});
+      return JSON.stringify({
+        items:faturalariTekillestir(kaynak.items).liste
           .map(inv => ({
             id: Number(inv.id),
             no: String(inv.no),
             cari: String(inv.cari || ""),
             tarih: String(inv.tarih),
             vadeGun: Number(inv.vadeGun),
-            tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
-            odendi: Boolean(inv.odendi),
-            odemeTarihi: String(inv.odemeTarihi || ""),
-            odemeler: (Array.isArray(inv.odemeler) ? inv.odemeler : [])
-              .map(odeme => ({
-                id:String(odeme.id),
-                tarih:String(odeme.tarih),
-                tutar:tutarSayiyaCevir(odeme.tutar).toFixed(2),
-                yontem:String(odeme.yontem || ""),
-                referans:String(odeme.referans || ""),
-                aciklama:String(odeme.aciklama || ""),
-                kayitZamani:String(odeme.kayitZamani || "")
-              }))
-              .sort((a,b) => a.id.localeCompare(b.id))
+            tutar: tutarSayiyaCevir(inv.tutar).toFixed(2)
           }))
-          .sort((a, b) => a.id - b.id)
-      );
+          .sort((a, b) => a.id - b.id),
+        cariHareketler:cariHareketleriNormallestir(kaynak.cariHareketler).map(hareket => ({
+          ...hareket, tutar:tutarSayiyaCevir(hareket.tutar).toFixed(2)
+        })),
+        cekler:cekleriNormallestir(kaynak.cekler).map(cek => ({
+          ...cek, tutar:tutarSayiyaCevir(cek.tutar).toFixed(2)
+        }))
+      });
     }
 
     async function bulutDurumunuGetir() {
@@ -1336,17 +1401,19 @@
         role: String(ham.role || ""),
         revision: Number.isInteger(revision) && revision >= 0 ? revision : null,
         lastRequestId: String(ham.lastRequestId || ""),
-        items: ham.items
+        items: ham.items,
+        cariHareketler:Array.isArray(ham.cariHareketler) ? ham.cariHareketler : null,
+        cekler:Array.isArray(ham.cekler) ? ham.cekler : null
       };
     }
 
-    function bulutCakismasiniKaydet(yerelListe, uzakDurum) {
+    function bulutCakismasiniKaydet(yerelDurum, uzakDurum) {
       localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify({
         kayitZamani: new Date().toISOString(),
         cihazSurumu: bulutSurumu,
         bulutSurumu: uzakDurum.revision,
-        yerelListe: faturalariTekillestir(yerelListe).liste,
-        bulutListe: faturalariTekillestir(uzakDurum.items).liste
+        yerelDurum: Array.isArray(yerelDurum) ? uygulamaDurumuOlustur(yerelDurum) : yerelDurum,
+        bulutDurum: uzakDurum
       }));
       syncGoster("Başka cihazda değişiklik algılandı · Bu cihazdaki değişiklik yedeklendi", "#ef4444");
       if (!bulutCakismaUyarildi) {
@@ -1355,7 +1422,7 @@
       }
     }
 
-    async function bulutKaydiniGonder(liste) {
+    async function bulutKaydiniGonder(durum) {
       if (!yoneticiGerekli()) return false;
       if (YEREL_GELISTIRME) {
         syncGoster("Yerel test modu · Google Sheets'e veri gönderilmedi", "#60a5fa");
@@ -1365,14 +1432,14 @@
         let kaydedildi = false;
         await bulutKilidiyleCalistir(async () => {
           const uzakOnce = await bulutDurumunuGetir();
-          const listelerAyni = listeSurumImzasi(uzakOnce.items) === listeSurumImzasi(liste);
+          const listelerAyni = listeSurumImzasi(uzakOnce) === listeSurumImzasi(durum);
 
           if (uzakOnce.revision !== null) {
             if (bulutSurumu === null || (uzakOnce.revision !== bulutSurumu && listelerAyni)) {
               bulutSurumunuKaydet(uzakOnce.revision);
             }
             if (uzakOnce.revision !== bulutSurumu) {
-              bulutCakismasiniKaydet(liste, uzakOnce);
+              bulutCakismasiniKaydet(durum, uzakOnce);
               return;
             }
           }
@@ -1383,7 +1450,9 @@
             action: "save",
             baseRevision,
             requestId,
-            items: faturalariTekillestir(liste).liste
+            items: faturalariTekillestir(durum.items).liste,
+            cariHareketler:cariHareketleriNormallestir(durum.cariHareketler),
+            cekler:cekleriNormallestir(durum.cekler)
           });
           bulutSurumunuKaydet(Number(yanit.revision));
           localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
@@ -1400,7 +1469,7 @@
         }
         if (e?.response?.conflict) {
           try {
-            bulutCakismasiniKaydet(liste, await bulutDurumunuGetir());
+            bulutCakismasiniKaydet(durum, await bulutDurumunuGetir());
           } catch (_) {
             syncGoster("Başka cihazda değişiklik algılandı · Yenileyin", "#ef4444");
           }
@@ -1425,9 +1494,9 @@
       }
     }
 
-    function buludaKaydet(liste) {
+    function buludaKaydet(liste=faturaYukle()) {
       if (!yoneticiMi()) return;
-      bekleyenBulutKaydi = faturalariTekillestir(liste).liste;
+      bekleyenBulutKaydi = uygulamaDurumuOlustur(liste);
       clearTimeout(bulutKayitZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
     }
@@ -1448,6 +1517,11 @@
         const uzakDurum = ilkDurum || await bulutKilidiyleCalistir(bulutDurumunuGetir);
         const data = uzakDurum.items;
         if (uzakDurum.revision !== null) bulutSurumunuKaydet(uzakDurum.revision);
+        if (Array.isArray(uzakDurum.cariHareketler)) {
+          localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(uzakDurum.cariHareketler)));
+          localStorage.setItem(ESKI_ODEME_GECIS_ANAHTAR, "1");
+        }
+        if (Array.isArray(uzakDurum.cekler)) localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(uzakDurum.cekler)));
 
         if (Array.isArray(data) && data.length > 0) {
           // Sheets sütun adları: id, "Fatura No", "Cari/Firma", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
@@ -1467,20 +1541,11 @@
             return;
           }
 
-          const yerelOdemeBilgileri = new Map(
-            faturaYukle().map(inv => [Number(inv.id), {
-              odemeTarihi:String(inv.odemeTarihi || ""),
-              odemeler:Array.isArray(inv.odemeler) ? inv.odemeler : []
-            }])
-          );
           const hamListe = gecerli.map(row => {
             const odemeD = row["Ödeme Durumu"] || row["odendi"] || "";
             const odendi = odemeD === "Ödendi" || odemeD === true || odemeD === "TRUE" || odemeD === "true";
-            const yerelOdeme = yerelOdemeBilgileri.get(Number(row["id"])) || { odemeTarihi:"", odemeler:[] };
-            const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || yerelOdeme.odemeTarihi || "";
-            const odemeler = Object.prototype.hasOwnProperty.call(row, "odemeler")
-              ? row.odemeler
-              : yerelOdeme.odemeler;
+            const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || "";
+            const odemeler = Array.isArray(row.odemeler) ? row.odemeler : [];
             const vadeGunHam = row["Vade Günü"] || row["vadeGun"] || "90";
             const vadeGunSayi = parseInt(String(vadeGunHam).replace(/[^0-9]/g,"")) || 90;
             return {
@@ -1507,7 +1572,8 @@
             syncGoster(liste.length + " fatura Google Sheets'ten yüklendi", "#4ade80");
           }
         } else {
-          syncGoster("Google Sheets boş — yerel veriler kullanılıyor", "#94a3b8");
+          localStorage.setItem(ANAHTAR, "[]");
+          syncGoster("Google Sheets'te fatura bulunamadı", "#94a3b8");
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
         }
       } catch(e) {
@@ -1560,6 +1626,145 @@
       }
       const sayi = Number(metin);
       return Number.isFinite(sayi) ? sayi : 0;
+    }
+
+    function cariAdiAnahtari(cari) {
+      return String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ";
+    }
+
+    function cariHareketiniNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const tarih = String(ham.tarih || ham.islemTarihi || "").split("T")[0];
+      const tutar = tutarSayiyaCevir(ham.tutar);
+      const cari = String(ham.cari || ham.firma || "").trim();
+      if (!cari || !tarihGecerliMi(tarih) || !(tutar > 0)) return null;
+      return {
+        id:String(ham.id || ham.hareketId || `chr-${tarih}-${sira+1}`).trim().slice(0,160),
+        cari:cari.slice(0,120),
+        tarih,
+        tutar,
+        yontem:String(ham.yontem || "Diğer").trim().slice(0,80),
+        referans:String(ham.referans || "").trim().slice(0,160),
+        aciklama:String(ham.aciklama || "").trim().slice(0,500),
+        kaynakFaturaId:Number(ham.kaynakFaturaId) || null,
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80)
+      };
+    }
+
+    function cariHareketleriNormallestir(hamListe) {
+      const gorulen = new Set();
+      return (Array.isArray(hamListe) ? hamListe : [])
+        .map((ham,sira) => cariHareketiniNormallestir(ham,sira))
+        .filter(hareket => hareket && !gorulen.has(hareket.id) && gorulen.add(hareket.id))
+        .sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id));
+    }
+
+    function cekiNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const tarih = String(ham.tarih || ham.verilisTarihi || "").split("T")[0];
+      const vadeTarihi = String(ham.vadeTarihi || ham.vade || "").split("T")[0];
+      const tutar = tutarSayiyaCevir(ham.tutar);
+      const cari = String(ham.cari || ham.firma || "").trim();
+      const durum = ["Verildi","Ödendi","İptal"].includes(String(ham.durum)) ? String(ham.durum) : "Verildi";
+      if (!cari || !tarihGecerliMi(tarih) || !tarihGecerliMi(vadeTarihi) || !(tutar > 0)) return null;
+      return {
+        id:String(ham.id || ham.cekId || `cek-${tarih}-${sira+1}`).trim().slice(0,160),
+        cari:cari.slice(0,120),
+        tarih,
+        vadeTarihi,
+        tutar,
+        cekNo:String(ham.cekNo || "").trim().slice(0,120),
+        banka:String(ham.banka || "").trim().slice(0,120),
+        durum,
+        referans:String(ham.referans || "").trim().slice(0,160),
+        aciklama:String(ham.aciklama || "").trim().slice(0,500),
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80)
+      };
+    }
+
+    function cekleriNormallestir(hamListe) {
+      const gorulen = new Set();
+      return (Array.isArray(hamListe) ? hamListe : [])
+        .map((ham,sira) => cekiNormallestir(ham,sira))
+        .filter(cek => cek && !gorulen.has(cek.id) && gorulen.add(cek.id))
+        .sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id));
+    }
+
+    function cariHareketleriYukle() {
+      try { return cariHareketleriNormallestir(JSON.parse(localStorage.getItem(CARI_HAREKET_ANAHTAR) || "[]")); }
+      catch { return []; }
+    }
+
+    function cekleriYukle() {
+      try { return cekleriNormallestir(JSON.parse(localStorage.getItem(CEK_ANAHTAR) || "[]")); }
+      catch { return []; }
+    }
+
+    function eskiFaturaOdemeleriniAktar(faturalar) {
+      if (localStorage.getItem(ESKI_ODEME_GECIS_ANAHTAR) === "1") return false;
+      const mevcut = cariHareketleriYukle();
+      const kimlikler = new Set(mevcut.map(hareket => hareket.id));
+      let degisti = false;
+      let eskiOdemeBulundu = false;
+      (Array.isArray(faturalar) ? faturalar : []).forEach(inv => {
+        (Array.isArray(inv.odemeler) ? inv.odemeler : []).forEach((odeme,sira) => {
+          eskiOdemeBulundu = true;
+          const kimlik = `legacy-${String(odeme.id || `${inv.id}-${sira+1}`)}`;
+          if (kimlikler.has(kimlik)) return;
+          const hareket = cariHareketiniNormallestir({
+            id:kimlik,
+            cari:inv.cari || "Belirtilmedi",
+            tarih:odeme.tarih || inv.odemeTarihi || inv.tarih,
+            tutar:odeme.tutar || inv.tutar,
+            yontem:odeme.yontem || "Eski ödeme kaydı",
+            referans:odeme.referans || "",
+            aciklama:odeme.aciklama || "Eski fatura ödeme kaydından cari harekete aktarıldı.",
+            kaynakFaturaId:inv.id,
+            kayitZamani:odeme.kayitZamani || ""
+          }, sira);
+          if (!hareket) return;
+          mevcut.push(hareket);
+          kimlikler.add(kimlik);
+          degisti = true;
+        });
+      });
+      if (degisti) localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(mevcut)));
+      if (eskiOdemeBulundu) localStorage.setItem(ESKI_ODEME_GECIS_ANAHTAR, "1");
+      return degisti;
+    }
+
+    function cariOzetleriniHesapla(faturalar=faturaYukle(), hareketler=cariHareketleriYukle(), cekler=cekleriYukle()) {
+      const hesaplar = new Map();
+      const hesapGetir = cari => {
+        const ad = String(cari || "Belirtilmedi").trim() || "Belirtilmedi";
+        const anahtar = cariAdiAnahtari(ad);
+        if (!hesaplar.has(anahtar)) hesaplar.set(anahtar,{ anahtar, cari:ad, faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0 });
+        return hesaplar.get(anahtar);
+      };
+      (faturalar || []).forEach(inv => { hesapGetir(inv.cari).faturaToplami += tutarSayiyaCevir(inv.tutar); });
+      (hareketler || []).forEach(hareket => { hesapGetir(hareket.cari).odemeToplami += tutarSayiyaCevir(hareket.tutar); });
+      (cekler || []).forEach(cek => {
+        const hesap = hesapGetir(cek.cari);
+        if (cek.durum !== "İptal") hesap.cekToplami += tutarSayiyaCevir(cek.tutar);
+        if (cek.durum === "Verildi") hesap.bekleyenCek += tutarSayiyaCevir(cek.tutar);
+      });
+      return Array.from(hesaplar.values()).map(hesap => ({
+        ...hesap,
+        bakiye:hesap.faturaToplami - hesap.odemeToplami - hesap.cekToplami
+      })).sort((a,b) => a.cari.localeCompare(b.cari,"tr"));
+    }
+
+    function cariOzetiniGetir(cari) {
+      const anahtar = cariAdiAnahtari(cari);
+      return cariOzetleriniHesapla().find(hesap => hesap.anahtar === anahtar) || {
+        anahtar, cari:String(cari || "Belirtilmedi"), faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0
+      };
+    }
+
+    function bakiyeBilgisi(bakiye) {
+      if (bakiye > 0.005) return { etiket:"Borç Bakiyesi", sinif:"bakiye-borc", tutar:bakiye };
+      if (bakiye < -0.005) return { etiket:"Alacak Bakiyesi", sinif:"bakiye-alacak", tutar:Math.abs(bakiye) };
+      return { etiket:"Kapalı Hesap", sinif:"bakiye-kapali", tutar:0 };
     }
 
     function odemeKaydiniNormallestir(ham, faturaId, sira=0) {
@@ -1694,6 +1899,7 @@
       try {
         const ham = JSON.parse(localStorage.getItem(ANAHTAR) || "[]");
         const sonuc = faturalariTekillestir(ham);
+        eskiFaturaOdemeleriniAktar(sonuc.liste);
         if (sonuc.kaldirilan > 0) localStorage.setItem(ANAHTAR, JSON.stringify(sonuc.liste));
         return sonuc.liste;
       } catch { return []; }
@@ -1744,14 +1950,12 @@
         const tarih = String(ham.tarih || "").split("T")[0];
         const vadeGun = Number(ham.vadeGun);
         const tutar = tutarSayiyaCevir(ham.tutar);
-        const odendi = ham.odendi === true || ham.odendi === "true" || ham.odendi === "TRUE" || ham.odendi === "Ödendi";
         const hatalar = [];
 
         if (!no) hatalar.push("fatura numarası eksik");
         if (!tarihGecerliMi(tarih)) hatalar.push("fatura tarihi geçersiz");
         if (!Number.isInteger(vadeGun) || vadeGun <= 0) hatalar.push("vade günü geçersiz");
         if (!(tutar > 0)) hatalar.push("tutar eksik veya geçersiz");
-        if (odendi && !tarihGecerliMi(ham.odemeTarihi)) hatalar.push("ödeme tarihi eksik veya geçersiz");
 
         if (hatalar.length) {
           const etiket = no ? `“${no.slice(0, 60)}”` : `${satir}. satır`;
@@ -1779,16 +1983,18 @@
       const ayniNumaraGruplari = [...numaraGruplari.entries()].filter(([, kayitlar]) => kayitlar.length > 1);
 
       let toplam = 0;
-      let odenen = 0;
       gecerliKayitlar.forEach(inv => {
         const tutar = tutarSayiyaCevir(inv.tutar);
         toplam += tutar;
-        odenen += Math.min(tutar, faturaOdenenTutari(inv));
       });
+      const hareketToplami = cariHareketleriYukle().reduce((deger,hareket) => deger + tutarSayiyaCevir(hareket.tutar), 0);
+      const cekToplami = cekleriYukle().filter(cek => cek.durum !== "İptal").reduce((deger,cek) => deger + tutarSayiyaCevir(cek.tutar), 0);
+      const alacakToplami = hareketToplami + cekToplami;
+      const netBakiye = toplam - alacakToplami;
       const beklenenOzet = {
         toplam: formatPara(toplam),
-        odenen: formatPara(odenen),
-        kalan: formatPara(toplam - odenen)
+        odenen: formatPara(alacakToplami),
+        kalan: formatPara(Math.abs(netBakiye))
       };
       const toplamlarDogru = !ozetMetinleri ||
         (ozetMetinleri.toplam === beklenenOzet.toplam &&
@@ -1983,7 +2189,7 @@
       try {
         const ham = JSON.parse(localStorage.getItem(YEDEK_ANAHTAR) || "[]");
         return Array.isArray(ham)
-          ? ham.filter(yedek => yedek && Array.isArray(yedek.liste)).slice(-YEDEK_SINIR)
+          ? ham.filter(yedek => yedek && (Array.isArray(yedek.liste) || Array.isArray(yedek.durum?.items))).slice(-YEDEK_SINIR)
           : [];
       } catch { return []; }
     }
@@ -2001,13 +2207,16 @@
 
     function otomatikYedekOlustur(liste, neden) {
       const guvenliListe = faturalariTekillestir(liste).liste;
+      const guvenliDurum = uygulamaDurumuOlustur(guvenliListe);
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler[yedekler.length - 1];
-      if (!sonYedek || JSON.stringify(sonYedek.liste) !== JSON.stringify(guvenliListe)) {
+      const sonDurum = sonYedek?.durum || (sonYedek ? { items:sonYedek.liste, cariHareketler:[], cekler:[] } : null);
+      if (!sonDurum || listeSurumImzasi(sonDurum) !== listeSurumImzasi(guvenliDurum)) {
         yedekler.push({
           kayitZamani: new Date().toISOString(),
-          neden: String(neden || "Fatura verisi değiştirildi"),
-          liste: guvenliListe
+          neden: String(neden || "Veri değiştirildi"),
+          liste: guvenliListe,
+          durum: guvenliDurum
         });
         localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler.slice(-YEDEK_SINIR)));
       }
@@ -2030,10 +2239,13 @@
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler.pop();
       if (!sonYedek) return;
-      const geriYuklenecek = faturalariTekillestir(sonYedek.liste).liste;
+      const geriDurum = sonYedek.durum || { items:sonYedek.liste, cariHareketler:cariHareketleriYukle(), cekler:cekleriYukle() };
+      const geriYuklenecek = faturalariTekillestir(geriDurum.items).liste;
       if (yedekler.length) localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler));
       else localStorage.removeItem(YEDEK_ANAHTAR);
       localStorage.setItem(ANAHTAR, JSON.stringify(geriYuklenecek));
+      localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(geriDurum.cariHareketler)));
+      localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(geriDurum.cekler)));
       buludaKaydet(geriYuklenecek);
       listeyiGoster();
       rozetGuncelle();
@@ -2086,10 +2298,9 @@
         const { baslangic, sonrakiHafta } = haftaAraligi();
         const vadeGunu = new Date(vade);
         vadeGunu.setHours(0,0,0,0);
-        return !inv.odendi && vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
+        return vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
       }
-      if (filtre==='geciken') return !inv.odendi && gun<0;
-      if (filtre==='odenen-ay') return (inv.odemeler || []).some(odeme => ayniAy(odeme.tarih));
+      if (filtre==='geciken') return gun<0;
       return true;
     }
     function arayuzFiltresineUyar(inv) {
@@ -2103,14 +2314,14 @@
       vade.setHours(0,0,0,0);
       const gun = kalanGun(vade);
       const tutar = tutarSayiyaCevir(inv.tutar);
-      const odemeDurumu = faturaOdemeDurumu(inv);
 
       const aramaMetni = `${inv.cari || ''} ${inv.no || ''}`.toLocaleUpperCase('tr-TR');
       if (arama && !aramaMetni.includes(arama)) return false;
-      if (durum === 'odenmedi' && odemeDurumu !== 'odenmedi') return false;
-      if (durum === 'kismi' && odemeDurumu !== 'kismi') return false;
-      if (durum === 'odendi' && odemeDurumu !== 'odendi') return false;
-      if (durum === 'geciken' && (inv.odendi || gun >= 0)) return false;
+      if (durum === 'geciken' && gun >= 0) return false;
+      if (durum === 'yaklasan') {
+        const { baslangic:haftaBaslangici, sonrakiHafta } = haftaAraligi();
+        if (vade < haftaBaslangici || vade >= sonrakiHafta) return false;
+      }
       if (baslangic) {
         const ilkGun = tarihOlusturYerel(baslangic);
         ilkGun.setHours(0,0,0,0);
@@ -2130,11 +2341,9 @@
       listeyiGoster();
     }
     function goruntulenenFaturalariGetir() {
-      return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>{
-        if(a.odendi&&!b.odendi) return 1;
-        if(!a.odendi&&b.odendi) return -1;
-        return kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun));
-      }).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
+      return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>
+        kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun))
+      ).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
     }
 
     // ── TOPLU İŞLEMLER ──────────────────────────────────────────────────────
@@ -2147,28 +2356,6 @@
     function seciliFaturalariGetir(liste, kimlikler) {
       const secimler = kimlikKumesiOlustur(kimlikler);
       return (Array.isArray(liste) ? liste : []).filter(inv => secimler.has(String(inv.id)));
-    }
-
-    function seciliFaturalariOdendiYap(liste, kimlikler, odemeTarihi) {
-      const secimler = kimlikKumesiOlustur(kimlikler);
-      return (Array.isArray(liste) ? liste : []).map(inv => {
-        const kalan = faturaKalanTutari(inv);
-        if (!secimler.has(String(inv.id)) || !(kalan > 0)) return inv;
-        const guncel = {
-          ...inv,
-          odemeler:[...(inv.odemeler || []), {
-            id:odemeKimligiOlustur(inv.id),
-            faturaId:inv.id,
-            tarih:String(odemeTarihi || bugununTarihi()),
-            tutar:kalan,
-            yontem:"Toplu tam ödeme",
-            referans:"",
-            aciklama:"Toplu işlem ekranından tam ödeme kaydedildi.",
-            kayitZamani:new Date().toISOString()
-          }]
-        };
-        return faturaOdemeOzetiniUygula(guncel, false);
-      });
     }
 
     function seciliFaturalariSil(liste, kimlikler) {
@@ -2199,12 +2386,6 @@
       panel.hidden = !yoneticiMi() || secilenler.length === 0;
       document.getElementById("toplu-secim-sayisi").textContent = `${secilenler.length} fatura seçildi`;
       document.getElementById("toplu-secim-toplami").textContent = `Toplam ${formatPara(secilenler.reduce((toplam, inv) => toplam + tutarSayiyaCevir(inv.tutar), 0))}`;
-      const odenecekSayisi = secilenler.filter(inv => faturaKalanTutari(inv) > 0).length;
-      const odendiDugmesi = document.getElementById("toplu-odendi-btn");
-      if (odendiDugmesi) {
-        odendiDugmesi.disabled = odenecekSayisi === 0;
-        odendiDugmesi.title = odenecekSayisi ? `${odenecekSayisi} faturanın kalan tutarını ödeme kaydı olarak ekle` : "Seçilen faturaların tamamı zaten ödendi";
-      }
       tabloSecimDurumunuGuncelle(gorunenListe);
     }
 
@@ -2229,21 +2410,6 @@
       document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
       if (yenidenCiz) listeyiGoster();
       else topluIslemPaneliniGuncelle([]);
-    }
-
-    function secilenleriOdendiYap() {
-      if (!yoneticiGerekli()) return;
-      const liste = faturaYukle();
-      const secilenler = seciliFaturalariGetir(liste, seciliFaturaKimlikleri);
-      const odenecekSayisi = secilenler.filter(inv => faturaKalanTutari(inv) > 0).length;
-      if (!odenecekSayisi) {
-        syncGoster("Seçilen faturaların tamamı zaten ödendi", "#f59e0b");
-        return;
-      }
-      const yeniListe = seciliFaturalariOdendiYap(liste, seciliFaturaKimlikleri, bugununTarihi());
-      seciliFaturaKimlikleri.clear();
-      faturaKaydet(yeniListe, `${odenecekSayisi} faturaya toplu tam ödeme kaydı eklendi`);
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
     function secilenleriCsvIndir() {
@@ -2295,13 +2461,12 @@
         syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
         return false;
       }
-      const basliklar = ["Cari/Firma","Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödenen (TL)","Kalan (TL)","Ödeme Durumu","Son Ödeme Tarihi","Ödeme Yöntemleri","Vade Durumu"];
+      const basliklar = ["Cari/Firma","Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Fatura Tutarı (TL)","Cari Bakiye (TL)","Bakiye Türü","Vade Durumu"];
       const satirlar = liste.map(inv=>{
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         const gun = kalanGun(vade);
-        const vadeDurumu = inv.odendi
-          ? "Ödendi"
-          : gun < 0 ? `${Math.abs(gun)} gün gecikti` : gun === 0 ? "Bugün vadeli" : `${gun} gün kaldı`;
+        const vadeDurumu = gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vade bugün" : `Vadeye ${gun} gün`;
+        const bakiye = bakiyeBilgisi(cariOzetiniGetir(inv.cari).bakiye);
         return [
           inv.cari || "Belirtilmedi",
           inv.no,
@@ -2309,11 +2474,8 @@
           inv.vadeGun || 90,
           bugununTarihi(vade),
           tutarSayiyaCevir(inv.tutar).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
-          faturaOdenenTutari(inv).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
-          faturaKalanTutari(inv).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
-          faturaOdemeDurumu(inv) === "odendi" ? "Ödendi" : faturaOdemeDurumu(inv) === "kismi" ? "Kısmi Ödendi" : "Ödenmedi",
-          faturaSonOdemeTarihi(inv),
-          [...new Set((inv.odemeler || []).map(odeme => odeme.yontem))].join(", "),
+          bakiye.tutar.toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
+          bakiye.etiket,
           vadeDurumu
         ].map(csvHucre).join(";");
       });
@@ -2370,38 +2532,35 @@
         if (bitis && vadeMetni > bitis) return false;
         const aramaMetni = `${inv.cari || ""} ${inv.no || ""}`.toLocaleUpperCase("tr-TR");
         if (arama && !aramaMetni.includes(arama)) return false;
-        const odemeDurumu = faturaOdemeDurumu(inv);
-        if (durum === "odendi" && odemeDurumu !== "odendi") return false;
-        if (durum === "kismi" && odemeDurumu !== "kismi") return false;
-        if (durum === "odenmedi" && odemeDurumu !== "odenmedi") return false;
-        if (durum === "geciken" && (inv.odendi || vade >= bugun)) return false;
-        if (durum === "yaklasan" && (inv.odendi || vade < bugun || vade >= sonraki30Gun)) return false;
+        if (durum === "geciken" && vade >= bugun) return false;
+        if (durum === "yaklasan" && (vade < bugun || vade >= sonraki30Gun)) return false;
         return true;
       }).sort((a,b) => vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun));
     }
 
-    function raporOzetiniHesapla(liste) {
-      let toplam = 0;
-      let odenen = 0;
-      (Array.isArray(liste) ? liste : []).forEach(inv => {
-        const tutar = tutarSayiyaCevir(inv.tutar);
-        toplam += tutar;
-        odenen += Math.min(tutar, faturaOdenenTutari(inv));
-      });
-      return { kayit:(liste || []).length, toplam, odenen, kalan:toplam-odenen };
+    function raporOzetiniHesapla(liste, referans=new Date()) {
+      const kayitlar = Array.isArray(liste) ? liste : [];
+      const toplam = kayitlar.reduce((deger,inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
+      const bugun = new Date(referans); bugun.setHours(0,0,0,0);
+      const vadesiGecen = kayitlar
+        .filter(inv => { const vade=vadeTarihi(inv.tarih,inv.vadeGun); vade.setHours(0,0,0,0); return vade < bugun; })
+        .reduce((deger,inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
+      const cariAnahtarlari = new Set(kayitlar.map(inv => cariAdiAnahtari(inv.cari)));
+      const cariNetBakiye = cariOzetleriniHesapla()
+        .filter(hesap => cariAnahtarlari.has(hesap.anahtar))
+        .reduce((deger,hesap) => deger + hesap.bakiye, 0);
+      return { kayit:kayitlar.length, toplam, vadesiGecen, cariNetBakiye };
     }
 
     function raporDurumBilgisi(inv, referans=new Date()) {
-      if (inv.odendi) return { metin:"Ödendi", renk:"#4ade80" };
-      if (faturaOdemeDurumu(inv) === "kismi") return { metin:`Kısmi · ${formatPara(faturaKalanTutari(inv))} kaldı`, renk:"#fbbf24" };
       const bugun = new Date(referans);
       bugun.setHours(0,0,0,0);
       const vade = vadeTarihi(inv.tarih, inv.vadeGun);
       vade.setHours(0,0,0,0);
       const fark = Math.round((vade - bugun) / 86400000);
-      if (fark < 0) return { metin:`${Math.abs(fark)} gün gecikti`, renk:"#ff5b67" };
-      if (fark === 0) return { metin:"Bugün vadeli", renk:"#f59e0b" };
-      return { metin:`${fark} gün kaldı`, renk:fark <= 30 ? "#fbbf24" : "#67cdfa" };
+      if (fark < 0) return { metin:`Vadesi ${Math.abs(fark)} gün geçti`, renk:"#ff5b67" };
+      if (fark === 0) return { metin:"Vade bugün", renk:"#f59e0b" };
+      return { metin:`Vadeye ${fark} gün`, renk:fark <= 30 ? "#fbbf24" : "#67cdfa" };
     }
 
     function htmlGuvenli(deger) {
@@ -2455,20 +2614,20 @@
       const ozet = raporOzetiniHesapla(aktifRaporListesi);
       document.getElementById("rapor-kayit").textContent = ozet.kayit;
       document.getElementById("rapor-toplam").textContent = formatPara(ozet.toplam);
-      document.getElementById("rapor-odenen").textContent = formatPara(ozet.odenen);
-      document.getElementById("rapor-kalan").textContent = formatPara(ozet.kalan);
+      document.getElementById("rapor-odenen").textContent = formatPara(ozet.vadesiGecen);
+      const raporBakiyesi = bakiyeBilgisi(ozet.cariNetBakiye);
+      document.getElementById("rapor-kalan").textContent = `${formatPara(raporBakiyesi.tutar)} · ${raporBakiyesi.etiket}`;
 
       const tablo = document.getElementById("rapor-tablo-wrap");
       if (!aktifRaporListesi.length) {
         tablo.innerHTML = '<div class="rapor-bos"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><br>Bu ölçütlere uyan fatura bulunamadı.</div>';
       } else {
         tablo.innerHTML = `<table class="rapor-tablo">
-          <thead><tr><th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>ÖDENEN</th><th>KALAN</th><th>DURUM</th><th>SON ÖDEME</th></tr></thead>
+          <thead><tr><th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>CARİ BAKİYE</th><th>BAKİYE TÜRÜ</th><th>VADE DURUMU</th></tr></thead>
           <tbody>${aktifRaporListesi.map((inv,sira) => {
             const vade = vadeTarihi(inv.tarih, inv.vadeGun);
             const durum = raporDurumBilgisi(inv);
-            const sonOdeme = faturaSonOdemeTarihi(inv);
-            const odemeTarihi = sonOdeme ? formatTarih(tarihOlusturYerel(sonOdeme)) : "—";
+            const bakiye = bakiyeBilgisi(cariOzetiniGetir(inv.cari).bakiye);
             return `<tr>
               <td>${sira+1}</td>
               <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
@@ -2476,10 +2635,9 @@
               <td>${formatTarih(tarihOlusturYerel(inv.tarih))}</td>
               <td>${formatTarih(vade)}</td>
               <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
-              <td style="color:#4ade80">${formatPara(faturaOdenenTutari(inv))}</td>
-              <td style="color:#ff6b77">${formatPara(faturaKalanTutari(inv))}</td>
+              <td class="${bakiye.sinif}">${formatPara(bakiye.tutar)}</td>
+              <td>${bakiye.etiket}</td>
               <td><span class="rapor-durum" style="color:${durum.renk}">${durum.metin}</span></td>
-              <td>${odemeTarihi}</td>
             </tr>`;
           }).join("")}</tbody>
         </table>`;
@@ -2505,7 +2663,7 @@
       window.print();
     }
     function filtreBasligi(filtre) {
-      return ({'bu-ay':'Bu ay eklenen','yaklasan':'7 gün içinde vadesi gelen','geciken':'Geciken','odenen-ay':'Bu ay ödenen'})[filtre] || '';
+      return ({'bu-ay':'Bu ay eklenen','yaklasan':'Bu hafta vadeli','geciken':'Vadesi geçen'})[filtre] || '';
     }
     function hizliFiltrele(filtre) {
       secimiTemizle(false);
@@ -2523,7 +2681,8 @@
       const buAy = liste.filter(inv=>filtreyeUyar(inv,'bu-ay'));
       const yaklasan = liste.filter(inv=>filtreyeUyar(inv,'yaklasan'));
       const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
-      const odenenAy = liste.filter(inv=>filtreyeUyar(inv,'odenen-ay'));
+      const buAyOdemeler = cariHareketleriYukle().filter(hareket => ayniAy(hareket.tarih));
+      const bekleyenCekler = cekleriYukle().filter(cek => cek.durum === "Verildi");
       const bugun = new Date();
       const { baslangic: haftaBaslangici, bitis: haftaBitisi } = haftaAraligi(bugun);
       const ayMetni = bugun.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
@@ -2533,18 +2692,19 @@
       document.getElementById('hizli-yaklasan').textContent = yaklasan.length;
       document.getElementById('hizli-yaklasan-alt').textContent = aralikMetni;
       document.getElementById('hizli-geciken').textContent = geciken.length;
-      document.getElementById('hizli-geciken-alt').textContent = formatPara(geciken.reduce((toplam,inv)=>toplam+(Number(inv.tutar)||0),0));
-      document.getElementById('hizli-odenen').textContent = odenenAy.length;
-      document.getElementById('hizli-odenen-alt').textContent = formatPara(odenenAy.reduce((toplam,inv)=>
-        toplam + (inv.odemeler || []).filter(odeme => ayniAy(odeme.tarih)).reduce((ara,odeme)=>ara+tutarSayiyaCevir(odeme.tutar),0), 0));
+      document.getElementById('hizli-geciken-alt').textContent = formatPara(geciken.reduce((toplam,inv)=>toplam+tutarSayiyaCevir(inv.tutar),0));
+      document.getElementById('hizli-odenen').textContent = buAyOdemeler.length;
+      document.getElementById('hizli-odenen-alt').textContent = formatPara(buAyOdemeler.reduce((toplam,hareket)=>toplam+tutarSayiyaCevir(hareket.tutar),0));
+      document.getElementById('hizli-cekler').textContent = bekleyenCekler.length;
+      document.getElementById('hizli-cekler-alt').textContent = formatPara(bekleyenCekler.reduce((toplam,cek)=>toplam+tutarSayiyaCevir(cek.tutar),0));
     }
 
     function durumBilgi(g) {
-      if(g<0)   return{label:Math.abs(g)+" gün gecikti",renk:"#ef4444",bg:"#ef444422"};
-      if(g===0) return{label:"Bugün öde",renk:"#f97316",bg:"#f9731622"};
-      if(g<=7)  return{label:g+" gün kaldı",renk:"#f59e0b",bg:"#f59e0b22"};
-      if(g<=30) return{label:g+" gün kaldı",renk:"#3b82f6",bg:"#3b82f622"};
-      return{label:g+" gün kaldı",renk:"#94a3b8",bg:"#64748b22"};
+      if(g<0)   return{label:"Vadesi "+Math.abs(g)+" gün geçti",renk:"#ef4444",bg:"#ef444422"};
+      if(g===0) return{label:"Vade bugün",renk:"#f97316",bg:"#f9731622"};
+      if(g<=7)  return{label:"Vadeye "+g+" gün",renk:"#f59e0b",bg:"#f59e0b22"};
+      if(g<=30) return{label:"Vadeye "+g+" gün",renk:"#3b82f6",bg:"#3b82f622"};
+      return{label:"Vadeye "+g+" gün",renk:"#94a3b8",bg:"#64748b22"};
     }
 
     // ── SES ────────────────────────────────────────────────────────────────────
@@ -2589,16 +2749,28 @@
 
     // ── ÖDEME UYARI POPUP ──────────────────────────────────────────────────────
     function odemeUyariKontrol() {
-      const acil = faturaYukle().filter(inv => !inv.odendi && kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) <= 0);
+      const acilFirmalar = new Map();
+      faturaYukle()
+        .filter(inv => kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) <= 0)
+        .forEach(inv => {
+          const hesap = cariOzetiniGetir(inv.cari);
+          if (hesap.bakiye <= 0.005) return;
+          const anahtar = hesap.anahtar;
+          const kayit = acilFirmalar.get(anahtar) || { cari:hesap.cari, bakiye:hesap.bakiye, faturalar:[] };
+          kayit.faturalar.push(inv);
+          acilFirmalar.set(anahtar,kayit);
+        });
+      const acil = Array.from(acilFirmalar.values()).sort((a,b) => b.bakiye-a.bakiye);
       if (!acil.length) return;
-      document.getElementById("odeme-liste").innerHTML = acil.map(inv => {
-        const g = kalanGun(vadeTarihi(inv.tarih, inv.vadeGun));
+      document.getElementById("odeme-liste").innerHTML = acil.map(kayit => {
+        const enEski = kayit.faturalar.slice().sort((a,b)=>vadeTarihi(a.tarih,a.vadeGun)-vadeTarihi(b.tarih,b.vadeGun))[0];
+        const g = kalanGun(vadeTarihi(enEski.tarih, enEski.vadeGun));
         const gunMetin = g < 0
-          ? `<span class="od-gun" style="color:#ef4444"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${Math.abs(g)} gün gecikmiş</span>`
-          : `<span class="od-gun" style="color:#f97316"><i class="fa-solid fa-clock" aria-hidden="true"></i> Bugün son gün!</span>`;
+          ? `<span class="od-gun" style="color:#ef4444"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> En eski vade ${Math.abs(g)} gün geçmiş · ${kayit.faturalar.length} fatura</span>`
+          : `<span class="od-gun" style="color:#f97316"><i class="fa-solid fa-clock" aria-hidden="true"></i> Vade bugün · ${kayit.faturalar.length} fatura</span>`;
         return `<div class="odeme-satir">
-          <div><div class="od-no">${htmlGuvenli(inv.cari || "Cari belirtilmedi")} · ${htmlGuvenli(inv.no)}</div>${gunMetin}</div>
-          <div class="od-tutar">${formatPara(faturaKalanTutari(inv))}</div>
+          <div><div class="od-no">${htmlGuvenli(kayit.cari)}</div>${gunMetin}</div>
+          <div class="od-tutar">${formatPara(kayit.bakiye)} borç</div>
         </div>`;
       }).join("");
       document.getElementById("odeme-overlay").classList.add("aktif");
@@ -2606,108 +2778,187 @@
     }
     function odemeKapat() { document.getElementById("odeme-overlay").classList.remove("aktif"); }
 
-    // ── MANUEL ÖDEME KAYITLARI ───────────────────────────────────────────────
-    function odemeYonetiminiAc(id) {
-      if (!yoneticiGerekli()) return;
-      const inv = faturaYukle().find(item => item.id === Number(id));
-      if (!inv) return;
-      document.getElementById("odeme-fatura-id").value = inv.id;
+    // ── CARİ HESAP, ÖDEME VE ÇEK KAYITLARI ─────────────────────────────────
+    function cariListesiniDoldur(seciliCari="") {
+      const adlar = cariOzetleriniHesapla().map(hesap => hesap.cari);
+      document.getElementById("odeme-cari-listesi").innerHTML = adlar.map(cari => `<option value="${htmlGuvenli(cari)}"></option>`).join("");
+      document.getElementById("odeme-cari").value = seciliCari;
+    }
+
+    function odemeYonetiminiAc(cari="") {
+      cariListesiniDoldur(cari);
+      document.getElementById("odeme-tur").value = "odeme";
       document.getElementById("odeme-tarih").value = bugununTarihi();
+      document.getElementById("odeme-tutar").value = "";
       document.getElementById("odeme-yontem").value = "Havale / EFT";
       document.getElementById("odeme-referans").value = "";
       document.getElementById("odeme-aciklama").value = "";
+      document.getElementById("cek-no").value = "";
+      document.getElementById("cek-banka").value = "";
+      document.getElementById("cek-vade").value = bugununTarihi();
+      document.getElementById("cek-durum").value = "Verildi";
       document.getElementById("odeme-form-mesaj").textContent = "";
-      odemeYonetiminiGuncelle(inv);
+      odemeTuruDegisti();
+      odemeYonetiminiGuncelle();
       document.getElementById("odeme-yonetim-overlay").classList.add("aktif");
-      setTimeout(() => document.getElementById("odeme-tutar")?.focus(), 60);
+      setTimeout(() => document.getElementById(cari ? "odeme-tutar" : "odeme-cari")?.focus(), 60);
     }
 
-    function odemeYonetiminiGuncelle(fatura=null) {
-      const id = Number(document.getElementById("odeme-fatura-id")?.value);
-      const inv = fatura || faturaYukle().find(item => item.id === id);
-      if (!inv) { odemeYonetiminiKapat(); return; }
-      const odenen = faturaOdenenTutari(inv);
-      const kalan = faturaKalanTutari(inv);
-      const odemeler = [...(inv.odemeler || [])].sort((a,b) => b.tarih.localeCompare(a.tarih) || b.kayitZamani.localeCompare(a.kayitZamani));
-      document.getElementById("odeme-fatura-bilgisi").textContent = `${inv.cari || "Cari belirtilmedi"} · ${inv.no}`;
-      document.getElementById("odeme-fatura-tutari").textContent = formatPara(inv.tutar);
-      document.getElementById("odeme-odenen-tutar").textContent = formatPara(odenen);
-      document.getElementById("odeme-kalan-tutar").textContent = formatPara(kalan);
-      document.getElementById("odeme-gecmisi-sayisi").textContent = `${odemeler.length} kayıt`;
-      const tutarAlani = document.getElementById("odeme-tutar");
-      tutarAlani.value = kalan > 0 ? kalan.toFixed(2) : "";
-      tutarAlani.max = kalan > 0 ? kalan.toFixed(2) : "0";
-      tutarAlani.disabled = !(kalan > 0);
-      const kaydetDugmesi = document.getElementById("odeme-kaydet-btn");
-      kaydetDugmesi.disabled = !(kalan > 0);
-      kaydetDugmesi.innerHTML = kalan > 0
-        ? '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet'
-        : '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Fatura Tamamen Ödendi';
-      document.getElementById("odeme-gecmisi-liste").innerHTML = odemeler.length
-        ? odemeler.map(odeme => {
-            const detaylar = [odeme.referans ? `Ref: ${odeme.referans}` : "", odeme.aciklama || ""].filter(Boolean).join(" · ") || "Ek açıklama yok";
-            return `<div class="odeme-kaydi">
-              <span class="odeme-kaydi-tarih">${formatTarih(tarihOlusturYerel(odeme.tarih))}</span>
-              <strong class="odeme-kaydi-tutar">${formatPara(odeme.tutar)}</strong>
-              <span class="odeme-kaydi-yontem">${htmlGuvenli(odeme.yontem)}</span>
-              <span class="odeme-kaydi-detay" title="${htmlGuvenli(detaylar)}">${htmlGuvenli(detaylar)}</span>
-              <button class="odeme-kaydi-sil" type="button" data-odeme-id="${htmlGuvenli(odeme.id)}" onclick="odemeKaydiniSil(this.dataset.odemeId)" aria-label="${formatPara(odeme.tutar)} ödeme kaydını sil" title="Ödeme kaydını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+    function odemeTuruDegisti() {
+      const cekMi = document.getElementById("odeme-tur")?.value === "cek";
+      document.getElementById("cek-alanlari").hidden = !cekMi;
+      document.getElementById("odeme-yontem-alani").hidden = cekMi;
+      document.getElementById("odeme-kaydet-btn").innerHTML = cekMi
+        ? '<i class="fa-solid fa-money-check" aria-hidden="true"></i> Çeki Kaydet'
+        : '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet';
+    }
+
+    function cariEkstreHareketleriniOlustur(cari) {
+      const anahtar = cariAdiAnahtari(cari);
+      const satirlar = [];
+      faturaYukle().filter(inv => cariAdiAnahtari(inv.cari) === anahtar).forEach(inv => satirlar.push({
+        id:`fatura-${inv.id}`, tarih:inv.tarih, tur:"Fatura", detay:`${inv.no} · Vade ${formatTarih(vadeTarihi(inv.tarih,inv.vadeGun))}`,
+        borc:tutarSayiyaCevir(inv.tutar), alacak:0, silinebilir:false, kayitZamani:""
+      }));
+      cariHareketleriYukle().filter(h => cariAdiAnahtari(h.cari) === anahtar).forEach(h => satirlar.push({
+        id:h.id, tarih:h.tarih, tur:h.yontem, detay:[h.referans ? `Ref: ${h.referans}` : "",h.aciklama].filter(Boolean).join(" · ") || "Cari ödeme",
+        borc:0, alacak:tutarSayiyaCevir(h.tutar), tutar:tutarSayiyaCevir(h.tutar), silinebilir:true, kaynak:"hareket", kayitZamani:h.kayitZamani
+      }));
+      cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => satirlar.push({
+        id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay:`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,
+        borc:0, alacak:cek.durum === "İptal" ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar), silinebilir:true, kaynak:"cek", durum:cek.durum, kayitZamani:cek.kayitZamani
+      }));
+      let bakiye = 0;
+      return satirlar.sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id)).map(satir => {
+        bakiye += satir.borc - satir.alacak;
+        return { ...satir, bakiye };
+      });
+    }
+
+    function odemeYonetiminiGuncelle() {
+      const cari = document.getElementById("odeme-cari")?.value.trim() || "";
+      const hesap = cariOzetiniGetir(cari || "Belirtilmedi");
+      const bakiye = bakiyeBilgisi(hesap.bakiye);
+      document.getElementById("odeme-fatura-bilgisi").textContent = cari ? `${cari} cari hesabı` : "İşlem bir faturaya değil, seçilen cari hesaba işlenir.";
+      document.getElementById("odeme-fatura-tutari").textContent = formatPara(hesap.faturaToplami);
+      document.getElementById("odeme-odenen-tutar").textContent = formatPara(hesap.odemeToplami + hesap.cekToplami);
+      document.getElementById("odeme-bakiye-etiket").textContent = bakiye.etiket.toLocaleUpperCase("tr-TR");
+      document.getElementById("odeme-kalan-tutar").textContent = formatPara(bakiye.tutar);
+      document.getElementById("odeme-bakiye-kart")?.style.setProperty("--odeme-renk", bakiye.sinif === "bakiye-borc" ? "#ff6b77" : bakiye.sinif === "bakiye-alacak" ? "#4ade80" : "#94a3b8");
+      const ekstre = cari ? cariEkstreHareketleriniOlustur(cari) : [];
+      document.getElementById("odeme-gecmisi-sayisi").textContent = `${ekstre.length} hareket`;
+      document.getElementById("odeme-gecmisi-liste").innerHTML = ekstre.length
+        ? ekstre.slice().reverse().map(satir => {
+            const cekDurumu = satir.kaynak === "cek" && yoneticiMi() ? `<select aria-label="Çek durumu" onchange="cekDurumunuDegistir('${htmlGuvenli(satir.id)}',this.value)"><option ${satir.durum==='Verildi'?'selected':''}>Verildi</option><option ${satir.durum==='Ödendi'?'selected':''}>Ödendi</option><option ${satir.durum==='İptal'?'selected':''}>İptal</option></select>` : "";
+            const satirBakiyesi = bakiyeBilgisi(satir.bakiye);
+            return `<div class="odeme-kaydi ${satir.durum === 'İptal' ? 'iptal' : ''}">
+              <span class="odeme-kaydi-tarih">${formatTarih(tarihOlusturYerel(satir.tarih))}</span>
+              <strong class="hareket-tur ${satir.borc ? 'borc' : 'alacak'}">${satir.borc ? 'BORÇ' : 'ALACAK'} · ${formatPara(satir.borc || satir.tutar || satir.alacak)}</strong>
+              <span class="odeme-kaydi-yontem">${htmlGuvenli(satir.tur)} ${cekDurumu}</span>
+              <span class="odeme-kaydi-detay" title="${htmlGuvenli(satir.detay)}">${htmlGuvenli(satir.detay)}</span>
+              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.silinebilir && yoneticiMi() ? `<button class="odeme-kaydi-sil" type="button" onclick="cariHareketSil('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi sil" title="Cari hareketi sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>` : ""}</span>
             </div>`;
           }).join("")
-        : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu faturaya henüz ödeme girilmedi.</div>';
+        : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu cari hesapta henüz hareket yok.</div>';
     }
 
-    function manuelOdemeKaydet() {
+    function cariVerileriniKaydet(hareketler, cekler, mesaj) {
+      if (!yoneticiGerekli()) return false;
+      otomatikYedekOlustur(faturaYukle(), mesaj || "Cari hesap değiştirildi");
+      localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(hareketler)));
+      localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(cekler)));
+      buludaKaydet();
+      listeyiGoster();
+      rozetGuncelle();
+      ozetGuncelle();
+      cariHesaplariniGoster();
+      syncGoster(mesaj, "#4ade80");
+      return true;
+    }
+
+    function cariHareketKimligiOlustur(onEk) {
+      const rastgele = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return `${onEk}-${rastgele}`;
+    }
+
+    function cariHareketKaydet() {
       if (!yoneticiGerekli()) return;
-      const faturaId = Number(document.getElementById("odeme-fatura-id").value);
-      const liste = faturaYukle();
-      const inv = liste.find(item => item.id === faturaId);
-      if (!inv) return;
+      const cari = document.getElementById("odeme-cari").value.trim();
+      const tur = document.getElementById("odeme-tur").value;
       const tarih = document.getElementById("odeme-tarih").value;
       const tutar = tutarSayiyaCevir(document.getElementById("odeme-tutar").value);
-      const yontem = document.getElementById("odeme-yontem").value.trim();
       const referans = document.getElementById("odeme-referans").value.trim();
       const aciklama = document.getElementById("odeme-aciklama").value.trim();
       const mesaj = document.getElementById("odeme-form-mesaj");
-      const kalan = faturaKalanTutari(inv);
       mesaj.style.color = "#ff7a85";
-      if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir ödeme tarihi seçin."; return; }
-      if (!(tutar > 0)) { mesaj.textContent = "Ödeme tutarı sıfırdan büyük olmalıdır."; return; }
-      if (tutar > kalan + 0.005) { mesaj.textContent = `Ödeme, kalan ${formatPara(kalan)} tutarını aşamaz.`; return; }
-      if (!yontem) { mesaj.textContent = "Ödeme yöntemini seçin."; return; }
-      const yeniOdeme = {
-        id:odemeKimligiOlustur(faturaId), faturaId, tarih, tutar, yontem, referans, aciklama,
-        kayitZamani:new Date().toISOString()
-      };
-      const yeniListe = liste.map(item => {
-        if (item.id !== faturaId) return item;
-        return faturaOdemeOzetiniUygula({ ...item, odendi:false, odemeTarihi:"", odemeler:[...(item.odemeler || []), yeniOdeme] }, false);
-      });
-      if (!faturaKaydet(yeniListe, `${inv.no} faturasına manuel ödeme eklendi`)) return;
+      if (!cari) { mesaj.textContent = "Cari/firma seçin."; return; }
+      if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir işlem tarihi seçin."; return; }
+      if (!(tutar > 0)) { mesaj.textContent = "Tutar sıfırdan büyük olmalıdır."; return; }
+      const kayitZamani = new Date().toISOString();
+      if (tur === "cek") {
+        const cekNo = document.getElementById("cek-no").value.trim();
+        const banka = document.getElementById("cek-banka").value.trim();
+        const vadeTarihi = document.getElementById("cek-vade").value;
+        const durum = document.getElementById("cek-durum").value;
+        if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
+        const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, kayitZamani });
+        cariVerileriniKaydet(cariHareketleriYukle(), [...cekleriYukle(),yeniCek], `${cari} hesabına çek kaydedildi`);
+      } else {
+        const yontem = document.getElementById("odeme-yontem").value.trim();
+        const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, yontem, referans, aciklama, kayitZamani });
+        cariVerileriniKaydet([...cariHareketleriYukle(),yeniHareket], cekleriYukle(), `${cari} hesabına ödeme kaydedildi`);
+      }
       mesaj.style.color = "#4ade80";
-      mesaj.textContent = `${formatPara(tutar)} ödeme kaydedildi.`;
+      mesaj.textContent = `${formatPara(tutar)} cari hesaba alacak kaydedildi.`;
+      document.getElementById("odeme-tutar").value = "";
       document.getElementById("odeme-referans").value = "";
       document.getElementById("odeme-aciklama").value = "";
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
       odemeYonetiminiGuncelle();
     }
 
-    function odemeKaydiniSil(odemeId) {
+    function cariHareketSil(kaynak, kimlik) {
       if (!yoneticiGerekli()) return;
-      const faturaId = Number(document.getElementById("odeme-fatura-id").value);
-      const liste = faturaYukle();
-      const inv = liste.find(item => item.id === faturaId);
-      const odeme = inv?.odemeler?.find(kayit => kayit.id === String(odemeId));
-      if (!inv || !odeme) return;
-      if (!confirm(`${formatPara(odeme.tutar)} tutarındaki ${formatTarih(tarihOlusturYerel(odeme.tarih))} tarihli ödeme kaydı silinsin mi?`)) return;
-      const yeniListe = liste.map(item => {
-        if (item.id !== faturaId) return item;
-        return faturaOdemeOzetiniUygula({ ...item, odendi:false, odemeTarihi:"", odemeler:(item.odemeler || []).filter(kayit => kayit.id !== String(odemeId)) }, false);
-      });
-      faturaKaydet(yeniListe, `${inv.no} faturasından ödeme kaydı silindi`);
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      const hareket = kaynak === "cek" ? cekleriYukle().find(cek => cek.id === kimlik) : cariHareketleriYukle().find(item => item.id === kimlik);
+      if (!hareket || !confirm(`${formatPara(hareket.tutar)} tutarındaki cari hareket silinsin mi?`)) return;
+      cariVerileriniKaydet(
+        cariHareketleriYukle().filter(item => !(kaynak === "hareket" && item.id === kimlik)),
+        cekleriYukle().filter(item => !(kaynak === "cek" && item.id === kimlik)),
+        "Cari hareket silindi"
+      );
       odemeYonetiminiGuncelle();
-      syncGoster("Ödeme kaydı silindi", "#4ade80");
+    }
+
+    function cekDurumunuDegistir(kimlik, durum) {
+      if (!yoneticiGerekli()) return;
+      if (!["Verildi","Ödendi","İptal"].includes(durum)) return;
+      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik ? { ...cek, durum } : cek), "Çek durumu güncellendi");
+      odemeYonetiminiGuncelle();
+    }
+
+    function cariHesaplariAc() {
+      document.getElementById("cari-hesap-arama").value = "";
+      cariHesaplariniGoster();
+      document.getElementById("cari-hesaplar-overlay").classList.add("aktif");
+    }
+
+    function cariHesaplariniGoster() {
+      const tablo = document.getElementById("cari-hesap-tablo-wrap");
+      if (!tablo) return;
+      const arama = String(document.getElementById("cari-hesap-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
+      const hesaplar = cariOzetleriniHesapla().filter(hesap => !arama || hesap.cari.toLocaleUpperCase("tr-TR").includes(arama));
+      tablo.innerHTML = hesaplar.length ? `<table class="cari-hesap-tablo"><thead><tr><th>CARİ / FİRMA</th><th>FATURA BORCU</th><th>ÖDEMELER</th><th>VERİLEN ÇEK</th><th>BEKLEYEN ÇEK</th><th>BAKİYE</th><th></th></tr></thead><tbody>${hesaplar.map(hesap => {
+        const bakiye = bakiyeBilgisi(hesap.bakiye);
+        return `<tr><td><strong>${htmlGuvenli(hesap.cari)}</strong></td><td>${formatPara(hesap.faturaToplami)}</td><td style="color:#4ade80">${formatPara(hesap.odemeToplami)}</td><td style="color:#a78bfa">${formatPara(hesap.cekToplami)}</td><td>${formatPara(hesap.bekleyenCek)}</td><td class="${bakiye.sinif}">${formatPara(bakiye.tutar)} · ${bakiye.etiket}</td><td><button class="cari-ekstre-btn" type="button" data-cari="${htmlGuvenli(hesap.cari)}" onclick="cariEkstreAc(this.dataset.cari)">Ekstre</button></td></tr>`;
+      }).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos">Cari hesap bulunamadı.</div>';
+    }
+
+    function cariEkstreAc(cari) {
+      cariHesaplariKapat();
+      odemeYonetiminiAc(cari);
+    }
+
+    function cariHesaplariKapat() {
+      document.getElementById("cari-hesaplar-overlay")?.classList.remove("aktif");
     }
 
     function odemeYonetiminiKapat() {
@@ -2747,31 +2998,48 @@
       const tutar = document.getElementById("d-tutar").value.trim();
       const msg   = document.getElementById("d-msg");
       if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
-      const mevcutFatura = faturaYukle().find(i => i.id === id);
-      if (tutarSayiyaCevir(tutar) + 0.005 < faturaOdenenTutari(mevcutFatura)) {
-        msg.style.color="#f87171";
-        msg.textContent=`Fatura tutarı, ödenmiş ${formatPara(faturaOdenenTutari(mevcutFatura))} tutarından düşük olamaz.`;
-        return;
+      const mevcutListe = faturaYukle();
+      const mevcutFatura = mevcutListe.find(i => i.id === id);
+      faturaKaydet(mevcutListe.map(i => i.id===id ? {...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
+      if (mevcutFatura && cariAdiAnahtari(mevcutFatura.cari) !== cariAdiAnahtari(cari)) {
+        const guncelHareketler = cariHareketleriYukle().map(hareket =>
+          Number(hareket.kaynakFaturaId) === id ? { ...hareket, cari } : hareket
+        );
+        localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(guncelHareketler)));
+        buludaKaydet();
       }
-      faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
       duzenleKapat();
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
     // ── ROZET ──────────────────────────────────────────────────────────────────
     function rozetGuncelle() {
-      const s = faturaYukle().filter(inv=>!inv.odendi&&kalanGun(vadeTarihi(inv.tarih,inv.vadeGun))<=0).length;
+      const cariler = new Set(faturaYukle()
+        .filter(inv=>kalanGun(vadeTarihi(inv.tarih,inv.vadeGun))<=0 && cariOzetiniGetir(inv.cari).bakiye>0.005)
+        .map(inv=>cariAdiAnahtari(inv.cari)));
+      const s = cariler.size;
       if('setAppBadge' in navigator){ s>0?navigator.setAppBadge(s).catch(()=>{}):navigator.clearAppBadge().catch(()=>{}); }
     }
 
     // ── ÖZET ───────────────────────────────────────────────────────────────────
     function ozetGuncelle() {
       const hamListe=hamFaturaVerisiniYukle();
-      const liste=faturaYukle(); let toplam=0,odenen=0;
-      liste.forEach(inv=>{ const t=tutarSayiyaCevir(inv.tutar); toplam+=t; odenen+=Math.min(t,faturaOdenenTutari(inv)); });
+      const liste=faturaYukle();
+      const toplam=liste.reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
+      const odemeler=cariHareketleriYukle().reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
+      const cekler=cekleriYukle().filter(cek=>cek.durum!=="İptal").reduce((deger,cek)=>deger+tutarSayiyaCevir(cek.tutar),0);
+      const toplamAlacak=odemeler+cekler;
+      const netBakiye=toplam-toplamAlacak;
+      const bakiye=bakiyeBilgisi(netBakiye);
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
-      document.getElementById("oz-odenen").textContent=formatPara(odenen);
-      document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
+      document.getElementById("oz-odenen").textContent=formatPara(toplamAlacak);
+      document.getElementById("oz-bakiye-etiket").textContent=bakiye.etiket;
+      document.getElementById("oz-kalan").textContent=formatPara(bakiye.tutar);
+      const bakiyeKarti=document.getElementById("oz-bakiye-kart");
+      bakiyeKarti?.classList.toggle("alacak",bakiye.sinif==="bakiye-alacak");
+      bakiyeKarti?.classList.toggle("kapali",bakiye.sinif==="bakiye-kapali");
+      const bakiyeIkonu=bakiyeKarti?.querySelector("i");
+      if(bakiyeIkonu) bakiyeIkonu.className=bakiye.sinif==="bakiye-alacak" ? "fa-solid fa-circle-check" : bakiye.sinif==="bakiye-kapali" ? "fa-solid fa-scale-balanced" : "fa-solid fa-triangle-exclamation";
       istatistikGuncelle();
       veriKontrolunuGuncelle(hamListe, liste);
     }
@@ -2819,7 +3087,7 @@
       const msg     = document.getElementById("msg");
       if (!cari||!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
       const liste = faturaYukle();
-      const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"", odemeler:[] };
+      const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar };
       if (liste.some(inv => faturaImzasi(inv) === faturaImzasi(yeniFatura))) {
         msg.style.color="#f59e0b";
         msg.textContent="Bu fatura zaten kayıtlı; ikinci kez eklenmedi.";
@@ -2849,8 +3117,7 @@
       if (!yoneticiGerekli()) return;
       const inv = faturaYukle().find(i => i.id === id);
       if (!inv) return;
-      const odemeNotu = inv.odemeler?.length ? ` Bu faturaya bağlı ${inv.odemeler.length} ödeme kaydı da silinecek.` : "";
-      if (!confirm(`${inv.no} numaralı fatura silinsin mi?${odemeNotu}`)) return;
+      if (!confirm(`${inv.no} numaralı fatura silinsin mi? Cari ödeme ve çek kayıtları korunacaktır.`)) return;
       faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi");
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
@@ -2884,13 +3151,9 @@
           const vade = vadeTarihi(inv.tarih, vg);
           const g    = kalanGun(vade);
           const {label,renk,bg} = durumBilgi(g);
-          const odendi = inv.odendi;
-          const odemeDurumu = faturaOdemeDurumu(inv);
-          const odenenTutar = faturaOdenenTutari(inv);
-          const kalanTutar = faturaKalanTutari(inv);
           const kimlik = String(inv.id);
           const secili = seciliFaturaKimlikleri.has(kimlik);
-          return `<tr class="${odendi?'odendi-satir':''} ${secili?'secili-satir':''}">
+          return `<tr class="${secili?'secili-satir':''}">
             ${yoneticiMi() ? `<td class="secim-hucre"><input class="fatura-secim" type="checkbox" data-fatura-id="${htmlGuvenli(kimlik)}" ${secili ? 'checked' : ''} onchange="secimDegistir(this.dataset.faturaId,this.checked,this)" aria-label="${htmlGuvenli(inv.no)} faturasını seç"/></td>` : ''}
             <td style="color:#64748b">${i+1}</td>
             <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
@@ -2899,14 +3162,8 @@
             <td style="text-align:center;color:#94a3b8">${vg} gün</td>
             <td>${formatTarih(vade)}</td>
             <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
-            <td>${odendi
-              ? '<span class="durum" style="color:#4ade80;background:#4ade8022"><i class="fa-solid fa-circle-check durum-nokta" aria-hidden="true"></i>Ödendi</span>'
-              : odemeDurumu === "kismi"
-                ? `<span class="durum kismi"><i class="fa-solid fa-circle-half-stroke durum-nokta" aria-hidden="true"></i>Kısmi Ödendi</span><span class="odeme-ilerleme">${formatPara(odenenTutar)} ödendi · ${formatPara(kalanTutar)} kaldı</span>`
-              : `<span class="durum" style="color:${renk};background:${bg}"><i class="fa-solid fa-circle durum-nokta" aria-hidden="true"></i>${label}</span>`}
-            </td>
+            <td><span class="durum" style="color:${renk};background:${bg}"><i class="fa-solid fa-circle durum-nokta" aria-hidden="true"></i>${label}</span></td>
             ${yoneticiMi() ? `<td><div class="islem-grup">
-              <button class="btn-odendi btn-odeme-gir" onclick="odemeYonetiminiAc(${inv.id})"><i class="fa-solid fa-${odendi ? 'receipt' : 'money-check-dollar'}" aria-hidden="true"></i> ${odendi ? 'Ödemeler' : 'Ödeme Gir'}</button>
               <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
               <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
             </div></td>` : ''}
@@ -2947,12 +3204,16 @@
       document.getElementById("odeme-yonetim-overlay")?.addEventListener("click", e => {
         if (e.target.id === "odeme-yonetim-overlay") odemeYonetiminiKapat();
       });
+      document.getElementById("cari-hesaplar-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "cari-hesaplar-overlay") cariHesaplariKapat();
+      });
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           yeniFaturaKapat();
           raporKapat();
           topluSilmeKapat();
           odemeYonetiminiKapat();
+          cariHesaplariKapat();
         }
       });
     }
@@ -2989,6 +3250,15 @@
     }
 
     function firebaseOturumunuBaslat() {
+      if (YEREL_GELISTIRME) {
+        oturumKullanici = { email:"Yerel önizleme" };
+        kullaniciRolu = "admin";
+        document.body.classList.remove("auth-bekliyor");
+        document.getElementById("giris-overlay").hidden = true;
+        yetkiyiArayuzeUygula();
+        uygulamayiBaslat();
+        return;
+      }
       if (typeof firebase === "undefined") {
         girisDurumuGoster("Giriş servisi yüklenemedi. İnternet bağlantınızı kontrol edin.", true);
         return;
