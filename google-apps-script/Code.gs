@@ -77,12 +77,126 @@ function epostaListesi() {
   return sonuc;
 }
 
+function sahipEpostasiniOku() {
+  try {
+    return String(Session.getEffectiveUser().getEmail() || "").trim().toLowerCase();
+  } catch (err) {
+    return "";
+  }
+}
+
+function epostaAdresiGecerliMi(eposta) {
+  return /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(String(eposta || ""));
+}
+
+function kullaniciYonetimVerisiniOku(istekYapan) {
+  const properties = PropertiesService.getScriptProperties();
+  const sahipEpostasi = sahipEpostasiniOku();
+  const yoneticiler = epostaListesi(
+    sahipEpostasi,
+    properties.getProperty(YONETICI_EPOSTALARI_ANAHTAR)
+  );
+  const izleyiciler = epostaListesi(properties.getProperty(IZLEYICI_EPOSTALARI_ANAHTAR));
+
+  Object.keys(yoneticiler).forEach(function(eposta) { delete izleyiciler[eposta]; });
+  const temizIsteyen = String(istekYapan || "").trim().toLowerCase();
+  const kullanicilar = Object.keys(yoneticiler).map(function(eposta) {
+    return {
+      email: eposta,
+      role: "admin",
+      protected: Boolean(sahipEpostasi && eposta === sahipEpostasi),
+      current: Boolean(temizIsteyen && eposta === temizIsteyen)
+    };
+  }).concat(Object.keys(izleyiciler).map(function(eposta) {
+    return {
+      email: eposta,
+      role: "viewer",
+      protected: false,
+      current: Boolean(temizIsteyen && eposta === temizIsteyen)
+    };
+  }));
+
+  kullanicilar.sort(function(a, b) {
+    if (a.protected !== b.protected) return a.protected ? -1 : 1;
+    if (a.role !== b.role) return a.role === "admin" ? -1 : 1;
+    return a.email < b.email ? -1 : a.email > b.email ? 1 : 0;
+  });
+  return { ownerEmail: sahipEpostasi, users: kullanicilar };
+}
+
+function kullaniciYetkisiniKaydet(eposta, role, istekYapan) {
+  const temizEposta = String(eposta || "").trim().toLowerCase();
+  const temizRole = String(role || "").trim().toLowerCase();
+  const temizIsteyen = String(istekYapan || "").trim().toLowerCase();
+  const sahipEpostasi = sahipEpostasiniOku();
+  if (!epostaAdresiGecerliMi(temizEposta) || temizEposta.length > 254) {
+    return { ok:false, code:"INVALID_EMAIL", message:"Geçerli bir e-posta adresi girin." };
+  }
+  if (["admin", "viewer"].indexOf(temizRole) < 0) {
+    return { ok:false, code:"INVALID_ROLE", message:"Geçerli bir yetki türü seçin." };
+  }
+  if (sahipEpostasi && temizEposta === sahipEpostasi && temizRole !== "admin") {
+    return { ok:false, code:"OWNER_PROTECTED", message:"Proje sahibinin yönetici yetkisi değiştirilemez." };
+  }
+  if (temizIsteyen && temizEposta === temizIsteyen && temizRole !== "admin") {
+    return { ok:false, code:"SELF_PROTECTED", message:"Kendi yönetici yetkinizi değiştiremezsiniz." };
+  }
+
+  const properties = PropertiesService.getScriptProperties();
+  const yoneticiler = epostaListesi(properties.getProperty(YONETICI_EPOSTALARI_ANAHTAR));
+  const izleyiciler = epostaListesi(properties.getProperty(IZLEYICI_EPOSTALARI_ANAHTAR));
+  if (temizRole === "admin") {
+    yoneticiler[temizEposta] = true;
+    delete izleyiciler[temizEposta];
+  } else {
+    izleyiciler[temizEposta] = true;
+    delete yoneticiler[temizEposta];
+  }
+  if (sahipEpostasi) delete yoneticiler[sahipEpostasi];
+  properties.setProperties({
+    ADMIN_EMAILS: Object.keys(yoneticiler).sort().join(","),
+    VIEWER_EMAILS: Object.keys(izleyiciler).sort().join(",")
+  }, false);
+
+  const sonuc = kullaniciYonetimVerisiniOku(temizIsteyen);
+  sonuc.ok = true;
+  sonuc.message = temizEposta + " için yetki kaydedildi.";
+  return sonuc;
+}
+
+function kullaniciYetkisiniKaldir(eposta, istekYapan) {
+  const temizEposta = String(eposta || "").trim().toLowerCase();
+  const temizIsteyen = String(istekYapan || "").trim().toLowerCase();
+  const sahipEpostasi = sahipEpostasiniOku();
+  if (!epostaAdresiGecerliMi(temizEposta)) {
+    return { ok:false, code:"INVALID_EMAIL", message:"Geçerli bir e-posta adresi girin." };
+  }
+  if (sahipEpostasi && temizEposta === sahipEpostasi) {
+    return { ok:false, code:"OWNER_PROTECTED", message:"Proje sahibinin yetkisi kaldırılamaz." };
+  }
+  if (temizIsteyen && temizEposta === temizIsteyen) {
+    return { ok:false, code:"SELF_PROTECTED", message:"Kendi yönetici yetkinizi kaldıramazsınız." };
+  }
+
+  const properties = PropertiesService.getScriptProperties();
+  const yoneticiler = epostaListesi(properties.getProperty(YONETICI_EPOSTALARI_ANAHTAR));
+  const izleyiciler = epostaListesi(properties.getProperty(IZLEYICI_EPOSTALARI_ANAHTAR));
+  delete yoneticiler[temizEposta];
+  delete izleyiciler[temizEposta];
+  properties.setProperties({
+    ADMIN_EMAILS: Object.keys(yoneticiler).sort().join(","),
+    VIEWER_EMAILS: Object.keys(izleyiciler).sort().join(",")
+  }, false);
+
+  const sonuc = kullaniciYonetimVerisiniOku(temizIsteyen);
+  sonuc.ok = true;
+  sonuc.message = temizEposta + " erişim listesinden kaldırıldı.";
+  return sonuc;
+}
+
 function kullaniciYetkisiniBul(eposta) {
   const properties = PropertiesService.getScriptProperties();
-  let sahipEpostasi = "";
-  try {
-    sahipEpostasi = Session.getEffectiveUser().getEmail();
-  } catch (err) {}
+  const sahipEpostasi = sahipEpostasiniOku();
 
   const yoneticiler = epostaListesi(
     sahipEpostasi,
@@ -625,6 +739,22 @@ function doPost(e) {
     const payload = JSON.parse(hamPayload || "{}");
     const yetki = firebaseKullanicisiniDogrula(payload.idToken);
     if (!yetki.ok) return jsonCevabi(yetki);
+
+    if (["users.list", "users.save", "users.delete"].indexOf(payload.action) >= 0) {
+      if (yetki.role !== "admin") {
+        return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Kullanıcı yetkilerini yalnızca yöneticiler değiştirebilir." });
+      }
+      kilit.waitLock(30000);
+      if (payload.action === "users.list") {
+        const kullaniciVerisi = kullaniciYonetimVerisiniOku(yetki.email);
+        kullaniciVerisi.ok = true;
+        return jsonCevabi(kullaniciVerisi);
+      }
+      if (payload.action === "users.save") {
+        return jsonCevabi(kullaniciYetkisiniKaydet(payload.email, payload.role, yetki.email));
+      }
+      return jsonCevabi(kullaniciYetkisiniKaldir(payload.email, yetki.email));
+    }
 
     if (payload.action === "read") {
       kilit.waitLock(30000);
