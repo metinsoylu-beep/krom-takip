@@ -21,6 +21,11 @@ const properties = {
 
 function range(row, column, rowCount, columnCount) {
   return {
+    setValue(next) {
+      if (!values[row - 1]) values[row - 1] = [];
+      values[row - 1][column - 1] = next;
+      return this;
+    },
     setValues(next) {
       for (let r = 0; r < rowCount; r++) {
         if (!values[row - 1 + r]) values[row - 1 + r] = [];
@@ -108,6 +113,14 @@ vm.createContext(context);
 vm.runInContext(code, context);
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
+const cariHazirligi = context.cariSutununuHazirla();
+assert.deepEqual(
+  { ok:cariHazirligi.ok, changed:cariHazirligi.changed, column:cariHazirligi.column },
+  { ok:true, changed:true, column:10 },
+  "Cari/Firma sütunu eski tabloya veri satırlarını kaydırmadan eklenmeli"
+);
+assert.equal(values[3][9], "Cari/Firma");
+assert.equal(context.cariSutununuHazirla().changed, false, "Sütun hazırlığı tekrar çalıştırıldığında yeni sütun eklememeli");
 
 const read = output => JSON.parse(output.text);
 const post = (payload, idToken = "admin-token") => read(context.doPost({

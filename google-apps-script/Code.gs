@@ -283,6 +283,30 @@ function faturaVerileriniOku() {
   };
 }
 
+// Mevcut tabloya yalnızca boş Cari/Firma sütun başlığını ekler. Fatura
+// satırlarını ve özet hücrelerini değiştirmez; tekrar çalıştırılması güvenlidir.
+function cariSutununuHazirla() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return { ok: false, message: "Faturalar sayfası bulunamadı." };
+
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) {
+    return String(row[0]).trim() === "id";
+  });
+  if (baslikSatiri < 0) return { ok: false, message: "Fatura başlık satırı bulunamadı." };
+
+  const basliklar = data[baslikSatiri].map(function(hucre) {
+    return String(hucre || "").trim();
+  });
+  if (basliklar.indexOf("Cari/Firma") >= 0) {
+    return { ok: true, changed: false, message: "Cari/Firma sütunu zaten hazır." };
+  }
+
+  const hedefSutun = basliklar.length + 1;
+  sheet.getRange(baslikSatiri + 1, hedefSutun).setValue("Cari/Firma");
+  return { ok: true, changed: true, column: hedefSutun, message: "Cari/Firma sütunu eklendi." };
+}
+
 function doGet() {
   // Fatura verisi URL parametreleriyle veya anonim GET isteğiyle verilmez.
   // Kimlik jetonu yalnızca POST gövdesinde kabul edilir.
