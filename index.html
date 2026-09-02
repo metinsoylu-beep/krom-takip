@@ -116,6 +116,7 @@
     .duzenle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px; }
     .duzenle-alan-genis, .form-alan-genis { grid-column: 1 / -1; }
     .duzenle-alan label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 5px; letter-spacing: 0.5px; }
+    .duzenle-alan select { width: 100%; min-height: 39px; background: #0f172a; border: 1px solid #334155; color: #f1f5f9; border-radius: 8px; padding: 8px 12px; font-family: Georgia, serif; }
     #duzenle-vade-hint { color: #c9a84c; font-size: 11px; margin-top: 4px; min-height: 16px; }
     .duzenle-btn-grup { display: flex; gap: 10px; margin-top: 16px; }
     .btn-duzenle-kaydet { flex: 2; background: linear-gradient(135deg,#c9a84c,#a07830); color: #0f172a; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
@@ -846,6 +847,13 @@
           <input type="number" id="d-vade-gun" placeholder="90" min="1" oninput="duzenleVadeGuncelle()"/>
           <div id="duzenle-vade-hint"></div>
         </div>
+        <div class="duzenle-alan">
+          <label>VADE TAKİBİ</label>
+          <select id="d-takip-durumu">
+            <option value="acik">Açık</option>
+            <option value="kapali">Kapalı</option>
+          </select>
+        </div>
       </div>
       <input type="hidden" id="d-id"/>
       <div id="d-msg" style="font-size:12px;min-height:16px;margin-top:4px;"></div>
@@ -1021,6 +1029,8 @@
             <label for="filtre-durum">Durum</label>
             <select id="filtre-durum" onchange="filtreleriGuncelle()">
               <option value="tumu">Tümü</option>
+              <option value="acik">Takibi Açık</option>
+              <option value="kapali">Takibi Kapalı</option>
               <option value="geciken">Vadesi Geçen</option>
               <option value="yaklasan">Bu Hafta Vadeli</option>
             </select>
@@ -1134,6 +1144,9 @@
           </div>
           <button class="toplu-islem-btn csv" type="button" onclick="secilenleriCsvIndir()">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Seçilen CSV
+          </button>
+          <button class="toplu-islem-btn odendi" id="gecmis-odeme-duzelt-btn" type="button" onclick="secilenGecmisOdemeleriDuzelt()">
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Geçmiş Ödemeyi Düzelt
           </button>
           <button class="toplu-islem-btn tehlike" type="button" onclick="topluSilmeAc()">
             <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Seçilenleri Sil
@@ -1379,7 +1392,9 @@
             cari: String(inv.cari || ""),
             tarih: String(inv.tarih),
             vadeGun: Number(inv.vadeGun),
-            tutar: tutarSayiyaCevir(inv.tutar).toFixed(2)
+            tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
+            takipKapali:faturaTakibiKapali(inv),
+            kapanisTarihi:String(inv.kapanisTarihi || "")
           }))
           .sort((a, b) => a.id - b.id),
         cariHareketler:cariHareketleriNormallestir(kaynak.cariHareketler).map(hareket => ({
@@ -1545,6 +1560,8 @@
             const odemeD = row["Ödeme Durumu"] || row["odendi"] || "";
             const odendi = odemeD === "Ödendi" || odemeD === true || odemeD === "TRUE" || odemeD === "true";
             const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || "";
+            const takipDurumu = row["Takip Durumu"] ?? row["takipKapali"] ?? odendi;
+            const kapanisTarihi = row["Kapanış Tarihi"] || row["kapanisTarihi"] || odemeTarihi || "";
             const odemeler = Array.isArray(row.odemeler) ? row.odemeler : [];
             const vadeGunHam = row["Vade Günü"] || row["vadeGun"] || "90";
             const vadeGunSayi = parseInt(String(vadeGunHam).replace(/[^0-9]/g,"")) || 90;
@@ -1557,6 +1574,8 @@
               tutar:   String(row["Tutar"]      || row["tutar"] || "0"),
               odendi,
               odemeTarihi: odendi ? String(odemeTarihi) : "",
+              takipKapali:takipKapaliMi(takipDurumu),
+              kapanisTarihi:String(kapanisTarihi).split("T")[0],
               odemeler,
             };
           });
@@ -1647,6 +1666,7 @@
         referans:String(ham.referans || "").trim().slice(0,160),
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
         kaynakFaturaId:Number(ham.kaynakFaturaId) || null,
+        gecisKaydi:ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
         kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80)
       };
     }
@@ -1720,6 +1740,7 @@
             referans:odeme.referans || "",
             aciklama:odeme.aciklama || "Eski fatura ödeme kaydından cari harekete aktarıldı.",
             kaynakFaturaId:inv.id,
+            gecisKaydi:true,
             kayitZamani:odeme.kayitZamani || ""
           }, sira);
           if (!hareket) return;
@@ -1829,7 +1850,21 @@
       }
       inv.odendi = faturaOdemeDurumu(inv) === "odendi";
       inv.odemeTarihi = inv.odendi ? faturaSonOdemeTarihi(inv) : "";
+      if (inv.odendi) {
+        inv.takipKapali = true;
+        inv.kapanisTarihi = inv.kapanisTarihi || inv.odemeTarihi || inv.tarih;
+      }
       return inv;
+    }
+
+    function takipKapaliMi(deger) {
+      const metin = String(deger ?? "").trim().toLocaleLowerCase("tr-TR");
+      return deger === true || deger === "true" || deger === "TRUE" ||
+        metin === "kapalı" || metin === "kapali" || metin === "ödendi" || metin === "odendi";
+    }
+
+    function faturaTakibiKapali(inv) {
+      return takipKapaliMi(inv?.takipKapali) || faturaOdemeDurumu(inv) === "odendi";
     }
 
     function odemeKimligiOlustur(faturaId) {
@@ -1857,6 +1892,7 @@
         if (!ham || typeof ham !== "object") return;
         const idSayi = Number(ham.id);
         const eskiOdendi = ham.odendi === true || ham.odendi === "true" || ham.odendi === "TRUE" || ham.odendi === "Ödendi";
+        const takipKapali = takipKapaliMi(ham.takipKapali) || eskiOdendi;
         const inv = {
           id: Number.isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
           no: String(ham.no ?? "").trim(),
@@ -1866,6 +1902,8 @@
           tutar: String(tutarSayiyaCevir(ham.tutar)),
           odendi: eskiOdendi,
           odemeTarihi: String(ham.odemeTarihi || "").split("T")[0],
+          takipKapali,
+          kapanisTarihi:String(ham.kapanisTarihi || (takipKapali ? ham.odemeTarihi : "") || "").split("T")[0],
           odemeler: [],
         };
         if (!inv.no || !inv.tarih || tutarSayiyaCevir(inv.tutar) <= 0) return;
@@ -2291,16 +2329,18 @@
     }
     function filtreyeUyar(inv, filtre) {
       if (!filtre) return true;
+      const takipKapali = faturaTakibiKapali(inv);
       const vade = vadeTarihi(inv.tarih, inv.vadeGun);
       const gun = kalanGun(vade);
       if (filtre==='bu-ay') return ayniAy(inv.tarih);
       if (filtre==='yaklasan') {
+        if (takipKapali) return false;
         const { baslangic, sonrakiHafta } = haftaAraligi();
         const vadeGunu = new Date(vade);
         vadeGunu.setHours(0,0,0,0);
         return vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
       }
-      if (filtre==='geciken') return gun<0;
+      if (filtre==='geciken') return !takipKapali && gun<0;
       return true;
     }
     function arayuzFiltresineUyar(inv) {
@@ -2314,11 +2354,15 @@
       vade.setHours(0,0,0,0);
       const gun = kalanGun(vade);
       const tutar = tutarSayiyaCevir(inv.tutar);
+      const takipKapali = faturaTakibiKapali(inv);
 
       const aramaMetni = `${inv.cari || ''} ${inv.no || ''}`.toLocaleUpperCase('tr-TR');
       if (arama && !aramaMetni.includes(arama)) return false;
-      if (durum === 'geciken' && gun >= 0) return false;
+      if (durum === 'acik' && takipKapali) return false;
+      if (durum === 'kapali' && !takipKapali) return false;
+      if (durum === 'geciken' && (takipKapali || gun >= 0)) return false;
       if (durum === 'yaklasan') {
+        if (takipKapali) return false;
         const { baslangic:haftaBaslangici, sonrakiHafta } = haftaAraligi();
         if (vade < haftaBaslangici || vade >= sonrakiHafta) return false;
       }
@@ -2451,6 +2495,52 @@
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
+    function secilenGecmisOdemeleriDuzelt() {
+      if (!yoneticiGerekli()) return;
+      const liste = faturaYukle();
+      const secilenler = seciliFaturalariGetir(liste, seciliFaturaKimlikleri)
+        .filter(inv => !faturaTakibiKapali(inv) && kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) < 0);
+      if (!secilenler.length) {
+        syncGoster("Seçimde takibi açık, vadesi geçmiş fatura yok", "#f59e0b");
+        return;
+      }
+      const toplam = secilenler.reduce((deger, inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
+      const onay = confirm(
+        `${secilenler.length} vadesi geçmiş fatura, toplam ${formatPara(toplam)} için geçmiş ödeme düzeltmesi yapılacak.\n\n` +
+        "Her fatura vade takibinde kapatılacak ve aynı tutar cari hesaba ödeme olarak işlenecek. Yeni ödemeler faturaya otomatik dağıtılmayacaktır. Devam edilsin mi?"
+      );
+      if (!onay) return;
+
+      const bugun = bugununTarihi();
+      const kimlikler = new Set(secilenler.map(inv => String(inv.id)));
+      const mevcutHareketler = cariHareketleriYukle();
+      const mevcutKimlikler = new Set(mevcutHareketler.map(hareket => String(hareket.id)));
+      const yeniHareketler = secilenler.map(inv => cariHareketiniNormallestir({
+        id:`gecmis-odeme-${inv.id}`,
+        cari:inv.cari || "Belirtilmedi",
+        tarih:bugun,
+        tutar:tutarSayiyaCevir(inv.tutar),
+        yontem:"Geçmiş ödeme düzeltmesi",
+        referans:String(inv.no || ""),
+        aciklama:"Yeni cari hesap sistemine geçişte ödendiği doğrulanan fatura.",
+        kaynakFaturaId:inv.id,
+        gecisKaydi:true,
+        kayitZamani:new Date().toISOString()
+      })).filter(hareket => hareket && !mevcutKimlikler.has(String(hareket.id)));
+      const guncelListe = liste.map(inv => kimlikler.has(String(inv.id))
+        ? { ...inv, takipKapali:true, kapanisTarihi:bugun }
+        : inv
+      );
+
+      otomatikYedekOlustur(liste, `${secilenler.length} geçmiş ödeme düzeltilmeden önce`);
+      localStorage.setItem(ANAHTAR, JSON.stringify(faturalariTekillestir(guncelListe).liste));
+      localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir([...mevcutHareketler, ...yeniHareketler])));
+      seciliFaturaKimlikleri.clear();
+      buludaKaydet(guncelListe);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle(); cariHesaplariniGoster();
+      syncGoster(`${secilenler.length} geçmiş ödeme düzeltildi`, "#4ade80");
+    }
+
     function csvHucre(deger) {
       let metin = String(deger ?? "");
       if (/^[=+\-@]/.test(metin)) metin = "'" + metin;
@@ -2465,7 +2555,7 @@
       const satirlar = liste.map(inv=>{
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         const gun = kalanGun(vade);
-        const vadeDurumu = gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vade bugün" : `Vadeye ${gun} gün`;
+        const vadeDurumu = faturaTakibiKapali(inv) ? "Takip kapalı" : gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vade bugün" : `Vadeye ${gun} gün`;
         const bakiye = bakiyeBilgisi(cariOzetiniGetir(inv.cari).bakiye);
         return [
           inv.cari || "Belirtilmedi",
@@ -2525,6 +2615,7 @@
       const bitis = String(kriterler.bitis || "");
 
       return (Array.isArray(liste) ? liste : []).filter(inv => {
+        const takipKapali = faturaTakibiKapali(inv);
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         vade.setHours(0,0,0,0);
         const vadeMetni = bugununTarihi(vade);
@@ -2532,8 +2623,8 @@
         if (bitis && vadeMetni > bitis) return false;
         const aramaMetni = `${inv.cari || ""} ${inv.no || ""}`.toLocaleUpperCase("tr-TR");
         if (arama && !aramaMetni.includes(arama)) return false;
-        if (durum === "geciken" && vade >= bugun) return false;
-        if (durum === "yaklasan" && (vade < bugun || vade >= sonraki30Gun)) return false;
+        if (durum === "geciken" && (takipKapali || vade >= bugun)) return false;
+        if (durum === "yaklasan" && (takipKapali || vade < bugun || vade >= sonraki30Gun)) return false;
         return true;
       }).sort((a,b) => vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun));
     }
@@ -2543,7 +2634,7 @@
       const toplam = kayitlar.reduce((deger,inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
       const bugun = new Date(referans); bugun.setHours(0,0,0,0);
       const vadesiGecen = kayitlar
-        .filter(inv => { const vade=vadeTarihi(inv.tarih,inv.vadeGun); vade.setHours(0,0,0,0); return vade < bugun; })
+        .filter(inv => { const vade=vadeTarihi(inv.tarih,inv.vadeGun); vade.setHours(0,0,0,0); return !faturaTakibiKapali(inv) && vade < bugun; })
         .reduce((deger,inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
       const cariAnahtarlari = new Set(kayitlar.map(inv => cariAdiAnahtari(inv.cari)));
       const cariNetBakiye = cariOzetleriniHesapla()
@@ -2553,6 +2644,7 @@
     }
 
     function raporDurumBilgisi(inv, referans=new Date()) {
+      if (faturaTakibiKapali(inv)) return { metin:"Takip kapalı", renk:"#4ade80" };
       const bugun = new Date(referans);
       bugun.setHours(0,0,0,0);
       const vade = vadeTarihi(inv.tarih, inv.vadeGun);
@@ -2681,7 +2773,7 @@
       const buAy = liste.filter(inv=>filtreyeUyar(inv,'bu-ay'));
       const yaklasan = liste.filter(inv=>filtreyeUyar(inv,'yaklasan'));
       const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
-      const buAyOdemeler = cariHareketleriYukle().filter(hareket => ayniAy(hareket.tarih));
+      const buAyOdemeler = cariHareketleriYukle().filter(hareket => !hareket.gecisKaydi && ayniAy(hareket.tarih));
       const bekleyenCekler = cekleriYukle().filter(cek => cek.durum === "Verildi");
       const bugun = new Date();
       const { baslangic: haftaBaslangici, bitis: haftaBitisi } = haftaAraligi(bugun);
@@ -2699,7 +2791,8 @@
       document.getElementById('hizli-cekler-alt').textContent = formatPara(bekleyenCekler.reduce((toplam,cek)=>toplam+tutarSayiyaCevir(cek.tutar),0));
     }
 
-    function durumBilgi(g) {
+    function durumBilgi(g, takipKapali=false) {
+      if(takipKapali) return{label:"Takip kapalı",renk:"#4ade80",bg:"#22c55e22"};
       if(g<0)   return{label:"Vadesi "+Math.abs(g)+" gün geçti",renk:"#ef4444",bg:"#ef444422"};
       if(g===0) return{label:"Vade bugün",renk:"#f97316",bg:"#f9731622"};
       if(g<=7)  return{label:"Vadeye "+g+" gün",renk:"#f59e0b",bg:"#f59e0b22"};
@@ -2751,7 +2844,7 @@
     function odemeUyariKontrol() {
       const acilFirmalar = new Map();
       faturaYukle()
-        .filter(inv => kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) <= 0)
+        .filter(inv => !faturaTakibiKapali(inv) && kalanGun(vadeTarihi(inv.tarih, inv.vadeGun)) <= 0)
         .forEach(inv => {
           const hesap = cariOzetiniGetir(inv.cari);
           if (hesap.bakiye <= 0.005) return;
@@ -2976,6 +3069,7 @@
       document.getElementById("d-tarih").value    = inv.tarih;
       document.getElementById("d-vade-gun").value = inv.vadeGun || 90;
       document.getElementById("d-tutar").value    = inv.tutar;
+      document.getElementById("d-takip-durumu").value = faturaTakibiKapali(inv) ? "kapali" : "acik";
       document.getElementById("d-msg").textContent = "";
       duzenleVadeGuncelle();
       document.getElementById("duzenle-overlay").classList.add("aktif");
@@ -2996,11 +3090,16 @@
       const tarih = document.getElementById("d-tarih").value;
       const vadeG = document.getElementById("d-vade-gun").value;
       const tutar = document.getElementById("d-tutar").value.trim();
+      const takipKapali = document.getElementById("d-takip-durumu").value === "kapali";
       const msg   = document.getElementById("d-msg");
       if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
       const mevcutListe = faturaYukle();
       const mevcutFatura = mevcutListe.find(i => i.id === id);
-      faturaKaydet(mevcutListe.map(i => i.id===id ? {...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
+      faturaKaydet(mevcutListe.map(i => i.id===id ? {
+        ...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar,
+        takipKapali,
+        kapanisTarihi:takipKapali ? (i.kapanisTarihi || bugununTarihi()) : ""
+      } : i), "Fatura düzenlendi");
       if (mevcutFatura && cariAdiAnahtari(mevcutFatura.cari) !== cariAdiAnahtari(cari)) {
         const guncelHareketler = cariHareketleriYukle().map(hareket =>
           Number(hareket.kaynakFaturaId) === id ? { ...hareket, cari } : hareket
@@ -3015,7 +3114,7 @@
     // ── ROZET ──────────────────────────────────────────────────────────────────
     function rozetGuncelle() {
       const cariler = new Set(faturaYukle()
-        .filter(inv=>kalanGun(vadeTarihi(inv.tarih,inv.vadeGun))<=0 && cariOzetiniGetir(inv.cari).bakiye>0.005)
+        .filter(inv=>!faturaTakibiKapali(inv) && kalanGun(vadeTarihi(inv.tarih,inv.vadeGun))<=0 && cariOzetiniGetir(inv.cari).bakiye>0.005)
         .map(inv=>cariAdiAnahtari(inv.cari)));
       const s = cariler.size;
       if('setAppBadge' in navigator){ s>0?navigator.setAppBadge(s).catch(()=>{}):navigator.clearAppBadge().catch(()=>{}); }
@@ -3150,10 +3249,11 @@
           const vg   = inv.vadeGun || 90;
           const vade = vadeTarihi(inv.tarih, vg);
           const g    = kalanGun(vade);
-          const {label,renk,bg} = durumBilgi(g);
+          const takipKapali = faturaTakibiKapali(inv);
+          const {label,renk,bg} = durumBilgi(g, takipKapali);
           const kimlik = String(inv.id);
           const secili = seciliFaturaKimlikleri.has(kimlik);
-          return `<tr class="${secili?'secili-satir':''}">
+          return `<tr class="${[secili?'secili-satir':'',takipKapali?'odendi-satir':''].filter(Boolean).join(' ')}">
             ${yoneticiMi() ? `<td class="secim-hucre"><input class="fatura-secim" type="checkbox" data-fatura-id="${htmlGuvenli(kimlik)}" ${secili ? 'checked' : ''} onchange="secimDegistir(this.dataset.faturaId,this.checked,this)" aria-label="${htmlGuvenli(inv.no)} faturasını seç"/></td>` : ''}
             <td style="color:#64748b">${i+1}</td>
             <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
