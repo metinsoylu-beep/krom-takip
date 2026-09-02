@@ -1,5 +1,7 @@
 const SHEET_NAME = "Faturalar";
 const PAYMENT_SHEET_NAME = "Ödemeler";
+const MOVEMENT_SHEET_NAME = "Cari Hareketler";
+const CHECK_SHEET_NAME = "Çekler";
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -13,9 +15,7 @@ const VERI_BASLIK = [
   "Vade Günü",
   "Vade Tarihi",
   "Tutar",
-  "Ödeme Durumu",
-  "Ödeme Tarihi",
-  "Durum"
+  "Vade Durumu"
 ];
 const ODEME_BASLIK = [
   "Ödeme ID",
@@ -23,6 +23,30 @@ const ODEME_BASLIK = [
   "Ödeme Tarihi",
   "Tutar",
   "Yöntem",
+  "Referans",
+  "Açıklama",
+  "Kayıt Zamanı"
+];
+const CARI_HAREKET_BASLIK = [
+  "Hareket ID",
+  "Cari/Firma",
+  "İşlem Tarihi",
+  "Tutar",
+  "Yöntem",
+  "Referans",
+  "Açıklama",
+  "Kaynak Fatura ID",
+  "Kayıt Zamanı"
+];
+const CEK_BASLIK = [
+  "Çek ID",
+  "Cari/Firma",
+  "Veriliş Tarihi",
+  "Vade Tarihi",
+  "Tutar",
+  "Çek No",
+  "Banka",
+  "Durum",
   "Referans",
   "Açıklama",
   "Kayıt Zamanı"
@@ -315,24 +339,162 @@ function odemeVerileriniOku() {
   return gruplar;
 }
 
+function cariHareketiniNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const tarih = tarihMetni(ham.tarih || ham.islemTarihi);
+  const tutar = tutarSayisi(ham.tutar);
+  const cari = String(ham.cari || ham.firma || "").trim();
+  if (!cari || !tarih || !(tutar > 0)) return null;
+  return {
+    id: String(ham.id || ham.hareketId || ("chr-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    cari: cari.slice(0, 120),
+    tarih: tarih,
+    tutar: tutar,
+    yontem: String(ham.yontem || "Diğer").trim().slice(0, 80),
+    referans: String(ham.referans || "").trim().slice(0, 160),
+    aciklama: String(ham.aciklama || "").trim().slice(0, 500),
+    kaynakFaturaId: Number(ham.kaynakFaturaId) || null,
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
+  };
+}
+
+function cariHareketleriNormallestir(hamListe) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const hareket = cariHareketiniNormallestir(ham, sira);
+    if (!hareket || gorulen[hareket.id]) return;
+    gorulen[hareket.id] = true;
+    sonuc.push(hareket);
+  });
+  return sonuc.sort(function(a, b) {
+    return a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id);
+  });
+}
+
+function cekiNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const tarih = tarihMetni(ham.tarih || ham.verilisTarihi);
+  const cekVadeTarihi = tarihMetni(ham.vadeTarihi || ham.vade);
+  const tutar = tutarSayisi(ham.tutar);
+  const cari = String(ham.cari || ham.firma || "").trim();
+  const durum = ["Verildi", "Ödendi", "İptal"].indexOf(String(ham.durum)) >= 0 ? String(ham.durum) : "Verildi";
+  if (!cari || !tarih || !cekVadeTarihi || !(tutar > 0)) return null;
+  return {
+    id: String(ham.id || ham.cekId || ("cek-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    cari: cari.slice(0, 120),
+    tarih: tarih,
+    vadeTarihi: cekVadeTarihi,
+    tutar: tutar,
+    cekNo: String(ham.cekNo || "").trim().slice(0, 120),
+    banka: String(ham.banka || "").trim().slice(0, 120),
+    durum: durum,
+    referans: String(ham.referans || "").trim().slice(0, 160),
+    aciklama: String(ham.aciklama || "").trim().slice(0, 500),
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
+  };
+}
+
+function cekleriNormallestir(hamListe) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const cek = cekiNormallestir(ham, sira);
+    if (!cek || gorulen[cek.id]) return;
+    gorulen[cek.id] = true;
+    sonuc.push(cek);
+  });
+  return sonuc.sort(function(a, b) {
+    return a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id);
+  });
+}
+
+function cariHareketVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(MOVEMENT_SHEET_NAME);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Hareket ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return cariHareketleriNormallestir(data.slice(baslikSatiri + 1).map(function(row, sira) {
+    return {
+      id: row[konum("Hareket ID")],
+      cari: row[konum("Cari/Firma")],
+      tarih: row[konum("İşlem Tarihi")],
+      tutar: row[konum("Tutar")],
+      yontem: row[konum("Yöntem")],
+      referans: row[konum("Referans")],
+      aciklama: row[konum("Açıklama")],
+      kaynakFaturaId: row[konum("Kaynak Fatura ID")],
+      kayitZamani: row[konum("Kayıt Zamanı")]
+    };
+  }));
+}
+
+function cekVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CHECK_SHEET_NAME);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Çek ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return cekleriNormallestir(data.slice(baslikSatiri + 1).map(function(row) {
+    return {
+      id: row[konum("Çek ID")],
+      cari: row[konum("Cari/Firma")],
+      tarih: row[konum("Veriliş Tarihi")],
+      vadeTarihi: row[konum("Vade Tarihi")],
+      tutar: row[konum("Tutar")],
+      cekNo: row[konum("Çek No")],
+      banka: row[konum("Banka")],
+      durum: row[konum("Durum")],
+      referans: row[konum("Referans")],
+      aciklama: row[konum("Açıklama")],
+      kayitZamani: row[konum("Kayıt Zamanı")]
+    };
+  }));
+}
+
+function eskiOdemeleriCariHareketlereDonustur(items) {
+  const hareketler = [];
+  (Array.isArray(items) ? items : []).forEach(function(item) {
+    (Array.isArray(item.odemeler) ? item.odemeler : []).forEach(function(odeme, sira) {
+      const hareket = cariHareketiniNormallestir({
+        id: "legacy-" + String(odeme.id || (String(item.id) + "-" + String(sira + 1))),
+        cari: item.cari || "Belirtilmedi",
+        tarih: odeme.tarih || item.odemeTarihi || item.tarih,
+        tutar: odeme.tutar || item.tutar,
+        yontem: odeme.yontem || "Eski ödeme kaydı",
+        referans: odeme.referans || "",
+        aciklama: odeme.aciklama || "Eski fatura ödeme kaydından cari harekete aktarıldı.",
+        kaynakFaturaId: item.id,
+        kayitZamani: odeme.kayitZamani || ""
+      }, sira);
+      if (hareket) hareketler.push(hareket);
+    });
+  });
+  return cariHareketleriNormallestir(hareketler);
+}
+
 function vadeTarihi(tarih, vadeGun) {
   const d = tarihOlustur(tarih);
   d.setDate(d.getDate() + (parseInt(vadeGun, 10) || 90));
   return d;
 }
 
-function durumHesapla(tarih, vadeGun, odendi) {
-  if (odendiMi(odendi)) return "✅ Ödendi";
+function durumHesapla(tarih, vadeGun) {
   const bugun = new Date();
   bugun.setHours(0, 0, 0, 0);
   const vade = vadeTarihi(tarih, vadeGun);
   vade.setHours(0, 0, 0, 0);
   const gun = Math.round((vade - bugun) / 86400000);
-  if (gun < 0) return "🔴 " + Math.abs(gun) + " gün gecikti";
-  if (gun === 0) return "🟠 Bugün öde!";
-  if (gun <= 7) return "🟡 " + gun + " gün kaldı";
-  if (gun <= 30) return "🔵 " + gun + " gün kaldı";
-  return "⚪ " + gun + " gün kaldı";
+  if (gun < 0) return "🔴 Vadesi " + Math.abs(gun) + " gün geçti";
+  if (gun === 0) return "🟠 Vade bugün";
+  if (gun <= 7) return "🟡 Vadeye " + gun + " gün";
+  if (gun <= 30) return "🔵 Vadeye " + gun + " gün";
+  return "⚪ Vadeye " + gun + " gün";
 }
 
 function faturaVerileriniOku() {
@@ -379,11 +541,18 @@ function faturaVerileriniOku() {
     }
   }
 
+  const kayitliCariHareketler = cariHareketVerileriniOku();
+  const cariHareketler = kayitliCariHareketler === null
+    ? eskiOdemeleriCariHareketlereDonustur(items)
+    : kayitliCariHareketler;
+  const cekler = cekVerileriniOku();
   const properties = PropertiesService.getScriptProperties();
   return {
     revision: bulutSurumuOku(properties),
     lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
-    items: items
+    items: items,
+    cariHareketler: cariHareketler,
+    cekler: cekler
   };
 }
 
@@ -437,7 +606,9 @@ function doPost(e) {
         role: yetki.role,
         revision: durum.revision,
         lastRequestId: durum.lastRequestId,
-        items: durum.items
+        items: durum.items,
+        cariHareketler: durum.cariHareketler,
+        cekler: durum.cekler
       });
     }
 
@@ -455,9 +626,7 @@ function doPost(e) {
       : parseInt(baseRevisionHam, 10);
     kilit.waitLock(30000);
 
-    // Eski bir ön yüz odemeler alanını hiç göndermiyorsa var olan ödeme
-    // hareketlerini koru. Yeni ön yüz [] gönderdiğinde ise bilinçli silme
-    // kabul edilir. Böylece dağıtım geçişinde ödeme geçmişi kaybolmaz.
+    // Eski ön yüzlerle dağıtım geçişinde fatura ödeme geçmişini koru.
     const mevcutOdemeGruplari = odemeVerileriniOku();
     const guvenliGelenItems = (Array.isArray(payload.items) ? payload.items : []).map(function(ham) {
       if (!ham || typeof ham !== "object" || Object.prototype.hasOwnProperty.call(ham, "odemeler")) return ham;
@@ -467,6 +636,16 @@ function doPost(e) {
       return kopya;
     });
     const items = faturalariTekillestir(guvenliGelenItems);
+    const mevcutCariHareketlerHam = cariHareketVerileriniOku();
+    const mevcutCariHareketler = mevcutCariHareketlerHam === null
+      ? eskiOdemeleriCariHareketlereDonustur(items)
+      : mevcutCariHareketlerHam;
+    const cariHareketler = Object.prototype.hasOwnProperty.call(payload, "cariHareketler")
+      ? cariHareketleriNormallestir(payload.cariHareketler)
+      : mevcutCariHareketler;
+    const cekler = Object.prototype.hasOwnProperty.call(payload, "cekler")
+      ? cekleriNormallestir(payload.cekler)
+      : cekVerileriniOku();
     const properties = PropertiesService.getScriptProperties();
     const mevcutSurum = bulutSurumuOku(properties);
     const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
@@ -496,28 +675,27 @@ function doPost(e) {
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-    const paymentSheet = ss.getSheetByName(PAYMENT_SHEET_NAME) || ss.insertSheet(PAYMENT_SHEET_NAME);
+    const movementSheet = ss.getSheetByName(MOVEMENT_SHEET_NAME) || ss.insertSheet(MOVEMENT_SHEET_NAME);
+    const checkSheet = ss.getSheetByName(CHECK_SHEET_NAME) || ss.insertSheet(CHECK_SHEET_NAME);
 
-    let toplam = 0;
-    let odenen = 0;
-    items.forEach(function(item) {
-      toplam += item.tutar;
-      const faturaOdemesi = item.odemeler.reduce(function(araToplam, odeme) {
-        return araToplam + tutarSayisi(odeme.tutar);
-      }, 0);
-      odenen += Math.min(item.tutar, faturaOdemesi);
-    });
+    const toplam = items.reduce(function(deger, item) { return deger + item.tutar; }, 0);
+    const odemeToplami = cariHareketler.reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
+    const cekToplami = cekler.filter(function(cek) { return cek.durum !== "İptal"; })
+      .reduce(function(deger, cek) { return deger + cek.tutar; }, 0);
+    const toplamAlacak = odemeToplami + cekToplami;
+    const netBakiye = toplam - toplamAlacak;
+    const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
 
     const satirlar = [
-      ["💰 TOPLAM TUTAR", "✅ ÖDENEN", "🔴 KALAN", "🕐 Son Güncelleme", "", "", "", "", "", ""],
+      ["💰 FATURA BORCU", "✅ ÖDEME / ÇEK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", ""],
       [
         toplam.toLocaleString("tr-TR") + " ₺",
-        odenen.toLocaleString("tr-TR") + " ₺",
-        (toplam - odenen).toLocaleString("tr-TR") + " ₺",
+        toplamAlacak.toLocaleString("tr-TR") + " ₺",
+        Math.abs(netBakiye).toLocaleString("tr-TR") + " ₺",
         new Date().toLocaleString("tr-TR"),
-        "", "", "", "", "", ""
+        "", "", "", ""
       ],
-      ["", "", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", ""],
       VERI_BASLIK
     ];
 
@@ -530,28 +708,39 @@ function doPost(e) {
         item.vadeGun + " gün",
         Utilities.formatDate(vadeTarihi(item.tarih, item.vadeGun), Session.getScriptTimeZone() || "Europe/Istanbul", "dd.MM.yyyy"),
         item.tutar,
-        item.odendi ? "Ödendi" : (item.odemeler.length ? "Kısmi Ödendi" : "Ödenmedi"),
-        item.odemeTarihi,
-        item.odemeler.length && !item.odendi
-          ? "🟡 Kısmi ödendi · " + Math.max(0, item.tutar - item.odemeler.reduce(function(araToplam, odeme) { return araToplam + tutarSayisi(odeme.tutar); }, 0)).toLocaleString("tr-TR") + " ₺ kaldı"
-          : durumHesapla(item.tarih, item.vadeGun, item.odendi)
+        durumHesapla(item.tarih, item.vadeGun)
       ]);
     });
 
-    const odemeSatirlari = [ODEME_BASLIK];
-    items.forEach(function(item) {
-      item.odemeler.forEach(function(odeme) {
-        odemeSatirlari.push([
-          odeme.id,
-          item.id,
-          odeme.tarih,
-          odeme.tutar,
-          odeme.yontem,
-          odeme.referans,
-          odeme.aciklama,
-          odeme.kayitZamani
-        ]);
-      });
+    const hareketSatirlari = [CARI_HAREKET_BASLIK];
+    cariHareketler.forEach(function(hareket) {
+      hareketSatirlari.push([
+        hareket.id,
+        hareket.cari,
+        hareket.tarih,
+        hareket.tutar,
+        hareket.yontem,
+        hareket.referans,
+        hareket.aciklama,
+        hareket.kaynakFaturaId || "",
+        hareket.kayitZamani
+      ]);
+    });
+    const cekSatirlari = [CEK_BASLIK];
+    cekler.forEach(function(cek) {
+      cekSatirlari.push([
+        cek.id,
+        cek.cari,
+        cek.tarih,
+        cek.vadeTarihi,
+        cek.tutar,
+        cek.cekNo,
+        cek.banka,
+        cek.durum,
+        cek.referans,
+        cek.aciklama,
+        cek.kayitZamani
+      ]);
     });
 
     // Kilit altında tek seferde yazılır; eşzamanlı istekler satırları iç içe geçiremez.
@@ -570,11 +759,17 @@ function doPost(e) {
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
 
-    // Her ödeme ayrı satırda tutulur. Böylece kısmi ve çoklu ödemelerin
-    // tarihçesi fatura tablosundan bağımsız olarak denetlenebilir.
-    paymentSheet.clearContents();
-    paymentSheet.getRange(1, 1, odemeSatirlari.length, ODEME_BASLIK.length).setValues(odemeSatirlari);
-    paymentSheet.getRange(1, 1, 1, ODEME_BASLIK.length)
+    // Cari ödeme ve çek hareketleri faturadan bağımsız tablolarda saklanır.
+    // Eski "Ödemeler" sayfası geçiş arşivi olarak korunur ve değiştirilmez.
+    movementSheet.clearContents();
+    movementSheet.getRange(1, 1, hareketSatirlari.length, CARI_HAREKET_BASLIK.length).setValues(hareketSatirlari);
+    movementSheet.getRange(1, 1, 1, CARI_HAREKET_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+    checkSheet.clearContents();
+    checkSheet.getRange(1, 1, cekSatirlari.length, CEK_BASLIK.length).setValues(cekSatirlari);
+    checkSheet.getRange(1, 1, 1, CEK_BASLIK.length)
       .setBackground("#1e3a5f")
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
@@ -591,7 +786,8 @@ function doPost(e) {
       revision: yeniSurum,
       requestId: requestId,
       count: items.length,
-      paymentCount: odemeSatirlari.length - 1
+      movementCount: cariHareketler.length,
+      checkCount: cekler.length
     });
   } catch (err) {
     return jsonCevabi({
