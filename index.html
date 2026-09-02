@@ -348,20 +348,17 @@
     .cari-logo {
       width: 28px; height: 28px; display: inline-grid; place-items: center; flex: 0 0 28px;
       border: 1px solid var(--logo-kenar, #ffffff90); border-radius: 5px;
-      background: var(--logo-zemin, #f8fafc); color: var(--logo-renk, #0f172a);
-      box-shadow: 0 1px 3px #02061766, inset 0 0 0 1px #ffffff38;
+      background: linear-gradient(var(--logo-egim, 135deg), var(--logo-vurgu, transparent) 0 3px, var(--logo-zemin, #f8fafc) 3px 100%);
+      color: var(--logo-renk, #0f172a);
+      box-shadow: 0 1px 3px #02061766, inset 0 -3px 0 var(--logo-vurgu, transparent), inset 0 0 0 1px #ffffff38;
       font: normal 850 15px/1 "Segoe UI",Arial,sans-serif; letter-spacing: 0;
     }
     .cari-adi { min-width: 0; line-height: 1.25; }
-    .cari-logo-0 { --logo-zemin:#f8fafc; --logo-renk:#ef3340; }
-    .cari-logo-1 { --logo-zemin:#35699c; --logo-renk:#f8fafc; --logo-kenar:#5d86ad; }
-    .cari-logo-2 { --logo-zemin:#f3c51c; --logo-renk:#172033; --logo-kenar:#e3ad00; }
-    .cari-logo-3 { --logo-zemin:#f8fafc; --logo-renk:#45823d; }
-    .cari-logo-4 { --logo-zemin:#f8fafc; --logo-renk:#347caf; }
-    .cari-logo-5 { --logo-zemin:#f8fafc; --logo-renk:#d9283f; }
-    .cari-logo-6 { --logo-zemin:#f8fafc; --logo-renk:#149995; }
-    .cari-logo-7 { --logo-zemin:#f8fafc; --logo-renk:#2388b8; }
-    .cari-logo-belirsiz { --logo-zemin:#d6d9dc; --logo-renk:#4b5563; --logo-kenar:#c4c8cd; }
+    .cari-logo-firma { font-weight: 900; }
+    .cari-logo-belirsiz {
+      --logo-zemin:#d6d9dc; --logo-renk:#4b5563; --logo-kenar:#c4c8cd;
+      --logo-vurgu:#aeb4bb; --logo-egim:135deg;
+    }
     table { font-family: inherit; font-size: 12px; }
     thead tr { background: #153557; }
     thead th {
@@ -2750,17 +2747,37 @@
       return kelimeler[0] || "?";
     }
 
-    function cariLogoRenkSinifi(cari) {
+    function cariLogoKimligi(cari) {
       const anahtar = cariAdiAnahtari(cari);
-      if (anahtar === "BELİRTİLMEDİ") return "cari-logo-belirsiz";
-      let karma = 0;
-      Array.from(anahtar).forEach(harf => { karma = (karma * 31 + harf.codePointAt(0)) >>> 0; });
-      return `cari-logo-${karma % 8}`;
+      if (anahtar === "BELİRTİLMEDİ") {
+        return { sinif:"cari-logo-belirsiz", stil:"", kod:"belirsiz" };
+      }
+
+      // Tam cari adı logonun kimliğini belirler. Böylece aynı harfle başlayan
+      // firmalar bile farklı renk, vurgu ve açı kombinasyonu kullanır.
+      let karma = 2166136261;
+      Array.from(anahtar).forEach(harf => {
+        karma ^= harf.codePointAt(0);
+        karma = Math.imul(karma, 16777619) >>> 0;
+      });
+
+      const ton = karma % 360;
+      const vurguTon = (ton + 35 + ((karma >>> 9) % 86)) % 360;
+      const koyuZemin = ((karma >>> 18) % 4) === 0;
+      const egim = ((karma >>> 21) % 2) === 0 ? 135 : 225;
+      const zemin = koyuZemin ? `hsl(${ton} 52% 36%)` : `hsl(${ton} 74% 93%)`;
+      const renk = koyuZemin ? "#f8fafc" : `hsl(${ton} 68% 31%)`;
+      const kenar = `hsl(${ton} 55% ${koyuZemin ? 49 : 72}%)`;
+      const vurgu = `hsl(${vurguTon} 76% ${koyuZemin ? 63 : 48}%)`;
+      const stil = `--logo-zemin:${zemin};--logo-renk:${renk};--logo-kenar:${kenar};--logo-vurgu:${vurgu};--logo-egim:${egim}deg`;
+      return { sinif:"cari-logo-firma", stil, kod:karma.toString(36) };
     }
 
     function cariLogosuHtml(cari) {
       const ad = String(cari || "").trim() || "Belirtilmedi";
-      return `<span class="cari-kimlik"><span class="cari-logo ${cariLogoRenkSinifi(cari)}" aria-hidden="true">${htmlGuvenli(cariBasHarfleri(cari))}</span><span class="cari-adi">${htmlGuvenli(ad)}</span></span>`;
+      const kimlik = cariLogoKimligi(cari);
+      const stil = kimlik.stil ? ` style="${kimlik.stil}"` : "";
+      return `<span class="cari-kimlik"><span class="cari-logo ${kimlik.sinif}" data-logo-kimligi="${kimlik.kod}"${stil} aria-hidden="true">${htmlGuvenli(cariBasHarfleri(cari))}</span><span class="cari-adi">${htmlGuvenli(ad)}</span></span>`;
     }
 
     function raporFiltreleriniOku() {
