@@ -7,12 +7,19 @@ const index = fs.readFileSync("index.html", "utf8");
 
 let invoiceValues = [
   ["TOPLAM", "ÖDENEN", "KALAN", "GÜNCELLEME", "", "", "", "", ""],
-  ["100 ₺", "0 ₺", "100 ₺", "", "", "", "", "", ""],
+  ["100 ₺", "40 ₺", "60 ₺", "", "", "", "", "", ""],
   ["", "", "", "", "", "", "", "", ""],
   ["id", "Fatura No", "Tarih", "Vade Günü", "Vade Tarihi", "Tutar", "Ödeme Durumu", "Ödeme Tarihi", "Durum"],
-  [1, "F-1", "2026-09-01", "30 gün", "01.10.2026", 100, "Ödenmedi", "", ""]
+  [1, "F-1", "2026-09-01", "30 gün", "01.10.2026", 100, "Kısmi Ödendi", "", ""]
 ];
-let paymentValues = [];
+let paymentValues = [
+  ["Ödeme ID", "Fatura ID", "Ödeme Tarihi", "Tutar", "Yöntem", "Referans", "Açıklama", "Kayıt Zamanı"],
+  ["odm-eski", 1, "2026-09-02", 40, "Havale / EFT", "REF-ESKI", "Eski ödeme", ""]
+];
+let movementValues = [];
+let checkValues = [];
+let movementExists = false;
+let checkExists = false;
 
 const propertyData = { VIEWER_EMAILS: "viewer@example.com" };
 const properties = {
@@ -33,9 +40,7 @@ function range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCou
       const values = degerleriGetir();
       for (let r = 0; r < rowCount; r++) {
         if (!values[row - 1 + r]) values[row - 1 + r] = [];
-        for (let c = 0; c < columnCount; c++) {
-          values[row - 1 + r][column - 1 + c] = next[r][c];
-        }
+        for (let c = 0; c < columnCount; c++) values[row - 1 + r][column - 1 + c] = next[r][c];
       }
       degerleriAyarla(values);
       return this;
@@ -55,68 +60,56 @@ function sheetOlustur(degerleriGetir, degerleriAyarla) {
     }
   };
 }
+
 const invoiceSheet = sheetOlustur(() => invoiceValues, next => { invoiceValues = next; });
 const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues = next; });
+const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; });
+const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; });
 
 let locked = false;
 const context = {
-  console,
-  Date,
-  JSON,
-  Math,
-  Number,
-  String,
-  Object,
-  Array,
-  isFinite,
-  parseInt,
+  console, Date, JSON, Math, Number, String, Object, Array, isFinite, parseInt,
   PropertiesService: { getScriptProperties: () => properties },
-  LockService: {
-    getScriptLock: () => ({
-      waitLock() { locked = true; },
-      hasLock() { return locked; },
-      releaseLock() { locked = false; }
-    })
-  },
-  SpreadsheetApp: {
-    getActiveSpreadsheet: () => ({
-      getSheetByName: name => name === "Faturalar" ? invoiceSheet : name === "Ödemeler" ? paymentSheet : null,
-      insertSheet: name => name === "Ödemeler" ? paymentSheet : invoiceSheet
-    })
-  },
-  UrlFetchApp: {
-    fetch(url, options) {
-      const token = JSON.parse(options.payload).idToken;
-      const users = {
-        "admin-token": { localId: "admin-1", email: "admin@example.com", emailVerified: true },
-        "viewer-token": { localId: "viewer-1", email: "viewer@example.com", emailVerified: true },
-        "unknown-token": { localId: "unknown-1", email: "unknown@example.com", emailVerified: true }
-      };
-      const user = users[token];
-      return {
-        getResponseCode: () => user ? 200 : 401,
-        getContentText: () => JSON.stringify(user ? { users: [user] } : { error: {} })
-      };
+  LockService: { getScriptLock: () => ({
+    waitLock() { locked = true; }, hasLock() { return locked; }, releaseLock() { locked = false; }
+  }) },
+  SpreadsheetApp: { getActiveSpreadsheet: () => ({
+    getSheetByName(name) {
+      if (name === "Faturalar") return invoiceSheet;
+      if (name === "Ödemeler") return paymentSheet;
+      if (name === "Cari Hareketler") return movementExists ? movementSheet : null;
+      if (name === "Çekler") return checkExists ? checkSheet : null;
+      return null;
+    },
+    insertSheet(name) {
+      if (name === "Cari Hareketler") { movementExists = true; return movementSheet; }
+      if (name === "Çekler") { checkExists = true; return checkSheet; }
+      return invoiceSheet;
     }
-  },
-  Utilities: {
-    formatDate(date, zone, pattern) {
-      const pad = value => String(value).padStart(2, "0");
-      if (pattern === "yyyy-MM-dd") {
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-      }
-      return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
-    }
-  },
+  }) },
+  UrlFetchApp: { fetch(url, options) {
+    const token = JSON.parse(options.payload).idToken;
+    const users = {
+      "admin-token": { localId:"admin-1", email:"admin@example.com", emailVerified:true },
+      "viewer-token": { localId:"viewer-1", email:"viewer@example.com", emailVerified:true },
+      "unknown-token": { localId:"unknown-1", email:"unknown@example.com", emailVerified:true }
+    };
+    const user = users[token];
+    return { getResponseCode: () => user ? 200 : 401, getContentText: () => JSON.stringify(user ? { users:[user] } : { error:{} }) };
+  } },
+  Utilities: { formatDate(date, zone, pattern) {
+    const pad = value => String(value).padStart(2,"0");
+    return pattern === "yyyy-MM-dd"
+      ? `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`
+      : `${pad(date.getDate())}.${pad(date.getMonth()+1)}.${date.getFullYear()}`;
+  } },
   Session: {
     getScriptTimeZone: () => "Europe/Istanbul",
     getEffectiveUser: () => ({ getEmail: () => "admin@example.com" })
   },
   ContentService: {
-    MimeType: { JSON: "application/json" },
-    createTextOutput(text) {
-      return { text, setMimeType() { return this; } };
-    }
+    MimeType:{ JSON:"application/json" },
+    createTextOutput(text) { return { text, setMimeType() { return this; } }; }
   }
 };
 
@@ -125,79 +118,65 @@ vm.runInContext(code, context);
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
-assert.deepEqual(
-  { ok:cariHazirligi.ok, changed:cariHazirligi.changed, column:cariHazirligi.column },
-  { ok:true, changed:true, column:10 },
-  "Cari/Firma sütunu eski tabloya veri satırlarını kaydırmadan eklenmeli"
-);
+assert.deepEqual({ ok:cariHazirligi.ok, changed:cariHazirligi.changed, column:cariHazirligi.column }, { ok:true, changed:true, column:10 });
 assert.equal(invoiceValues[3][9], "Cari/Firma");
-assert.equal(context.cariSutununuHazirla().changed, false, "Sütun hazırlığı tekrar çalıştırıldığında yeni sütun eklememeli");
+assert.equal(context.cariSutununuHazirla().changed, false);
 
 const read = output => JSON.parse(output.text);
-const post = (payload, idToken = "admin-token") => read(context.doPost({
-  parameter: { payload: JSON.stringify({ ...payload, idToken }) }
-}));
-const item1 = { id: 1, cari: "Örnek Metal", no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: 100, odendi: false, odemeTarihi: "", odemeler:[{ id:"odm-1", tarih:"2026-09-02", tutar:40, yontem:"Havale / EFT", referans:"REF-1", aciklama:"İlk ödeme" }] };
-const item2 = { id: 2, cari: "Başarı Çelik", no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: 100, odendi: true, odemeTarihi: "2026-09-03", odemeler:[{ id:"odm-2", tarih:"2026-09-03", tutar:100, yontem:"Çek", referans:"ÇEK-1", aciklama:"Tam ödeme" }] };
+const post = (payload, idToken="admin-token") => read(context.doPost({ parameter:{ payload:JSON.stringify({ ...payload, idToken }) } }));
+const item1 = { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-09-01", vadeGun:30, tutar:100 };
+const item2 = { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-09-01", vadeGun:30, tutar:200 };
+const hareketler = [
+  { id:"h-1", cari:"Örnek Metal", tarih:"2026-09-02", tutar:140, yontem:"Havale / EFT", referans:"REF-1" },
+  { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, yontem:"Nakit" }
+];
+const cekler = [{ id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", durum:"Verildi" }];
 
-const anonymousRead = read(context.doGet());
-assert.equal(anonymousRead.code, "AUTH_REQUIRED");
-
-const firstRead = post({ action: "read" });
+assert.equal(read(context.doGet()).code, "AUTH_REQUIRED");
+const firstRead = post({ action:"read" });
 assert.equal(firstRead.role, "admin");
 assert.equal(firstRead.revision, 0);
 assert.equal(firstRead.items.length, 1);
-assert.equal(firstRead.items[0].cari, "", "Eski sütun düzenindeki faturalar veri kaybı olmadan okunmalı");
+assert.equal(firstRead.cariHareketler.length, 1, "Eski Ödemeler sayfası ilk okumada cari harekete dönüştürülmeli");
+assert.equal(firstRead.cariHareketler[0].id, "legacy-odm-eski");
 
-const viewerRead = post({ action: "read" }, "viewer-token");
-assert.equal(viewerRead.role, "viewer");
-assert.equal(viewerRead.items.length, 1);
+assert.equal(post({ action:"read" }, "viewer-token").role, "viewer");
+assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", items:[item1] }, "viewer-token").code, "FORBIDDEN");
+assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
 
-const viewerSave = post({ action: "save", baseRevision: 0, requestId: "viewer-save", items: [item1] }, "viewer-token");
-assert.equal(viewerSave.code, "FORBIDDEN");
+const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
+assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount },
+  { ok:true, revision:1, count:2, movementCount:2, checkCount:1 });
+assert.equal(movementValues[0][0], "Hareket ID");
+assert.equal(movementValues.length, 3);
+assert.equal(checkValues[0][0], "Çek ID");
+assert.equal(checkValues.length, 2);
+assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi olarak korunmalı");
 
-const unknownRead = post({ action: "read" }, "unknown-token");
-assert.equal(unknownRead.code, "ACCESS_DENIED");
+const kayitSonrasi = post({ action:"read" });
+assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");
+assert.equal(kayitSonrasi.cariHareketler[0].tutar, 140);
+assert.equal(kayitSonrasi.cekler[0].durum, "Verildi");
+assert.equal(invoiceValues[3][7], "Vade Durumu", "Fatura sayfasında ödeme durumu yerine vade durumu bulunmalı");
 
-const saved = post({ action: "save", baseRevision: 0, requestId: "request-1", items: [item1, item2] });
-assert.deepEqual({ ok: saved.ok, revision: saved.revision, count: saved.count }, { ok: true, revision: 1, count: 2 });
-assert.equal(saved.paymentCount, 2, "İki ödeme ayrı Ödemeler satırı olarak yazılmalı");
-const kayitSonrasi = post({ action: "read" }).items;
-assert.equal(kayitSonrasi[0].cari, "Örnek Metal", "Cari bilgisi Sheets yazma-okuma döngüsünde korunmalı");
-assert.equal(kayitSonrasi[0].odemeler.length, 1, "Kısmi ödeme Sheets yazma-okuma döngüsünde korunmalı");
-assert.equal(kayitSonrasi[0].odendi, false, "Kısmi ödeme faturayı tamamen kapatmamalı");
-assert.equal(kayitSonrasi[1].odendi, true, "Toplam ödeme fatura tutarına ulaşınca fatura kapanmalı");
-assert.equal(paymentValues[0][0], "Ödeme ID", "Ödemeler sayfası başlıkla oluşturulmalı");
-assert.equal(paymentValues.length, 3, "Başlık ve iki ödeme satırı yazılmalı");
-
-const legacy = context.faturalariTekillestir([{ id:9, cari:"Eski Firma", no:"E-1", tarih:"2026-08-01", vadeGun:30, tutar:50, odendi:true, odemeTarihi:"2026-08-15" }])[0];
-assert.equal(legacy.odemeler[0].id, "legacy-9", "Eski ödenmiş faturaya geriye uyumlu ödeme geçmişi eklenmeli");
-
-const replayed = post({ action: "save", baseRevision: 0, requestId: "request-1", items: [item1, item2] });
+const replayed = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
 assert.equal(replayed.replayed, true);
 assert.equal(replayed.revision, 1);
-
-const conflict = post({ action: "save", baseRevision: 0, requestId: "request-2", items: [item1] });
+const conflict = post({ action:"save", baseRevision:0, requestId:"request-2", items:[item1] });
 assert.equal(conflict.conflict, true);
 assert.equal(conflict.revision, 1);
-assert.equal(post({ action: "read" }).items.length, 2);
 
-const secondSave = post({ action: "save", baseRevision: 1, requestId: "request-3", items: [item1] });
-assert.equal(secondSave.revision, 2);
-assert.equal(post({ action: "read" }).items.length, 1);
-
-const eskiOnYuzKaydi = { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-09-01", vadeGun:30, tutar:100, odendi:false, odemeTarihi:"" };
-const eskiOnYuzSonucu = post({ action:"save", baseRevision:2, requestId:"request-4", items:[eskiOnYuzKaydi] });
-assert.equal(eskiOnYuzSonucu.revision, 3);
-assert.equal(post({ action:"read" }).items[0].odemeler.length, 1, "Eski ön yüz odemeler alanını göndermese de ödeme geçmişi korunmalı");
+const eskiOnYuzSonucu = post({ action:"save", baseRevision:1, requestId:"request-3", items:[item1] });
+assert.equal(eskiOnYuzSonucu.revision, 2);
+const eskiOnYuzOkumasi = post({ action:"read" });
+assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 2, "Eski ön yüz cari hareket alanını göndermese de kayıtlar korunmalı");
+assert.equal(eskiOnYuzOkumasi.cekler.length, 1, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
 
 assert.match(index, /firebase-auth-compat/);
-assert.match(index, /action:\s*"read"/);
-assert.match(index, /idToken/);
-assert.match(index, /giris-overlay/);
-assert.match(index, /data-role="viewer"/);
+assert.match(index, /cariHareketler/);
+assert.match(index, /cekler/);
 assert.match(index, /baseRevision/);
 assert.match(index, /requestId/);
 assert.match(index, /BULUT_CAKISMA_ANAHTAR/);
 
-console.log("Apps Script sürümleme ve çakışma testleri başarılı.");
+console.log("Apps Script cari hareket, çek, sürümleme ve çakışma testleri başarılı.");

@@ -15,6 +15,8 @@ const context = {
   Date,
   JSON,
   ANAHTAR: "faturalar",
+  CARI_HAREKET_ANAHTAR: "hareketler",
+  CEK_ANAHTAR: "cekler",
   YEDEK_ANAHTAR: "yedekler",
   YEDEK_SINIR: 10,
   kullaniciRolu: "admin",
@@ -25,6 +27,17 @@ const context = {
   },
   document: { getElementById: id => id === "son-islem-geri-al" ? dugme : null },
   faturalariTekillestir: liste => ({ liste: Array.isArray(liste) ? liste : [], kaldirilan: 0 }),
+  eskiFaturaOdemeleriniAktar() {},
+  cariHareketleriNormallestir: liste => Array.isArray(liste) ? liste : [],
+  cekleriNormallestir: liste => Array.isArray(liste) ? liste : [],
+  cariHareketleriYukle: () => JSON.parse(depo.get("hareketler") || "[]"),
+  cekleriYukle: () => JSON.parse(depo.get("cekler") || "[]"),
+  uygulamaDurumuOlustur: liste => ({
+    items:Array.isArray(liste) ? liste : [],
+    cariHareketler:JSON.parse(depo.get("hareketler") || "[]"),
+    cekler:JSON.parse(depo.get("cekler") || "[]")
+  }),
+  listeSurumImzasi: durum => JSON.stringify(durum),
   buludaKaydet: liste => { bulutaGonderilen = liste; },
   listeyiGoster() {},
   rozetGuncelle() {},
@@ -37,6 +50,8 @@ vm.runInContext(index.slice(baslangic, bitis), context);
 
 const ilkListe = [{ id: 1, no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: "100", odendi: false }];
 depo.set("faturalar", JSON.stringify(ilkListe));
+depo.set("hareketler", JSON.stringify([{ id:"h-1", cari:"Firma A", tarih:"2026-09-01", tutar:40 }]));
+depo.set("cekler", JSON.stringify([{ id:"c-1", cari:"Firma A", tarih:"2026-09-01", vadeTarihi:"2026-10-01", tutar:20, durum:"Verildi" }]));
 
 const yeniListe = [...ilkListe, { id: 2, no: "F-2", tarih: "2026-09-02", vadeGun: 30, tutar: "200", odendi: false }];
 context.faturaKaydet(yeniListe, "Fatura eklendi");
@@ -44,6 +59,8 @@ context.faturaKaydet(yeniListe, "Fatura eklendi");
 let yedekler = JSON.parse(depo.get("yedekler"));
 assert.equal(yedekler.length, 1, "Değişiklikten önce bir yedek oluşmalı");
 assert.deepEqual(yedekler[0].liste, ilkListe, "Yedek eski listeyi içermeli");
+assert.equal(yedekler[0].durum.cariHareketler.length, 1, "Cari hareketler aynı güvenlik yedeğinde tutulmalı");
+assert.equal(yedekler[0].durum.cekler.length, 1, "Çekler aynı güvenlik yedeğinde tutulmalı");
 assert.equal(dugme.hidden, false, "Geri alma düğmesi görünür olmalı");
 
 context.sonIslemiGeriAl();

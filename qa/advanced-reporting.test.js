@@ -16,17 +16,6 @@ function vadeTarihi(tarih, vadeGun) {
   sonuc.setDate(sonuc.getDate() + Number(vadeGun));
   return sonuc;
 }
-function faturaOdenenTutari(inv) {
-  return (inv.odemeler || []).reduce((toplam, odeme) => toplam + Number(odeme.tutar), 0);
-}
-function faturaKalanTutari(inv) {
-  return Math.max(0, Number(inv.tutar) - faturaOdenenTutari(inv));
-}
-function faturaOdemeDurumu(inv) {
-  const odenen = faturaOdenenTutari(inv);
-  return odenen >= Number(inv.tutar) ? "odendi" : odenen > 0 ? "kismi" : "odenmedi";
-}
-
 const context = {
   console,
   Date,
@@ -36,9 +25,12 @@ const context = {
   bugununTarihi,
   vadeTarihi,
   tutarSayiyaCevir: deger => Number(deger) || 0,
-  faturaOdenenTutari,
-  faturaKalanTutari,
-  faturaOdemeDurumu,
+  cariAdiAnahtari: cari => String(cari || "").toUpperCase(),
+  cariOzetleriniHesapla: () => [
+    { anahtar:"ÖRNEK METAL", bakiye:100 },
+    { anahtar:"BAŞARI ÇELİK", bakiye:200 },
+    { anahtar:"YILMAZ MAKİNA", bakiye:400 }
+  ],
   formatPara: deger => `${Number(deger)} ₺`
 };
 vm.createContext(context);
@@ -78,15 +70,15 @@ const geciken = context.raporListesiniOlustur(liste, { durum:"geciken" }, refera
 assert.deepEqual(Array.from(geciken, x => x.no), ["F-2"], "Geciken raporu yalnızca ödenmemiş geçmiş vadeleri içermeli");
 
 const yaklasan = context.raporListesiniOlustur(liste, { durum:"yaklasan" }, referans);
-assert.deepEqual(Array.from(yaklasan, x => x.no), ["F-1"], "30 gün içindeki ödenmemiş vadeler doğru seçilmeli");
+assert.deepEqual(Array.from(yaklasan, x => x.no), ["F-1","F-3"], "30 gün içindeki fatura vadeleri ödeme durumundan bağımsız seçilmeli");
 
 const cariAramasi = context.raporListesiniOlustur(liste, { arama:"örnek metal" }, referans);
 assert.deepEqual(Array.from(cariAramasi, x => x.no), ["F-1","F-3"], "Rapor cari/firma adına göre aranabilmeli");
 
-const ozet = context.raporOzetiniHesapla(aylik);
-assert.deepEqual({ ...ozet }, { kayit:2, toplam:400, odenen:300, kalan:100 });
+const ozet = context.raporOzetiniHesapla(aylik, referans);
+assert.deepEqual({ ...ozet }, { kayit:2, toplam:400, vadesiGecen:0, cariNetBakiye:100 });
 assert.equal(context.htmlGuvenli('<Fatura "A">'), "&lt;Fatura &quot;A&quot;&gt;", "Rapor tablosu metni güvenli olmalı");
 
 assert.match(index, /Yazdır \/ PDF/);
 assert.match(index, /Vade tarihine göre hazırlanır/);
-console.log("Gelişmiş raporlama tarih, durum, toplam ve çıktı testleri başarılı.");
+console.log("Gelişmiş raporlama tarih, vade, cari bakiye ve çıktı testleri başarılı.");

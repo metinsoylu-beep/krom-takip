@@ -4,47 +4,55 @@ const vm = require("node:vm");
 
 const index = fs.readFileSync("index.html", "utf8");
 const code = fs.readFileSync("google-apps-script/Code.gs", "utf8");
-const baslangic = index.indexOf("function odemeKaydiniNormallestir");
-const bitis = index.indexOf("function faturaImzasi", baslangic);
-assert.ok(baslangic >= 0 && bitis > baslangic, "Ödeme veri modeli işlevleri bulunamadı");
+const baslangic = index.indexOf("function cariAdiAnahtari");
+const bitis = index.indexOf("function odemeKaydiniNormallestir", baslangic);
+assert.ok(baslangic >= 0 && bitis > baslangic, "Cari hesap veri modeli işlevleri bulunamadı");
 
+const depo = new Map();
 const context = {
-  console, Date, Math, Number, String, Array, Set,
-  tutarSayiyaCevir: deger => Number(deger) || 0
+  console, Date, Math, Number, String, Array, Set, Map, JSON,
+  CARI_HAREKET_ANAHTAR:"hareketler",
+  CEK_ANAHTAR:"cekler",
+  ESKI_ODEME_GECIS_ANAHTAR:"eski-gecis",
+  localStorage: {
+    getItem: anahtar => depo.get(anahtar) || null,
+    setItem: (anahtar,deger) => depo.set(anahtar,String(deger))
+  },
+  tutarSayiyaCevir: deger => Number(deger) || 0,
+  tarihGecerliMi: deger => /^\d{4}-\d{2}-\d{2}$/.test(String(deger || "")),
+  faturaYukle: () => []
 };
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
 
-const kismi = {
-  id:1, tarih:"2026-09-01", tutar:100, odendi:false, odemeTarihi:"",
-  odemeler:[{ id:"odm-1", tarih:"2026-09-02", tutar:40, yontem:"Havale / EFT", referans:"R-1", aciklama:"İlk ödeme" }]
-};
-assert.equal(context.faturaOdenenTutari(kismi), 40);
-assert.equal(context.faturaKalanTutari(kismi), 60);
-assert.equal(context.faturaOdemeDurumu(kismi), "kismi");
+const faturalar = [{ id:1, cari:"Firma A", no:"A-1", tarih:"2026-09-01", vadeGun:30, tutar:100 }];
+const hareketler = [{ id:"h-1", cari:"Firma A", tarih:"2026-09-02", tutar:150, yontem:"Havale / EFT" }];
+const verildi = [{ id:"c-1", cari:"Firma A", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:25, cekNo:"001", banka:"Test Bank", durum:"Verildi" }];
 
-const tamamlanan = context.faturaOdemeOzetiniUygula({
-  ...kismi,
-  odemeler:[...kismi.odemeler, { id:"odm-2", tarih:"2026-09-05", tutar:60, yontem:"Çek" }]
-}, false);
-assert.equal(tamamlanan.odendi, true, "Toplam ödeme fatura tutarına ulaşınca kapanmalı");
-assert.equal(tamamlanan.odemeTarihi, "2026-09-05", "Tamamlanma tarihi son ödeme tarihi olmalı");
+let hesap = context.cariOzetleriniHesapla(faturalar, hareketler, [])[0];
+assert.equal(hesap.bakiye, -50, "Faturadan fazla ödeme alacak bakiyesi oluşturmalı");
+assert.deepEqual({ ...context.bakiyeBilgisi(hesap.bakiye) }, { etiket:"Alacak Bakiyesi", sinif:"bakiye-alacak", tutar:50 });
 
-const eski = context.faturaOdemeOzetiniUygula({
-  id:9, tarih:"2026-08-01", tutar:250, odendi:true, odemeTarihi:"2026-08-20", odemeler:[]
-}, true);
-assert.equal(eski.odemeler.length, 1, "Eski ödenmiş kayıt için ödeme geçmişi üretilmeli");
-assert.equal(eski.odemeler[0].id, "legacy-9");
-assert.equal(eski.odemeler[0].tutar, 250);
+hesap = context.cariOzetleriniHesapla(faturalar, [], verildi)[0];
+assert.equal(hesap.bakiye, 75, "Verilen çek cari borçtan bir kez düşmeli");
+assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"Ödendi" }])[0].bakiye, 75, "Çekin ödendi yapılması ikinci kez düşmemeli");
+assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"İptal" }])[0].bakiye, 100, "İptal edilen çek bakiyeyi etkilememeli");
 
-assert.match(index, /id="odeme-yonetim-overlay"/, "Manuel ödeme penceresi bulunmalı");
-assert.match(index, /id="odeme-tarih"/, "Ödeme tarihi alanı bulunmalı");
-assert.match(index, /id="odeme-tutar"/, "Ödeme tutarı alanı bulunmalı");
-assert.match(index, /id="odeme-yontem"/, "Ödeme yöntemi alanı bulunmalı");
-assert.match(index, /id="odeme-referans"/, "Dekont veya referans alanı bulunmalı");
-assert.match(index, /function odemeKaydiniSil\(/, "Yanlış ödeme kaydı silinebilmeli");
-assert.match(index, /Kısmi Ödendi/, "Kısmi ödeme durumu arayüzde bulunmalı");
-assert.match(code, /const PAYMENT_SHEET_NAME = "Ödemeler"/, "Ödemeler ayrı Sheets sayfasında tutulmalı");
-assert.match(code, /paymentSheet\.getRange/, "Ödeme satırları Sheets'e yazılmalı");
+const eskiFatura = [{ id:9, cari:"Eski Firma", no:"E-1", tarih:"2026-08-01", tutar:250, odemeTarihi:"2026-08-20", odemeler:[{ id:"odm-9", tarih:"2026-08-20", tutar:250, yontem:"Eski kayıt" }] }];
+assert.equal(context.eskiFaturaOdemeleriniAktar(eskiFatura), true, "Eski fatura ödemesi cari harekete aktarılmalı");
+assert.equal(JSON.parse(depo.get("hareketler"))[0].id, "legacy-odm-9");
+depo.set("hareketler", "[]");
+assert.equal(context.eskiFaturaOdemeleriniAktar(eskiFatura), false, "Tamamlanan eski ödeme geçişi tekrar çalışmamalı");
+assert.deepEqual(JSON.parse(depo.get("hareketler")), [], "Silinen eski ödeme yeniden oluşturulmamalı");
 
-console.log("Manuel, kısmi ve çoklu ödeme kayıt sistemi testleri başarılı.");
+assert.match(index, /id="cari-hesaplar-overlay"/, "Cari hesaplar ekranı bulunmalı");
+assert.match(index, /id="odeme-tur"/, "Ödeme ve çek işlem türü seçilebilmeli");
+assert.match(index, /id="cek-no"/, "Çek numarası alanı bulunmalı");
+assert.match(index, /function cekDurumunuDegistir\(/, "Çek durumu güncellenebilmeli");
+assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");
+assert.match(code, /const MOVEMENT_SHEET_NAME = "Cari Hareketler"/);
+assert.match(code, /const CHECK_SHEET_NAME = "Çekler"/);
+assert.match(code, /movementSheet\.getRange/);
+assert.match(code, /checkSheet\.getRange/);
+
+console.log("Cari ödeme, alacak bakiyesi ve çek hareketi testleri başarılı.");

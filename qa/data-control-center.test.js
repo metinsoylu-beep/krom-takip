@@ -20,7 +20,8 @@ const context = {
   Map,
   Set,
   tutarSayiyaCevir,
-  faturaOdenenTutari: inv => (inv.odemeler || []).reduce((toplam, odeme) => toplam + tutarSayiyaCevir(odeme.tutar), 0),
+  cariHareketleriYukle: () => [],
+  cekleriYukle: () => [],
   formatPara: deger => `${Number(deger)} ₺`,
   faturaImzasi: inv => [
     String(inv.cari || "").trim().toLocaleUpperCase("tr-TR"),
@@ -41,7 +42,7 @@ const hamListe = [
   { id: 1, no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: "100", odendi: false },
   { id: 2, no: "F-1", tarih: "2026-09-02", vadeGun: 30, tutar: "200", odendi: false },
   { id: 1, no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: "100", odendi: false },
-  { id: 4, no: "F-4", tarih: "2026-02-30", vadeGun: 0, tutar: "0", odendi: true, odemeTarihi: "" }
+  { id: 4, no: "F-4", tarih: "2026-02-30", vadeGun: 0, tutar: "0" }
 ];
 const gecerliListe = hamListe.slice(0, 2);
 const dogruOzet = { toplam: "300 ₺", odenen: "0 ₺", kalan: "300 ₺" };
