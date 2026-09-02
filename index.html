@@ -69,6 +69,11 @@
     .btn-duzenle:hover { background: #2a2410; }
     .btn-sil-tablo { font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #334155; background: transparent; color: #ef4444; font-family: Georgia, serif; white-space: nowrap; }
     .btn-sil-tablo:hover { background: #2a1212; }
+    .secim-hucre { width: 42px; text-align: center; }
+    .fatura-secim {
+      width: 16px; height: 16px; accent-color: #e6a91f; cursor: pointer;
+    }
+    tbody tr.secili-satir { background: #183550 !important; box-shadow: inset 3px 0 #e6a91f; }
     .bos { text-align: center; color: #475569; padding: 48px 20px; font-size: 15px; line-height: 2.5; }
     #bildirim-banner { display: none; background: #1e293b; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 18px; margin-bottom: 18px; align-items: center; justify-content: space-between; gap: 12px; }
     #bildirim-banner.goster { display: flex; }
@@ -366,6 +371,46 @@
     #csv-indir-btn:hover { background: #38bdf824; border-color: #38bdf888; }
     button:disabled { opacity: .55; cursor: wait; }
 
+    .toplu-islem-panel {
+      min-height: 52px; display: flex; align-items: center; gap: 9px; margin: 0 0 10px;
+      padding: 8px 10px; background: #102d46; border: 1px solid #356080;
+      border-left: 4px solid var(--altin); border-radius: 8px; box-shadow: 0 8px 24px #02061726;
+    }
+    .toplu-islem-panel[hidden] { display: none; }
+    .toplu-islem-bilgi { display: flex; align-items: center; gap: 9px; min-width: 190px; margin-right: auto; }
+    .toplu-islem-ikon {
+      width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto;
+      border-radius: 8px; color: #f3be3e; background: #e6a91f18; border: 1px solid #e6a91f38;
+    }
+    .toplu-islem-metin strong { display: block; color: #eef4fa; font-size: 11px; }
+    .toplu-islem-metin span { display: block; margin-top: 2px; color: #90a3b6; font-size: 9px; }
+    .toplu-islem-btn {
+      min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 6px 10px; border: 1px solid var(--cizgi); border-radius: 6px;
+      background: #0b1b2d; color: #b8c6d3; font: 600 10px "Segoe UI",Arial,sans-serif;
+      white-space: nowrap; cursor: pointer;
+    }
+    .toplu-islem-btn:hover { background: #17324c; }
+    .toplu-islem-btn.odendi { color: #61dc8b; border-color: #39c56b66; background: #39c56b10; }
+    .toplu-islem-btn.csv { color: #67cdfa; border-color: #38bdf866; background: #38bdf810; }
+    .toplu-islem-btn.tehlike { color: #ff6b77; border-color: #ff3f4f66; background: #ff3f4f10; }
+    .toplu-islem-btn.temizle { border-color: transparent; background: transparent; color: #8ea0b2; }
+
+    .toplu-sil-kart { border: 1px solid #ff3f4f66; border-top: 3px solid var(--kirmizi); }
+    .toplu-sil-kart .popup-baslik { color: #ff6b77; }
+    .toplu-sil-ozet {
+      margin: 4px 0 18px; padding: 14px; background: #0b1b2d; border: 1px solid var(--cizgi);
+      border-radius: 8px; color: #aebcca; font-size: 12px; line-height: 1.6;
+    }
+    .toplu-sil-ozet strong { color: #f3be3e; }
+    .toplu-sil-butonlar { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+    .toplu-sil-iptal, .toplu-sil-onay {
+      min-height: 40px; border-radius: 7px; font: 700 12px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .toplu-sil-iptal { border: 1px solid var(--cizgi); background: transparent; color: #aebcca; }
+    .toplu-sil-onay { border: 1px solid #ff6370; background: #c92c3a; color: #fff; }
+    .toplu-sil-onay:hover { background: #e23847; }
+
     .veri-kontrol-panel {
       margin: 0 0 13px; overflow: hidden; background: var(--panel-koyu);
       border: 1px solid var(--cizgi); border-left: 4px solid #4ade80; border-radius: 9px;
@@ -531,6 +576,10 @@
       .veri-kontrol-ok { grid-column: 3; grid-row: 1 / span 2; }
       .veri-kontrol-detay { padding-left: 13px; }
       .veri-kontrol-sayaclar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .toplu-islem-panel { align-items: stretch; flex-wrap: wrap; padding: 10px; }
+      .toplu-islem-bilgi { width: 100%; min-width: 0; }
+      .toplu-islem-btn { flex: 1 1 calc(50% - 6px); }
+      .toplu-islem-btn.temizle { flex-basis: 100%; }
       .rapor-overlay { padding: 0; }
       .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
@@ -544,7 +593,7 @@
       .kur-satirlar { grid-template-columns: 1fr; }
       .kur-satir + .kur-satir { border-left: 0; border-top: 1px solid var(--cizgi-yumusak); }
       .form-grid { grid-template-columns: 1fr; }
-      table { min-width: 1080px; }
+      table { min-width: 1120px; }
     }
     body.auth-bekliyor .navbar,
     body.auth-bekliyor .konteyner,
@@ -686,6 +735,26 @@
       <div class="duzenle-btn-grup">
         <button class="btn-duzenle-iptal" onclick="duzenleKapat()">İptal</button>
         <button class="btn-duzenle-kaydet" onclick="duzenleKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPLU SİLME ONAYI -->
+  <div class="popup-overlay yalnızca-yonetici" id="toplu-sil-overlay">
+    <div class="popup-kutu toplu-sil-kart" role="dialog" aria-modal="true" aria-labelledby="toplu-sil-baslik">
+      <div class="popup-header">
+        <div class="popup-ikon" style="color:#ff5b67"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
+        <div>
+          <div class="popup-baslik" id="toplu-sil-baslik">Seçilen faturalar silinsin mi?</div>
+          <div class="popup-alt">Bu işlemden önce otomatik güvenlik yedeği oluşturulur.</div>
+        </div>
+      </div>
+      <div class="toplu-sil-ozet" id="toplu-sil-ozet"></div>
+      <div class="toplu-sil-butonlar">
+        <button class="toplu-sil-iptal" type="button" onclick="topluSilmeKapat()">Vazgeç</button>
+        <button class="toplu-sil-onay" id="toplu-sil-onay" type="button" onclick="topluSilmeyiOnayla()">
+          <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Silmeyi Onayla
+        </button>
       </div>
     </div>
   </div>
@@ -880,6 +949,27 @@
         </section>
 
         <!-- LİSTE -->
+        <section class="toplu-islem-panel yalnızca-yonetici" id="toplu-islem-panel" aria-label="Toplu fatura işlemleri" aria-live="polite" hidden>
+          <div class="toplu-islem-bilgi">
+            <span class="toplu-islem-ikon" aria-hidden="true"><i class="fa-solid fa-list-check"></i></span>
+            <span class="toplu-islem-metin">
+              <strong id="toplu-secim-sayisi">0 fatura seçildi</strong>
+              <span id="toplu-secim-toplami">Toplam 0 ₺</span>
+            </span>
+          </div>
+          <button class="toplu-islem-btn odendi" id="toplu-odendi-btn" type="button" onclick="secilenleriOdendiYap()">
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Ödendi Yap
+          </button>
+          <button class="toplu-islem-btn csv" type="button" onclick="secilenleriCsvIndir()">
+            <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Seçilen CSV
+          </button>
+          <button class="toplu-islem-btn tehlike" type="button" onclick="topluSilmeAc()">
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Seçilenleri Sil
+          </button>
+          <button class="toplu-islem-btn temizle" type="button" onclick="secimiTemizle()">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i> Seçimi Temizle
+          </button>
+        </section>
         <div id="liste-baslik" class="liste-baslik"></div>
         <div id="liste"></div>
 
@@ -1013,6 +1103,8 @@
     let uygulamaBaslatildi = false;
     let sonGirisHatasi = "";
     let aktifRaporListesi = [];
+    const seciliFaturaKimlikleri = new Set();
+    let topluSilmeKimlikleri = [];
 
     if ('serviceWorker' in navigator) {
       let servisCalisaniYenileniyor = false;
@@ -1609,6 +1701,9 @@
       if (!yoneticiMi()) {
         document.getElementById("duzenle-overlay")?.classList.remove("aktif");
         document.getElementById("yeni-fatura-overlay")?.classList.remove("aktif");
+        document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
+        seciliFaturaKimlikleri.clear();
+        topluSilmeKimlikleri = [];
       }
       yedekDugmesiniGuncelle();
       listeyiGoster();
@@ -1823,7 +1918,10 @@
       if (maxHam !== '' && tutar > Number(maxHam)) return false;
       return true;
     }
-    function filtreleriGuncelle() { listeyiGoster(); }
+    function filtreleriGuncelle() {
+      secimiTemizle(false);
+      listeyiGoster();
+    }
     function goruntulenenFaturalariGetir() {
       return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>{
         if(a.odendi&&!b.odendi) return 1;
@@ -1831,6 +1929,142 @@
         return kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun));
       }).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
     }
+
+    // ── TOPLU İŞLEMLER ──────────────────────────────────────────────────────
+    function kimlikKumesiOlustur(kimlikler) {
+      return kimlikler instanceof Set
+        ? new Set(Array.from(kimlikler, String))
+        : new Set((Array.isArray(kimlikler) ? kimlikler : []).map(String));
+    }
+
+    function seciliFaturalariGetir(liste, kimlikler) {
+      const secimler = kimlikKumesiOlustur(kimlikler);
+      return (Array.isArray(liste) ? liste : []).filter(inv => secimler.has(String(inv.id)));
+    }
+
+    function seciliFaturalariOdendiYap(liste, kimlikler, odemeTarihi) {
+      const secimler = kimlikKumesiOlustur(kimlikler);
+      return (Array.isArray(liste) ? liste : []).map(inv =>
+        secimler.has(String(inv.id)) && !inv.odendi
+          ? { ...inv, odendi:true, odemeTarihi:String(odemeTarihi || "") }
+          : inv
+      );
+    }
+
+    function seciliFaturalariSil(liste, kimlikler) {
+      const secimler = kimlikKumesiOlustur(kimlikler);
+      return (Array.isArray(liste) ? liste : []).filter(inv => !secimler.has(String(inv.id)));
+    }
+
+    function secimiGecerliKayitlarlaSinirla(liste=faturaYukle()) {
+      const gecerli = new Set((Array.isArray(liste) ? liste : []).map(inv => String(inv.id)));
+      Array.from(seciliFaturaKimlikleri).forEach(kimlik => {
+        if (!gecerli.has(String(kimlik))) seciliFaturaKimlikleri.delete(String(kimlik));
+      });
+    }
+
+    function tabloSecimDurumunuGuncelle(gorunenListe=goruntulenenFaturalariGetir()) {
+      const tumunuSec = document.getElementById("gorunenlerin-tumunu-sec");
+      if (!tumunuSec) return;
+      const seciliSayisi = gorunenListe.filter(inv => seciliFaturaKimlikleri.has(String(inv.id))).length;
+      tumunuSec.checked = gorunenListe.length > 0 && seciliSayisi === gorunenListe.length;
+      tumunuSec.indeterminate = seciliSayisi > 0 && seciliSayisi < gorunenListe.length;
+    }
+
+    function topluIslemPaneliniGuncelle(gorunenListe=goruntulenenFaturalariGetir()) {
+      secimiGecerliKayitlarlaSinirla();
+      const secilenler = seciliFaturalariGetir(faturaYukle(), seciliFaturaKimlikleri);
+      const panel = document.getElementById("toplu-islem-panel");
+      if (!panel) return;
+      panel.hidden = !yoneticiMi() || secilenler.length === 0;
+      document.getElementById("toplu-secim-sayisi").textContent = `${secilenler.length} fatura seçildi`;
+      document.getElementById("toplu-secim-toplami").textContent = `Toplam ${formatPara(secilenler.reduce((toplam, inv) => toplam + tutarSayiyaCevir(inv.tutar), 0))}`;
+      const odenecekSayisi = secilenler.filter(inv => !inv.odendi).length;
+      const odendiDugmesi = document.getElementById("toplu-odendi-btn");
+      if (odendiDugmesi) {
+        odendiDugmesi.disabled = odenecekSayisi === 0;
+        odendiDugmesi.title = odenecekSayisi ? `${odenecekSayisi} ödenmemiş faturayı ödendi yap` : "Seçilen faturaların tamamı zaten ödendi";
+      }
+      tabloSecimDurumunuGuncelle(gorunenListe);
+    }
+
+    function secimDegistir(kimlik, secildi, kutu) {
+      const anahtar = String(kimlik);
+      secildi ? seciliFaturaKimlikleri.add(anahtar) : seciliFaturaKimlikleri.delete(anahtar);
+      kutu?.closest("tr")?.classList.toggle("secili-satir", secildi);
+      topluIslemPaneliniGuncelle();
+    }
+
+    function gorunenlerinSeciminiDegistir(secildi) {
+      goruntulenenFaturalariGetir().forEach(inv => {
+        const kimlik = String(inv.id);
+        secildi ? seciliFaturaKimlikleri.add(kimlik) : seciliFaturaKimlikleri.delete(kimlik);
+      });
+      listeyiGoster();
+    }
+
+    function secimiTemizle(yenidenCiz=true) {
+      seciliFaturaKimlikleri.clear();
+      topluSilmeKimlikleri = [];
+      document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
+      if (yenidenCiz) listeyiGoster();
+      else topluIslemPaneliniGuncelle([]);
+    }
+
+    function secilenleriOdendiYap() {
+      if (!yoneticiGerekli()) return;
+      const liste = faturaYukle();
+      const secilenler = seciliFaturalariGetir(liste, seciliFaturaKimlikleri);
+      const odenecekSayisi = secilenler.filter(inv => !inv.odendi).length;
+      if (!odenecekSayisi) {
+        syncGoster("Seçilen faturaların tamamı zaten ödendi", "#f59e0b");
+        return;
+      }
+      const yeniListe = seciliFaturalariOdendiYap(liste, seciliFaturaKimlikleri, bugununTarihi());
+      seciliFaturaKimlikleri.clear();
+      faturaKaydet(yeniListe, `${odenecekSayisi} fatura toplu olarak ödendi işaretlendi`);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+    }
+
+    function secilenleriCsvIndir() {
+      if (!yoneticiGerekli()) return;
+      csvDosyasiIndir(
+        seciliFaturalariGetir(faturaYukle(), seciliFaturaKimlikleri),
+        `arlinoks-secili-faturalar-${bugununTarihi()}.csv`
+      );
+    }
+
+    function topluSilmeAc() {
+      if (!yoneticiGerekli()) return;
+      const secilenler = seciliFaturalariGetir(faturaYukle(), seciliFaturaKimlikleri);
+      if (!secilenler.length) return;
+      topluSilmeKimlikleri = secilenler.map(inv => String(inv.id));
+      const toplam = secilenler.reduce((deger, inv) => deger + tutarSayiyaCevir(inv.tutar), 0);
+      document.getElementById("toplu-sil-ozet").innerHTML = `<strong>${secilenler.length} fatura</strong> ve toplam <strong>${formatPara(toplam)}</strong> tutarındaki kayıt silinecek. Devam etmek istediğinizden emin misiniz?`;
+      document.getElementById("toplu-sil-onay").innerHTML = `<i class="fa-solid fa-trash-can" aria-hidden="true"></i> ${secilenler.length} Faturayı Sil`;
+      document.getElementById("toplu-sil-overlay").classList.add("aktif");
+      setTimeout(() => document.getElementById("toplu-sil-onay")?.focus(), 60);
+    }
+
+    function topluSilmeKapat() {
+      topluSilmeKimlikleri = [];
+      document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
+    }
+
+    function topluSilmeyiOnayla() {
+      if (!yoneticiGerekli() || !topluSilmeKimlikleri.length) return;
+      const liste = faturaYukle();
+      const silinecekler = seciliFaturalariGetir(liste, topluSilmeKimlikleri);
+      if (!silinecekler.length) { topluSilmeKapat(); return; }
+      const yeniListe = seciliFaturalariSil(liste, topluSilmeKimlikleri);
+      const silinenSayisi = silinecekler.length;
+      seciliFaturaKimlikleri.clear();
+      topluSilmeKimlikleri = [];
+      document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
+      faturaKaydet(yeniListe, `${silinenSayisi} fatura toplu olarak silindi`);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+    }
+
     function csvHucre(deger) {
       let metin = String(deger ?? "");
       if (/^[=+\-@]/.test(metin)) metin = "'" + metin;
@@ -2045,6 +2279,7 @@
       return ({'bu-ay':'Bu ay eklenen','yaklasan':'7 gün içinde vadesi gelen','geciken':'Geciken','odenen-ay':'Bu ay ödenen'})[filtre] || '';
     }
     function hizliFiltrele(filtre) {
+      secimiTemizle(false);
       aktifIstatistikFiltresi = aktifIstatistikFiltresi===filtre ? null : filtre;
       document.querySelectorAll('.hizli-kart').forEach(kart=>{
         const aktif = kart.dataset.filtre===aktifIstatistikFiltresi;
@@ -2283,11 +2518,13 @@
       const liste = goruntulenenFaturalariGetir();
       const baslik    = document.getElementById("liste-baslik");
       const konteyner = document.getElementById("liste");
+      secimiGecerliKayitlarlaSinirla();
       if (!liste.length) {
         baslik.textContent = aktifIstatistikFiltresi ? filtreBasligi(aktifIstatistikFiltresi) : '';
         konteyner.innerHTML = aktifIstatistikFiltresi
           ? '<div class="bos">Bu filtreye uyan fatura bulunamadı.<br><button class="btn-duzenle" onclick="hizliFiltrele(aktifIstatistikFiltresi)">Filtreyi Temizle</button></div>'
           : '<div class="bos"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><br>Henüz fatura eklenmedi.<br><span style="font-size:13px;color:#64748b">Yeni Fatura düğmesini kullanın.</span></div>';
+        topluIslemPaneliniGuncelle(liste);
         return;
       }
       baslik.textContent = aktifIstatistikFiltresi
@@ -2295,6 +2532,7 @@
         : liste.length + " fatura · Vadeye göre sıralı";
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
+          ${yoneticiMi() ? '<th class="secim-hucre"><input class="fatura-secim" id="gorunenlerin-tumunu-sec" type="checkbox" onchange="gorunenlerinSeciminiDegistir(this.checked)" aria-label="Görünen tüm faturaları seç" title="Görünen tüm faturaları seç"/></th>' : ''}
           <th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th>
           <th>VADE GÜNÜ</th><th>VADE TARİHİ</th>
           <th>TUTAR</th><th>DURUM</th>${yoneticiMi() ? '<th>İŞLEM</th>' : ''}
@@ -2305,7 +2543,10 @@
           const g    = kalanGun(vade);
           const {label,renk,bg} = durumBilgi(g);
           const odendi = inv.odendi;
-          return `<tr class="${odendi?'odendi-satir':''}">
+          const kimlik = String(inv.id);
+          const secili = seciliFaturaKimlikleri.has(kimlik);
+          return `<tr class="${odendi?'odendi-satir':''} ${secili?'secili-satir':''}">
+            ${yoneticiMi() ? `<td class="secim-hucre"><input class="fatura-secim" type="checkbox" data-fatura-id="${htmlGuvenli(kimlik)}" ${secili ? 'checked' : ''} onchange="secimDegistir(this.dataset.faturaId,this.checked,this)" aria-label="${htmlGuvenli(inv.no)} faturasını seç"/></td>` : ''}
             <td style="color:#64748b">${i+1}</td>
             <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
             <td><strong>${htmlGuvenli(inv.no)}</strong></td>
@@ -2327,6 +2568,7 @@
           </tr>`;
         }).join("")}</tbody>
       </table></div>`;
+      topluIslemPaneliniGuncelle(liste);
     }
 
     // ── BAŞLANGIÇ ─────────────────────────────────────────────────────────────
@@ -2354,10 +2596,14 @@
       document.getElementById("rapor-overlay")?.addEventListener("click", e => {
         if (e.target.id === "rapor-overlay") raporKapat();
       });
+      document.getElementById("toplu-sil-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "toplu-sil-overlay") topluSilmeKapat();
+      });
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           yeniFaturaKapat();
           raporKapat();
+          topluSilmeKapat();
         }
       });
     }
