@@ -744,17 +744,28 @@
       max-width: none; min-height: 0; color: #8ea0b4; font-size: 9px;
       line-height: 1.25; text-align: left;
     }
-    .kur-satirlar { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .kur-satirlar {
+      min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(205px, 240px));
+      justify-content: center;
+    }
     .kur-satir {
-      grid-template-columns: 32px minmax(86px,1fr) minmax(58px,auto) minmax(58px,auto);
-      gap: 10px; padding: 9px 18px;
+      grid-template-columns: 32px minmax(145px,1fr);
+      grid-template-rows: auto repeat(2, minmax(15px,auto));
+      gap: 0 10px; padding: 6px 18px;
     }
     .kur-satir + .kur-satir { border-top: 0; border-left: 1px solid var(--cizgi-yumusak); }
-    .kur-ikon { width: 32px; height: 32px; font-size: 14px; }
-    .kur-para strong { color: #e8eef5; font-size: 12px; }
-    .kur-para small { margin-top: 3px; }
-    .kur-fiyat small { margin-bottom: 2px; color: #75889d; }
-    .kur-fiyat strong { color: #f4f7fa; font-size: 12px; }
+    .kur-ikon { grid-column: 1; grid-row: 1 / 4; width: 32px; height: 32px; align-self: center; font-size: 14px; }
+    .kur-para { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; gap: 7px; }
+    .kur-para strong { display: inline; color: #e8eef5; font-size: 11px; }
+    .kur-para small { display: inline; margin: 0; }
+    .kur-fiyat {
+      grid-column: 2; display: grid; grid-template-columns: 40px minmax(64px,auto);
+      align-items: baseline; gap: 6px; text-align: left;
+    }
+    .kur-fiyat-alis { grid-row: 2; }
+    .kur-fiyat-satis { grid-row: 3; }
+    .kur-fiyat small { display: inline; margin: 0; color: #75889d; }
+    .kur-fiyat strong { display: inline; color: #f4f7fa; font-size: 12px; }
     .kur-islemler {
       display: flex; align-items: center; gap: 7px; padding: 0 13px;
       border-left: 1px solid var(--cizgi-yumusak);
@@ -855,6 +866,7 @@
       .kur-baslik-satir { grid-column: 1; border-right: 0; border-bottom: 1px solid var(--cizgi-yumusak); }
       .kur-durum { flex-basis: 100%; padding-left: 37px; }
       .kur-satirlar { grid-column: 1 / -1; grid-row: 2; grid-template-columns: 1fr; }
+      .kur-satir { grid-template-columns: 32px minmax(0,1fr); }
       .kur-satir + .kur-satir { border-left: 0; border-top: 1px solid var(--cizgi-yumusak); }
       .kur-islemler { grid-column: 2; grid-row: 1; border-left: 1px solid var(--cizgi-yumusak); border-bottom: 1px solid var(--cizgi-yumusak); }
       .form-grid { grid-template-columns: 1fr; }
@@ -1259,14 +1271,14 @@
         <div class="kur-satir">
           <span class="kur-ikon usd" aria-hidden="true"><i class="fa-solid fa-dollar-sign"></i></span>
           <span class="kur-para"><strong>Dolar / TL</strong><small>USD / TRY</small></span>
-          <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-usd-alis">—</strong></span>
-          <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-usd-satis">—</strong></span>
+          <span class="kur-fiyat kur-fiyat-alis"><small>ALIŞ</small><strong id="kur-usd-alis">—</strong></span>
+          <span class="kur-fiyat kur-fiyat-satis"><small>SATIŞ</small><strong id="kur-usd-satis">—</strong></span>
         </div>
         <div class="kur-satir">
           <span class="kur-ikon eur" aria-hidden="true"><i class="fa-solid fa-euro-sign"></i></span>
           <span class="kur-para"><strong>Euro / TL</strong><small>EUR / TRY</small></span>
-          <span class="kur-fiyat"><small>ALIŞ</small><strong id="kur-eur-alis">—</strong></span>
-          <span class="kur-fiyat"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
+          <span class="kur-fiyat kur-fiyat-alis"><small>ALIŞ</small><strong id="kur-eur-alis">—</strong></span>
+          <span class="kur-fiyat kur-fiyat-satis"><small>SATIŞ</small><strong id="kur-eur-satis">—</strong></span>
         </div>
       </div>
       <div class="kur-islemler">

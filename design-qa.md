@@ -1,46 +1,59 @@
-# Design QA — Üst Döviz Kuru Şeridi
+# Design QA — Sıkı Döviz Kuru Yerleşimi
 
-## Visual source
+## Görsel kaynak ve hedef
 
-- Onaylanan seçenek: `C:\Users\Ryzen\.codex\generated_images\01a022f5-d85b-7ab1-b359-9d4906202cc1\exec-0544b77a-9344-4e41-967f-acb58989d7b0.png`
-- Kaynak boyutu: 1485 × 1059 px
-- Uygulanan masaüstü görüntüsü: `qa/artifacts/exchange-rate-reference-size.png`
-- Uygulanan telefon görüntüsü: `qa/artifacts/exchange-rate-mobile.png`
-- Yan yana karşılaştırma: `qa/artifacts/exchange-rate-comparison.png`
+- Kaynak görünüm: `qa/artifacts/exchange-rate-before-stacked.png`
+- Kullanıcı hedefi: USD ve EUR gruplarını birbirine yaklaştırmak; alış ve satış değerlerini para simgesinin yanında, alış üstte ve satış altta göstermek.
+- Uygulanan masaüstü görünümü: `qa/artifacts/exchange-rate-desktop.png`
+- Uygulanan telefon görünümü: `qa/artifacts/exchange-rate-mobile.png`
+- Odaklı karşılaştırma: `qa/artifacts/exchange-rate-stacked-comparison.png`
 
-## Viewport and state
+## Viewport ve durum
 
-- Masaüstü: 1536 × 1024 CSS viewport, yerel yönetici önizlemesi, bir örnek fatura.
-- Telefon: 390 × 844 CSS viewport, yerel yönetici önizlemesi, aynı örnek veri.
-- Karşılaştırılan durum: sayfa ilk açılışı; döviz kuru yüklü ve filtreler kapalı.
+- Masaüstü: 1920 × 1080 CSS viewport; uygulama içeriği 1920 × 1080 px; yoğunluk 1.
+- Telefon: 390 × 844 CSS viewport; yakalanan içerik 375 × 812 px; yoğunluk 1.
+- Durum: yerel yönetici önizlemesi, TCMB kuru yüklenmiş, bir örnek fatura gösteriliyor.
 
-## Full-view comparison
+## Tam görünüm karşılaştırması
 
-- Döviz kuru şeridi başlığın hemen altına ve filtrelerin üstüne taşındı.
-- Şerit mevcut Arlinoks lacivert/altın görsel sistemiyle uyumlu tutuldu.
-- USD ve EUR alış/satış değerleri tek bakışta okunabilecek iki eşit gruba ayrıldı.
-- Yenile ve TCMB kaynak işlemleri sağ uçta, onaylanan görseldeki konumla eşleşiyor.
-- 1536 px masaüstünde yatay taşma giderildi; “Yeni Fatura” düğmesi tamamen görünür.
+- Döviz şeridinin üst konumu, yüksekliği, renkleri ve mevcut işlevleri korunuyor.
+- USD ve EUR bölümleri 240 px genişliğinde bitişik iki grup olarak ortalandı; önceki geniş yayılım kaldırıldı.
+- Masaüstünde ve telefonda yatay taşma bulunmuyor.
 
-## Focused-region comparison
+## Odaklı bölge karşılaştırması
 
-- Şerit yüksekliği 62 px; filtrelerle arasındaki boşluk 14 px.
-- Başlık, veri tarihi, para birimi ikonları ve alış/satış değerlerinde hiyerarşi korunuyor.
-- Mobil görünümde başlık ve işlemler üst satırda, USD/EUR değerleri alt alta akıyor.
-- 390 px mobil testinde yatay taşma yok.
+- Her para biriminde simge ile kur bilgilerinin yatay mesafesi 10 px.
+- Para birimi adı üstte; alış değeri ikinci satırda, satış değeri üçüncü satırda.
+- “ALIŞ” ve “SATIŞ” etiketleri kendi değerleriyle aynı satırda ve sola hizalı.
+- Telefon görünümünde USD ve EUR grupları alt alta geçiyor; aynı dikey alış/satış sırası korunuyor.
 
-## Findings
+## Gerekli uygunluk yüzeyleri
+
+- Yazı ve tipografi: Mevcut Segoe UI/Georgia hiyerarşisi, ağırlıklar ve sayı okunabilirliği korundu.
+- Boşluk ve yerleşim: Kur grupları sıkılaştırıldı; 10 px simge aralığı ve 0 px grup aralığı hedefi karşılıyor.
+- Renkler: Mevcut lacivert, altın, yeşil ve mavi durum renkleri değişmedi.
+- Görsel ve ikon kalitesi: Var olan Font Awesome dolar/euro ikonları korundu; yeni raster veya yaklaşık ikon üretilmedi.
+- Metin ve içerik: TCMB tarihi, Dolar/TL, Euro/TL, USD/TRY, EUR/TRY, ALIŞ ve SATIŞ metinleri korundu.
+
+## Bulgular
 
 - P0: Yok.
 - P1: Yok.
 - P2: Yok.
-- Kabul edilen ürün kısıtı: Onay yalnızca döviz alanını kapsadığı için mevcut Arlinoks üst menüsü ve canlı veri yapısı değiştirilmedi.
 
-## Comparison history
+## Karşılaştırma geçmişi
 
-1. İlk karşılaştırmada 1536 px görünümde filtre işlemlerinin 17 px taştığı görüldü.
-2. İşlem düğmeleri ve filtre aralıkları sıkılaştırıldı.
-3. İkinci karşılaştırmada `scrollWidth` ve `clientWidth` 1536 px olarak eşitlendi.
-4. Masaüstü ve mobil tarayıcı konsolunda hata bulunmadı.
+1. İlk uygulamada alış/satış iki satıra alındı ancak para simgesiyle arasında yaklaşık 100 px mesafe kaldı.
+2. Kur kartı iki sütunlu yapıya çevrildi; para adı ve iki kur satırı simgenin hemen yanına taşındı.
+3. Son kanıtta simge-kur aralığı 10 px, alış satırı satış satırının üstünde ve iki kur grubu bitişik ölçüldü.
+4. Mobil görünümde `scrollWidth` ve `clientWidth` 375 px olarak eşit; tarayıcı konsol hatası yok.
+
+## Uygulama kontrol listesi
+
+- [x] USD ve EUR gruplarını yakınlaştır.
+- [x] Alış değerini üst satıra yerleştir.
+- [x] Satış değerini alt satıra yerleştir.
+- [x] Kur bilgilerini para simgesinin yanına taşı.
+- [x] Masaüstü ve telefon taşmasını kontrol et.
 
 final result: passed
