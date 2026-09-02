@@ -2386,7 +2386,7 @@
     }
     function goruntulenenFaturalariGetir() {
       return faturaYukle().filter(arayuzFiltresineUyar).sort((a,b)=>
-        kalanGun(vadeTarihi(a.tarih,a.vadeGun)) - kalanGun(vadeTarihi(b.tarih,b.vadeGun))
+        tarihOlusturYerel(b.tarih) - tarihOlusturYerel(a.tarih) || Number(b.id) - Number(a.id)
       ).filter(inv=>filtreyeUyar(inv,aktifIstatistikFiltresi));
     }
 
@@ -3247,7 +3247,7 @@
       }
       baslik.textContent = aktifIstatistikFiltresi
         ? liste.length + " fatura · " + filtreBasligi(aktifIstatistikFiltresi)
-        : liste.length + " fatura · Vadeye göre sıralı";
+        : liste.length + " fatura · Fatura tarihine göre yeni → eski";
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
           ${yoneticiMi() ? '<th class="secim-hucre"><input class="fatura-secim" id="gorunenlerin-tumunu-sec" type="checkbox" onchange="gorunenlerinSeciminiDegistir(this.checked)" aria-label="Görünen tüm faturaları seç" title="Görünen tüm faturaları seç"/></th>' : ''}
