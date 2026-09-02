@@ -142,7 +142,28 @@ assert.equal(firstRead.cariHareketler[0].id, "legacy-odm-eski");
 
 assert.equal(post({ action:"read" }, "viewer-token").role, "viewer");
 assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", items:[item1] }, "viewer-token").code, "FORBIDDEN");
+assert.equal(post({ action:"users.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici kullanıcı yönetimine erişememeli");
 assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
+
+const ilkKullanicilar = post({ action:"users.list" });
+assert.equal(ilkKullanicilar.users.length, 2, "Proje sahibi ve izleyici listelenmeli");
+assert.equal(ilkKullanicilar.users[0].email, "admin@example.com");
+assert.equal(ilkKullanicilar.users[0].protected, true, "Proje sahibi korunmalı");
+assert.equal(post({ action:"users.save", email:"gecersiz", role:"viewer" }).code, "INVALID_EMAIL");
+
+const izleyiciEklendi = post({ action:"users.save", email:"yeni@example.com", role:"viewer" });
+assert.equal(izleyiciEklendi.users.find(item => item.email === "yeni@example.com").role, "viewer");
+assert.match(propertyData.VIEWER_EMAILS, /yeni@example\.com/);
+
+const yoneticiYapildi = post({ action:"users.save", email:"yeni@example.com", role:"admin" });
+assert.equal(yoneticiYapildi.users.find(item => item.email === "yeni@example.com").role, "admin");
+assert.doesNotMatch(propertyData.VIEWER_EMAILS, /yeni@example\.com/);
+assert.match(propertyData.ADMIN_EMAILS, /yeni@example\.com/);
+
+assert.equal(post({ action:"users.delete", email:"admin@example.com" }).code, "OWNER_PROTECTED", "Proje sahibi kaldırılamamalı");
+const kullaniciKaldirildi = post({ action:"users.delete", email:"yeni@example.com" });
+assert.equal(kullaniciKaldirildi.users.some(item => item.email === "yeni@example.com"), false);
+assert.doesNotMatch(propertyData.ADMIN_EMAILS, /yeni@example\.com/);
 
 const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
 assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount },
@@ -178,5 +199,7 @@ assert.match(index, /cekler/);
 assert.match(index, /baseRevision/);
 assert.match(index, /requestId/);
 assert.match(index, /BULUT_CAKISMA_ANAHTAR/);
+assert.match(index, /action:"users\.save"/);
+assert.match(index, /action:"users\.delete"/);
 
-console.log("Apps Script cari hareket, çek, sürümleme ve çakışma testleri başarılı.");
+console.log("Apps Script kullanıcı yetkisi, cari hareket, çek, sürümleme ve çakışma testleri başarılı.");
