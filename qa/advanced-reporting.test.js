@@ -16,6 +16,16 @@ function vadeTarihi(tarih, vadeGun) {
   sonuc.setDate(sonuc.getDate() + Number(vadeGun));
   return sonuc;
 }
+function faturaOdenenTutari(inv) {
+  return (inv.odemeler || []).reduce((toplam, odeme) => toplam + Number(odeme.tutar), 0);
+}
+function faturaKalanTutari(inv) {
+  return Math.max(0, Number(inv.tutar) - faturaOdenenTutari(inv));
+}
+function faturaOdemeDurumu(inv) {
+  const odenen = faturaOdenenTutari(inv);
+  return odenen >= Number(inv.tutar) ? "odendi" : odenen > 0 ? "kismi" : "odenmedi";
+}
 
 const context = {
   console,
@@ -25,7 +35,11 @@ const context = {
   Math,
   bugununTarihi,
   vadeTarihi,
-  tutarSayiyaCevir: deger => Number(deger) || 0
+  tutarSayiyaCevir: deger => Number(deger) || 0,
+  faturaOdenenTutari,
+  faturaKalanTutari,
+  faturaOdemeDurumu,
+  formatPara: deger => `${Number(deger)} ₺`
 };
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
@@ -49,7 +63,7 @@ assert.deepEqual(
 const liste = [
   { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-01-01", vadeGun:40, tutar:"100", odendi:false },
   { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-01-01", vadeGun:30, tutar:"200", odendi:false },
-  { id:3, cari:"Örnek Metal", no:"F-3", tarih:"2026-02-01", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05" },
+  { id:3, cari:"Örnek Metal", no:"F-3", tarih:"2026-02-01", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05", odemeler:[{tarih:"2026-02-05",tutar:300}] },
   { id:4, cari:"Yılmaz Makina", no:"F-4", tarih:"2026-02-15", vadeGun:30, tutar:"400", odendi:false }
 ];
 const referans = new Date(2026,1,10);

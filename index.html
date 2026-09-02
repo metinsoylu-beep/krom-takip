@@ -57,7 +57,8 @@
     tbody tr { border-bottom: 1px solid #1a2535; transition: background 0.15s; }
     tbody tr:hover { background: #1a2a42; }
     tbody tr.odendi-satir { background: #0d2218 !important; opacity: 0.72; }
-    tbody tr.odendi-satir td { text-decoration: line-through; color: #4ade80 !important; }
+    tbody tr.odendi-satir td { color: #4ade80 !important; }
+    tbody tr.odendi-satir td:not(.secim-hucre):not(:last-child) { text-decoration: line-through; }
     td { padding: 11px 14px; vertical-align: middle; white-space: nowrap; }
     .tutar-hucre { color: #c9a84c; font-weight: bold; }
     .durum { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
@@ -411,6 +412,68 @@
     .toplu-sil-onay { border: 1px solid #ff6370; background: #c92c3a; color: #fff; }
     .toplu-sil-onay:hover { background: #e23847; }
 
+    .odeme-yonetim-overlay { align-items: flex-start; overflow-y: auto; padding: 18px; }
+    .odeme-yonetim-kart {
+      width: min(780px, 100%); max-width: 780px; margin: auto; padding: 0; overflow: hidden;
+      border: 1px solid var(--cizgi); border-top: 3px solid var(--yesil); background: var(--panel-koyu);
+      box-shadow: 0 26px 90px #020914c7; animation: salla .25s ease;
+    }
+    .odeme-yonetim-ust {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 16px 18px; border-bottom: 1px solid var(--cizgi-yumusak);
+    }
+    .odeme-yonetim-baslik { color: #eef4fa; font: 700 17px Georgia,serif; }
+    .odeme-yonetim-baslik i { margin-right: 7px; color: #4ade80; }
+    .odeme-yonetim-alt { margin-top: 4px; color: #8294a7; font-size: 10px; }
+    .odeme-ozetler { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; padding: 14px 18px; }
+    .odeme-ozet {
+      min-width: 0; padding: 11px 12px; background: var(--panel); border: 1px solid var(--cizgi-yumusak); border-radius: 7px;
+    }
+    .odeme-ozet span { display: block; color: #8294a7; font-size: 8px; }
+    .odeme-ozet strong { display: block; margin-top: 4px; color: var(--odeme-renk); font: 700 16px Georgia,serif; white-space: nowrap; }
+    .odeme-formu {
+      display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 10px; padding: 14px 18px;
+      background: #0a1a2b; border-block: 1px solid var(--cizgi-yumusak);
+    }
+    .odeme-form-alan label { display: block; margin-bottom: 5px; color: #91a3b5; font-size: 9px; }
+    .odeme-form-alan input, .odeme-form-alan select {
+      width: 100%; height: 38px; padding: 0 10px; background: #10243a; border: 1px solid var(--cizgi);
+      border-radius: 6px; color: #eef4fa; font: 11px "Segoe UI",Arial,sans-serif; outline: none;
+    }
+    .odeme-form-alan input:focus, .odeme-form-alan select:focus { border-color: #39c56b; }
+    .odeme-form-alan.genis { grid-column: span 2; }
+    .odeme-form-alan.tam { grid-column: 1 / -1; }
+    .odeme-form-islem { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+    .odeme-form-mesaj { min-height: 18px; margin-right: auto; color: #ff7a85; font-size: 10px; }
+    .odeme-kaydet-btn {
+      min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 8px 16px; border: 1px solid #4ade8088; border-radius: 7px; background: #2faa58;
+      color: #06140d; font: 750 11px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .odeme-kaydet-btn:hover { background: #4ade80; }
+    .odeme-kaydet-btn:disabled { cursor: not-allowed; }
+    .odeme-gecmisi { padding: 14px 18px 18px; }
+    .odeme-gecmisi-baslik { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; color: #dce6ef; font-size: 11px; }
+    .odeme-gecmisi-baslik span { color: #8294a7; font-size: 9px; }
+    .odeme-gecmisi-liste { display: grid; gap: 7px; max-height: 225px; overflow-y: auto; }
+    .odeme-gecmisi-bos { padding: 24px; border: 1px dashed var(--cizgi); border-radius: 7px; color: #718398; text-align: center; font-size: 11px; }
+    .odeme-kaydi {
+      display: grid; grid-template-columns: 85px minmax(95px,.8fr) minmax(110px,1fr) minmax(0,1.3fr) auto;
+      align-items: center; gap: 10px; padding: 9px 10px; background: #10243a; border: 1px solid var(--cizgi-yumusak); border-radius: 7px;
+    }
+    .odeme-kaydi-tarih { color: #aebcca; font-size: 10px; }
+    .odeme-kaydi-tutar { color: #4ade80; font: 700 12px Georgia,serif; }
+    .odeme-kaydi-yontem { color: #d4dee8; font-size: 10px; }
+    .odeme-kaydi-detay { min-width: 0; overflow: hidden; color: #8294a7; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .odeme-kaydi-sil {
+      width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #ff3f4f55;
+      border-radius: 6px; background: #ff3f4f0d; color: #ff6b77; cursor: pointer;
+    }
+    .odeme-kaydi-sil:hover { background: #ff3f4f22; }
+    .durum.kismi { color: #fbbf24; background: #f59e0b1a; border-color: #f59e0b33; }
+    .odeme-ilerleme { display: block; margin-top: 4px; color: #8ea0b2; font-size: 9px; text-decoration: none !important; }
+    .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
+
     .veri-kontrol-panel {
       margin: 0 0 13px; overflow: hidden; background: var(--panel-koyu);
       border: 1px solid var(--cizgi); border-left: 4px solid #4ade80; border-radius: 9px;
@@ -580,6 +643,19 @@
       .toplu-islem-bilgi { width: 100%; min-width: 0; }
       .toplu-islem-btn { flex: 1 1 calc(50% - 6px); }
       .toplu-islem-btn.temizle { flex-basis: 100%; }
+      .odeme-yonetim-overlay { padding: 0; }
+      .odeme-yonetim-kart { min-height: 100vh; margin: 0; border-radius: 0; }
+      .odeme-ozetler { grid-template-columns: 1fr; padding: 12px; }
+      .odeme-formu { grid-template-columns: 1fr; padding: 12px; }
+      .odeme-form-alan.genis, .odeme-form-alan.tam { grid-column: 1; }
+      .odeme-form-islem { align-items: stretch; flex-direction: column; }
+      .odeme-form-mesaj { margin: 0; }
+      .odeme-kaydet-btn { width: 100%; }
+      .odeme-gecmisi { padding: 12px; }
+      .odeme-kaydi { grid-template-columns: 1fr auto; gap: 5px 10px; }
+      .odeme-kaydi-tutar { grid-column: 2; grid-row: 1; }
+      .odeme-kaydi-yontem, .odeme-kaydi-detay { grid-column: 1; }
+      .odeme-kaydi-sil { grid-column: 2; grid-row: 2 / span 2; }
       .rapor-overlay { padding: 0; }
       .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
@@ -739,6 +815,40 @@
     </div>
   </div>
 
+  <!-- MANUEL ÖDEME GİRİŞİ VE GEÇMİŞİ -->
+  <div class="popup-overlay odeme-yonetim-overlay yalnızca-yonetici" id="odeme-yonetim-overlay">
+    <section class="popup-kutu odeme-yonetim-kart" role="dialog" aria-modal="true" aria-labelledby="odeme-yonetim-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="odeme-yonetim-baslik"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Manuel Ödeme Girişi</h2>
+          <p class="odeme-yonetim-alt" id="odeme-fatura-bilgisi">Fatura bilgileri hazırlanıyor…</p>
+        </div>
+        <button class="modal-kapat" type="button" onclick="odemeYonetiminiKapat()" aria-label="Ödeme penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="odeme-ozetler">
+        <div class="odeme-ozet" style="--odeme-renk:#f3be3e"><span>FATURA TUTARI</span><strong id="odeme-fatura-tutari">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#4ade80"><span>ÖDENEN TUTAR</span><strong id="odeme-odenen-tutar">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#ff6b77"><span>KALAN TUTAR</span><strong id="odeme-kalan-tutar">0 ₺</strong></div>
+      </div>
+      <div class="odeme-formu">
+        <input id="odeme-fatura-id" type="hidden"/>
+        <div class="odeme-form-alan"><label for="odeme-tarih">ÖDEME TARİHİ</label><input id="odeme-tarih" type="date"/></div>
+        <div class="odeme-form-alan"><label for="odeme-tutar">ÖDENEN TUTAR (₺)</label><input id="odeme-tutar" type="number" min="0.01" step="0.01" placeholder="0,00"/></div>
+        <div class="odeme-form-alan"><label for="odeme-yontem">ÖDEME YÖNTEMİ</label><select id="odeme-yontem"><option>Havale / EFT</option><option>Çek</option><option>Nakit</option><option>Kredi Kartı</option><option>Mahsup</option><option>Diğer</option></select></div>
+        <div class="odeme-form-alan"><label for="odeme-referans">DEKONT / REFERANS NO</label><input id="odeme-referans" type="text" maxlength="160" placeholder="İsteğe bağlı"/></div>
+        <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
+        <div class="odeme-form-islem">
+          <span class="odeme-form-mesaj" id="odeme-form-mesaj" role="status"></span>
+          <button class="odeme-kaydet-btn" id="odeme-kaydet-btn" type="button" onclick="manuelOdemeKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet</button>
+        </div>
+      </div>
+      <div class="odeme-gecmisi">
+        <div class="odeme-gecmisi-baslik"><strong>Ödeme Geçmişi</strong><span id="odeme-gecmisi-sayisi">0 kayıt</span></div>
+        <div class="odeme-gecmisi-liste" id="odeme-gecmisi-liste"></div>
+      </div>
+    </section>
+  </div>
+
   <!-- TOPLU SİLME ONAYI -->
   <div class="popup-overlay yalnızca-yonetici" id="toplu-sil-overlay">
     <div class="popup-kutu toplu-sil-kart" role="dialog" aria-modal="true" aria-labelledby="toplu-sil-baslik">
@@ -786,6 +896,7 @@
           <select id="rapor-durum" onchange="raporuGuncelle()">
             <option value="tumu">Tümü</option>
             <option value="odenmedi">Ödenmedi</option>
+            <option value="kismi">Kısmi Ödendi</option>
             <option value="odendi">Ödendi</option>
             <option value="geciken">Geciken</option>
             <option value="yaklasan">30 gün içinde</option>
@@ -851,6 +962,7 @@
             <select id="filtre-durum" onchange="filtreleriGuncelle()">
               <option value="tumu">Tümü</option>
               <option value="odenmedi">Ödenmedi</option>
+              <option value="kismi">Kısmi Ödendi</option>
               <option value="odendi">Ödendi</option>
               <option value="geciken">Geciken</option>
             </select>
@@ -958,7 +1070,7 @@
             </span>
           </div>
           <button class="toplu-islem-btn odendi" id="toplu-odendi-btn" type="button" onclick="secilenleriOdendiYap()">
-            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Ödendi Yap
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Tam Ödeme Kaydet
           </button>
           <button class="toplu-islem-btn csv" type="button" onclick="secilenleriCsvIndir()">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Seçilen CSV
@@ -1197,7 +1309,18 @@
             vadeGun: Number(inv.vadeGun),
             tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
             odendi: Boolean(inv.odendi),
-            odemeTarihi: String(inv.odemeTarihi || "")
+            odemeTarihi: String(inv.odemeTarihi || ""),
+            odemeler: (Array.isArray(inv.odemeler) ? inv.odemeler : [])
+              .map(odeme => ({
+                id:String(odeme.id),
+                tarih:String(odeme.tarih),
+                tutar:tutarSayiyaCevir(odeme.tutar).toFixed(2),
+                yontem:String(odeme.yontem || ""),
+                referans:String(odeme.referans || ""),
+                aciklama:String(odeme.aciklama || ""),
+                kayitZamani:String(odeme.kayitZamani || "")
+              }))
+              .sort((a,b) => a.id.localeCompare(b.id))
           }))
           .sort((a, b) => a.id - b.id)
       );
@@ -1344,13 +1467,20 @@
             return;
           }
 
-          const yerelOdemeTarihleri = new Map(
-            faturaYukle().map(inv => [Number(inv.id), String(inv.odemeTarihi || "")])
+          const yerelOdemeBilgileri = new Map(
+            faturaYukle().map(inv => [Number(inv.id), {
+              odemeTarihi:String(inv.odemeTarihi || ""),
+              odemeler:Array.isArray(inv.odemeler) ? inv.odemeler : []
+            }])
           );
           const hamListe = gecerli.map(row => {
             const odemeD = row["Ödeme Durumu"] || row["odendi"] || "";
             const odendi = odemeD === "Ödendi" || odemeD === true || odemeD === "TRUE" || odemeD === "true";
-            const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || yerelOdemeTarihleri.get(Number(row["id"])) || "";
+            const yerelOdeme = yerelOdemeBilgileri.get(Number(row["id"])) || { odemeTarihi:"", odemeler:[] };
+            const odemeTarihi = row["Ödeme Tarihi"] || row["odemeTarihi"] || yerelOdeme.odemeTarihi || "";
+            const odemeler = Object.prototype.hasOwnProperty.call(row, "odemeler")
+              ? row.odemeler
+              : yerelOdeme.odemeler;
             const vadeGunHam = row["Vade Günü"] || row["vadeGun"] || "90";
             const vadeGunSayi = parseInt(String(vadeGunHam).replace(/[^0-9]/g,"")) || 90;
             return {
@@ -1362,6 +1492,7 @@
               tutar:   String(row["Tutar"]      || row["tutar"] || "0"),
               odendi,
               odemeTarihi: odendi ? String(odemeTarihi) : "",
+              odemeler,
             };
           });
           const { liste, kaldirilan } = faturalariTekillestir(hamListe);
@@ -1431,6 +1562,76 @@
       return Number.isFinite(sayi) ? sayi : 0;
     }
 
+    function odemeKaydiniNormallestir(ham, faturaId, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const tarih = String(ham.tarih || ham.odemeTarihi || "").split("T")[0];
+      const tutar = tutarSayiyaCevir(ham.tutar);
+      if (!tarih || !(tutar > 0)) return null;
+      return {
+        id: String(ham.id || ham.odemeId || `odm-${faturaId}-${tarih}-${sira+1}`).trim().slice(0,160),
+        faturaId: Number(faturaId),
+        tarih,
+        tutar,
+        yontem: String(ham.yontem || ham.yontemAdi || "Belirtilmedi").trim().slice(0,80),
+        referans: String(ham.referans || "").trim().slice(0,160),
+        aciklama: String(ham.aciklama || "").trim().slice(0,500),
+        kayitZamani: String(ham.kayitZamani || "").trim().slice(0,80)
+      };
+    }
+
+    function odemeleriNormallestir(hamOdemeler, faturaId) {
+      const gorulen = new Set();
+      return (Array.isArray(hamOdemeler) ? hamOdemeler : [])
+        .map((ham, sira) => odemeKaydiniNormallestir(ham, faturaId, sira))
+        .filter(odeme => odeme && !gorulen.has(odeme.id) && gorulen.add(odeme.id))
+        .sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id));
+    }
+
+    function faturaOdenenTutari(inv) {
+      return (Array.isArray(inv?.odemeler) ? inv.odemeler : [])
+        .reduce((toplam, odeme) => toplam + tutarSayiyaCevir(odeme.tutar), 0);
+    }
+
+    function faturaKalanTutari(inv) {
+      return Math.max(0, tutarSayiyaCevir(inv?.tutar) - faturaOdenenTutari(inv));
+    }
+
+    function faturaOdemeDurumu(inv) {
+      const toplam = tutarSayiyaCevir(inv?.tutar);
+      const odenen = faturaOdenenTutari(inv);
+      if (toplam > 0 && odenen + 0.005 >= toplam) return "odendi";
+      if (odenen > 0) return "kismi";
+      return "odenmedi";
+    }
+
+    function faturaSonOdemeTarihi(inv) {
+      return (Array.isArray(inv?.odemeler) ? inv.odemeler : [])
+        .reduce((son, odeme) => odeme.tarih > son ? odeme.tarih : son, "");
+    }
+
+    function faturaOdemeOzetiniUygula(inv, eskiOdendi=false) {
+      if (!inv.odemeler.length && eskiOdendi) {
+        inv.odemeler.push({
+          id:`legacy-${inv.id}`,
+          faturaId:inv.id,
+          tarih:inv.odemeTarihi || inv.tarih,
+          tutar:tutarSayiyaCevir(inv.tutar),
+          yontem:"Eski kayıt",
+          referans:"",
+          aciklama:"Ödeme geçmişi özelliğinden önce ödendi olarak işaretlendi.",
+          kayitZamani:""
+        });
+      }
+      inv.odendi = faturaOdemeDurumu(inv) === "odendi";
+      inv.odemeTarihi = inv.odendi ? faturaSonOdemeTarihi(inv) : "";
+      return inv;
+    }
+
+    function odemeKimligiOlustur(faturaId) {
+      const rastgele = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      return `odm-${faturaId}-${rastgele}`;
+    }
+
     function faturaImzasi(inv) {
       const cari = String(inv.cari ?? "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
       const no = String(inv.no ?? "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
@@ -1450,6 +1651,7 @@
       hamListe.forEach((ham, sira) => {
         if (!ham || typeof ham !== "object") return;
         const idSayi = Number(ham.id);
+        const eskiOdendi = ham.odendi === true || ham.odendi === "true" || ham.odendi === "TRUE" || ham.odendi === "Ödendi";
         const inv = {
           id: Number.isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
           no: String(ham.no ?? "").trim(),
@@ -1457,11 +1659,13 @@
           tarih: String(ham.tarih ?? "").split("T")[0],
           vadeGun: parseInt(ham.vadeGun, 10) || 90,
           tutar: String(tutarSayiyaCevir(ham.tutar)),
-          odendi: ham.odendi === true || ham.odendi === "true" || ham.odendi === "TRUE" || ham.odendi === "Ödendi",
+          odendi: eskiOdendi,
           odemeTarihi: String(ham.odemeTarihi || "").split("T")[0],
+          odemeler: [],
         };
         if (!inv.no || !inv.tarih || tutarSayiyaCevir(inv.tutar) <= 0) return;
-        if (!inv.odendi) inv.odemeTarihi = "";
+        inv.odemeler = odemeleriNormallestir(ham.odemeler, inv.id);
+        faturaOdemeOzetiniUygula(inv, eskiOdendi);
 
         const idAnahtari = String(inv.id);
         const imza = faturaImzasi(inv);
@@ -1579,7 +1783,7 @@
       gecerliKayitlar.forEach(inv => {
         const tutar = tutarSayiyaCevir(inv.tutar);
         toplam += tutar;
-        if (inv.odendi) odenen += tutar;
+        odenen += Math.min(tutar, faturaOdenenTutari(inv));
       });
       const beklenenOzet = {
         toplam: formatPara(toplam),
@@ -1701,6 +1905,7 @@
       if (!yoneticiMi()) {
         document.getElementById("duzenle-overlay")?.classList.remove("aktif");
         document.getElementById("yeni-fatura-overlay")?.classList.remove("aktif");
+        document.getElementById("odeme-yonetim-overlay")?.classList.remove("aktif");
         document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
         seciliFaturaKimlikleri.clear();
         topluSilmeKimlikleri = [];
@@ -1884,7 +2089,7 @@
         return !inv.odendi && vadeGunu>=baslangic && vadeGunu<sonrakiHafta;
       }
       if (filtre==='geciken') return !inv.odendi && gun<0;
-      if (filtre==='odenen-ay') return inv.odendi && Boolean(inv.odemeTarihi) && ayniAy(inv.odemeTarihi);
+      if (filtre==='odenen-ay') return (inv.odemeler || []).some(odeme => ayniAy(odeme.tarih));
       return true;
     }
     function arayuzFiltresineUyar(inv) {
@@ -1898,11 +2103,13 @@
       vade.setHours(0,0,0,0);
       const gun = kalanGun(vade);
       const tutar = tutarSayiyaCevir(inv.tutar);
+      const odemeDurumu = faturaOdemeDurumu(inv);
 
       const aramaMetni = `${inv.cari || ''} ${inv.no || ''}`.toLocaleUpperCase('tr-TR');
       if (arama && !aramaMetni.includes(arama)) return false;
-      if (durum === 'odenmedi' && inv.odendi) return false;
-      if (durum === 'odendi' && !inv.odendi) return false;
+      if (durum === 'odenmedi' && odemeDurumu !== 'odenmedi') return false;
+      if (durum === 'kismi' && odemeDurumu !== 'kismi') return false;
+      if (durum === 'odendi' && odemeDurumu !== 'odendi') return false;
       if (durum === 'geciken' && (inv.odendi || gun >= 0)) return false;
       if (baslangic) {
         const ilkGun = tarihOlusturYerel(baslangic);
@@ -1944,11 +2151,24 @@
 
     function seciliFaturalariOdendiYap(liste, kimlikler, odemeTarihi) {
       const secimler = kimlikKumesiOlustur(kimlikler);
-      return (Array.isArray(liste) ? liste : []).map(inv =>
-        secimler.has(String(inv.id)) && !inv.odendi
-          ? { ...inv, odendi:true, odemeTarihi:String(odemeTarihi || "") }
-          : inv
-      );
+      return (Array.isArray(liste) ? liste : []).map(inv => {
+        const kalan = faturaKalanTutari(inv);
+        if (!secimler.has(String(inv.id)) || !(kalan > 0)) return inv;
+        const guncel = {
+          ...inv,
+          odemeler:[...(inv.odemeler || []), {
+            id:odemeKimligiOlustur(inv.id),
+            faturaId:inv.id,
+            tarih:String(odemeTarihi || bugununTarihi()),
+            tutar:kalan,
+            yontem:"Toplu tam ödeme",
+            referans:"",
+            aciklama:"Toplu işlem ekranından tam ödeme kaydedildi.",
+            kayitZamani:new Date().toISOString()
+          }]
+        };
+        return faturaOdemeOzetiniUygula(guncel, false);
+      });
     }
 
     function seciliFaturalariSil(liste, kimlikler) {
@@ -1979,11 +2199,11 @@
       panel.hidden = !yoneticiMi() || secilenler.length === 0;
       document.getElementById("toplu-secim-sayisi").textContent = `${secilenler.length} fatura seçildi`;
       document.getElementById("toplu-secim-toplami").textContent = `Toplam ${formatPara(secilenler.reduce((toplam, inv) => toplam + tutarSayiyaCevir(inv.tutar), 0))}`;
-      const odenecekSayisi = secilenler.filter(inv => !inv.odendi).length;
+      const odenecekSayisi = secilenler.filter(inv => faturaKalanTutari(inv) > 0).length;
       const odendiDugmesi = document.getElementById("toplu-odendi-btn");
       if (odendiDugmesi) {
         odendiDugmesi.disabled = odenecekSayisi === 0;
-        odendiDugmesi.title = odenecekSayisi ? `${odenecekSayisi} ödenmemiş faturayı ödendi yap` : "Seçilen faturaların tamamı zaten ödendi";
+        odendiDugmesi.title = odenecekSayisi ? `${odenecekSayisi} faturanın kalan tutarını ödeme kaydı olarak ekle` : "Seçilen faturaların tamamı zaten ödendi";
       }
       tabloSecimDurumunuGuncelle(gorunenListe);
     }
@@ -2015,14 +2235,14 @@
       if (!yoneticiGerekli()) return;
       const liste = faturaYukle();
       const secilenler = seciliFaturalariGetir(liste, seciliFaturaKimlikleri);
-      const odenecekSayisi = secilenler.filter(inv => !inv.odendi).length;
+      const odenecekSayisi = secilenler.filter(inv => faturaKalanTutari(inv) > 0).length;
       if (!odenecekSayisi) {
         syncGoster("Seçilen faturaların tamamı zaten ödendi", "#f59e0b");
         return;
       }
       const yeniListe = seciliFaturalariOdendiYap(liste, seciliFaturaKimlikleri, bugununTarihi());
       seciliFaturaKimlikleri.clear();
-      faturaKaydet(yeniListe, `${odenecekSayisi} fatura toplu olarak ödendi işaretlendi`);
+      faturaKaydet(yeniListe, `${odenecekSayisi} faturaya toplu tam ödeme kaydı eklendi`);
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
@@ -2075,7 +2295,7 @@
         syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
         return false;
       }
-      const basliklar = ["Cari/Firma","Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödeme Durumu","Ödeme Tarihi","Vade Durumu"];
+      const basliklar = ["Cari/Firma","Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödenen (TL)","Kalan (TL)","Ödeme Durumu","Son Ödeme Tarihi","Ödeme Yöntemleri","Vade Durumu"];
       const satirlar = liste.map(inv=>{
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         const gun = kalanGun(vade);
@@ -2089,8 +2309,11 @@
           inv.vadeGun || 90,
           bugununTarihi(vade),
           tutarSayiyaCevir(inv.tutar).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
-          inv.odendi ? "Ödendi" : "Ödenmedi",
-          inv.odemeTarihi || "",
+          faturaOdenenTutari(inv).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
+          faturaKalanTutari(inv).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
+          faturaOdemeDurumu(inv) === "odendi" ? "Ödendi" : faturaOdemeDurumu(inv) === "kismi" ? "Kısmi Ödendi" : "Ödenmedi",
+          faturaSonOdemeTarihi(inv),
+          [...new Set((inv.odemeler || []).map(odeme => odeme.yontem))].join(", "),
           vadeDurumu
         ].map(csvHucre).join(";");
       });
@@ -2147,8 +2370,10 @@
         if (bitis && vadeMetni > bitis) return false;
         const aramaMetni = `${inv.cari || ""} ${inv.no || ""}`.toLocaleUpperCase("tr-TR");
         if (arama && !aramaMetni.includes(arama)) return false;
-        if (durum === "odendi" && !inv.odendi) return false;
-        if (durum === "odenmedi" && inv.odendi) return false;
+        const odemeDurumu = faturaOdemeDurumu(inv);
+        if (durum === "odendi" && odemeDurumu !== "odendi") return false;
+        if (durum === "kismi" && odemeDurumu !== "kismi") return false;
+        if (durum === "odenmedi" && odemeDurumu !== "odenmedi") return false;
         if (durum === "geciken" && (inv.odendi || vade >= bugun)) return false;
         if (durum === "yaklasan" && (inv.odendi || vade < bugun || vade >= sonraki30Gun)) return false;
         return true;
@@ -2161,13 +2386,14 @@
       (Array.isArray(liste) ? liste : []).forEach(inv => {
         const tutar = tutarSayiyaCevir(inv.tutar);
         toplam += tutar;
-        if (inv.odendi) odenen += tutar;
+        odenen += Math.min(tutar, faturaOdenenTutari(inv));
       });
       return { kayit:(liste || []).length, toplam, odenen, kalan:toplam-odenen };
     }
 
     function raporDurumBilgisi(inv, referans=new Date()) {
       if (inv.odendi) return { metin:"Ödendi", renk:"#4ade80" };
+      if (faturaOdemeDurumu(inv) === "kismi") return { metin:`Kısmi · ${formatPara(faturaKalanTutari(inv))} kaldı`, renk:"#fbbf24" };
       const bugun = new Date(referans);
       bugun.setHours(0,0,0,0);
       const vade = vadeTarihi(inv.tarih, inv.vadeGun);
@@ -2237,11 +2463,12 @@
         tablo.innerHTML = '<div class="rapor-bos"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><br>Bu ölçütlere uyan fatura bulunamadı.</div>';
       } else {
         tablo.innerHTML = `<table class="rapor-tablo">
-          <thead><tr><th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>ÖDEME TARİHİ</th></tr></thead>
+          <thead><tr><th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>ÖDENEN</th><th>KALAN</th><th>DURUM</th><th>SON ÖDEME</th></tr></thead>
           <tbody>${aktifRaporListesi.map((inv,sira) => {
             const vade = vadeTarihi(inv.tarih, inv.vadeGun);
             const durum = raporDurumBilgisi(inv);
-            const odemeTarihi = inv.odemeTarihi ? formatTarih(tarihOlusturYerel(inv.odemeTarihi)) : "—";
+            const sonOdeme = faturaSonOdemeTarihi(inv);
+            const odemeTarihi = sonOdeme ? formatTarih(tarihOlusturYerel(sonOdeme)) : "—";
             return `<tr>
               <td>${sira+1}</td>
               <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
@@ -2249,6 +2476,8 @@
               <td>${formatTarih(tarihOlusturYerel(inv.tarih))}</td>
               <td>${formatTarih(vade)}</td>
               <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
+              <td style="color:#4ade80">${formatPara(faturaOdenenTutari(inv))}</td>
+              <td style="color:#ff6b77">${formatPara(faturaKalanTutari(inv))}</td>
               <td><span class="rapor-durum" style="color:${durum.renk}">${durum.metin}</span></td>
               <td>${odemeTarihi}</td>
             </tr>`;
@@ -2306,7 +2535,8 @@
       document.getElementById('hizli-geciken').textContent = geciken.length;
       document.getElementById('hizli-geciken-alt').textContent = formatPara(geciken.reduce((toplam,inv)=>toplam+(Number(inv.tutar)||0),0));
       document.getElementById('hizli-odenen').textContent = odenenAy.length;
-      document.getElementById('hizli-odenen-alt').textContent = formatPara(odenenAy.reduce((toplam,inv)=>toplam+(Number(inv.tutar)||0),0));
+      document.getElementById('hizli-odenen-alt').textContent = formatPara(odenenAy.reduce((toplam,inv)=>
+        toplam + (inv.odemeler || []).filter(odeme => ayniAy(odeme.tarih)).reduce((ara,odeme)=>ara+tutarSayiyaCevir(odeme.tutar),0), 0));
     }
 
     function durumBilgi(g) {
@@ -2368,13 +2598,121 @@
           : `<span class="od-gun" style="color:#f97316"><i class="fa-solid fa-clock" aria-hidden="true"></i> Bugün son gün!</span>`;
         return `<div class="odeme-satir">
           <div><div class="od-no">${htmlGuvenli(inv.cari || "Cari belirtilmedi")} · ${htmlGuvenli(inv.no)}</div>${gunMetin}</div>
-          <div class="od-tutar">${formatPara(inv.tutar)}</div>
+          <div class="od-tutar">${formatPara(faturaKalanTutari(inv))}</div>
         </div>`;
       }).join("");
       document.getElementById("odeme-overlay").classList.add("aktif");
       sesliBildirim('odeme');
     }
     function odemeKapat() { document.getElementById("odeme-overlay").classList.remove("aktif"); }
+
+    // ── MANUEL ÖDEME KAYITLARI ───────────────────────────────────────────────
+    function odemeYonetiminiAc(id) {
+      if (!yoneticiGerekli()) return;
+      const inv = faturaYukle().find(item => item.id === Number(id));
+      if (!inv) return;
+      document.getElementById("odeme-fatura-id").value = inv.id;
+      document.getElementById("odeme-tarih").value = bugununTarihi();
+      document.getElementById("odeme-yontem").value = "Havale / EFT";
+      document.getElementById("odeme-referans").value = "";
+      document.getElementById("odeme-aciklama").value = "";
+      document.getElementById("odeme-form-mesaj").textContent = "";
+      odemeYonetiminiGuncelle(inv);
+      document.getElementById("odeme-yonetim-overlay").classList.add("aktif");
+      setTimeout(() => document.getElementById("odeme-tutar")?.focus(), 60);
+    }
+
+    function odemeYonetiminiGuncelle(fatura=null) {
+      const id = Number(document.getElementById("odeme-fatura-id")?.value);
+      const inv = fatura || faturaYukle().find(item => item.id === id);
+      if (!inv) { odemeYonetiminiKapat(); return; }
+      const odenen = faturaOdenenTutari(inv);
+      const kalan = faturaKalanTutari(inv);
+      const odemeler = [...(inv.odemeler || [])].sort((a,b) => b.tarih.localeCompare(a.tarih) || b.kayitZamani.localeCompare(a.kayitZamani));
+      document.getElementById("odeme-fatura-bilgisi").textContent = `${inv.cari || "Cari belirtilmedi"} · ${inv.no}`;
+      document.getElementById("odeme-fatura-tutari").textContent = formatPara(inv.tutar);
+      document.getElementById("odeme-odenen-tutar").textContent = formatPara(odenen);
+      document.getElementById("odeme-kalan-tutar").textContent = formatPara(kalan);
+      document.getElementById("odeme-gecmisi-sayisi").textContent = `${odemeler.length} kayıt`;
+      const tutarAlani = document.getElementById("odeme-tutar");
+      tutarAlani.value = kalan > 0 ? kalan.toFixed(2) : "";
+      tutarAlani.max = kalan > 0 ? kalan.toFixed(2) : "0";
+      tutarAlani.disabled = !(kalan > 0);
+      const kaydetDugmesi = document.getElementById("odeme-kaydet-btn");
+      kaydetDugmesi.disabled = !(kalan > 0);
+      kaydetDugmesi.innerHTML = kalan > 0
+        ? '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet'
+        : '<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Fatura Tamamen Ödendi';
+      document.getElementById("odeme-gecmisi-liste").innerHTML = odemeler.length
+        ? odemeler.map(odeme => {
+            const detaylar = [odeme.referans ? `Ref: ${odeme.referans}` : "", odeme.aciklama || ""].filter(Boolean).join(" · ") || "Ek açıklama yok";
+            return `<div class="odeme-kaydi">
+              <span class="odeme-kaydi-tarih">${formatTarih(tarihOlusturYerel(odeme.tarih))}</span>
+              <strong class="odeme-kaydi-tutar">${formatPara(odeme.tutar)}</strong>
+              <span class="odeme-kaydi-yontem">${htmlGuvenli(odeme.yontem)}</span>
+              <span class="odeme-kaydi-detay" title="${htmlGuvenli(detaylar)}">${htmlGuvenli(detaylar)}</span>
+              <button class="odeme-kaydi-sil" type="button" data-odeme-id="${htmlGuvenli(odeme.id)}" onclick="odemeKaydiniSil(this.dataset.odemeId)" aria-label="${formatPara(odeme.tutar)} ödeme kaydını sil" title="Ödeme kaydını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+            </div>`;
+          }).join("")
+        : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu faturaya henüz ödeme girilmedi.</div>';
+    }
+
+    function manuelOdemeKaydet() {
+      if (!yoneticiGerekli()) return;
+      const faturaId = Number(document.getElementById("odeme-fatura-id").value);
+      const liste = faturaYukle();
+      const inv = liste.find(item => item.id === faturaId);
+      if (!inv) return;
+      const tarih = document.getElementById("odeme-tarih").value;
+      const tutar = tutarSayiyaCevir(document.getElementById("odeme-tutar").value);
+      const yontem = document.getElementById("odeme-yontem").value.trim();
+      const referans = document.getElementById("odeme-referans").value.trim();
+      const aciklama = document.getElementById("odeme-aciklama").value.trim();
+      const mesaj = document.getElementById("odeme-form-mesaj");
+      const kalan = faturaKalanTutari(inv);
+      mesaj.style.color = "#ff7a85";
+      if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir ödeme tarihi seçin."; return; }
+      if (!(tutar > 0)) { mesaj.textContent = "Ödeme tutarı sıfırdan büyük olmalıdır."; return; }
+      if (tutar > kalan + 0.005) { mesaj.textContent = `Ödeme, kalan ${formatPara(kalan)} tutarını aşamaz.`; return; }
+      if (!yontem) { mesaj.textContent = "Ödeme yöntemini seçin."; return; }
+      const yeniOdeme = {
+        id:odemeKimligiOlustur(faturaId), faturaId, tarih, tutar, yontem, referans, aciklama,
+        kayitZamani:new Date().toISOString()
+      };
+      const yeniListe = liste.map(item => {
+        if (item.id !== faturaId) return item;
+        return faturaOdemeOzetiniUygula({ ...item, odendi:false, odemeTarihi:"", odemeler:[...(item.odemeler || []), yeniOdeme] }, false);
+      });
+      if (!faturaKaydet(yeniListe, `${inv.no} faturasına manuel ödeme eklendi`)) return;
+      mesaj.style.color = "#4ade80";
+      mesaj.textContent = `${formatPara(tutar)} ödeme kaydedildi.`;
+      document.getElementById("odeme-referans").value = "";
+      document.getElementById("odeme-aciklama").value = "";
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      odemeYonetiminiGuncelle();
+    }
+
+    function odemeKaydiniSil(odemeId) {
+      if (!yoneticiGerekli()) return;
+      const faturaId = Number(document.getElementById("odeme-fatura-id").value);
+      const liste = faturaYukle();
+      const inv = liste.find(item => item.id === faturaId);
+      const odeme = inv?.odemeler?.find(kayit => kayit.id === String(odemeId));
+      if (!inv || !odeme) return;
+      if (!confirm(`${formatPara(odeme.tutar)} tutarındaki ${formatTarih(tarihOlusturYerel(odeme.tarih))} tarihli ödeme kaydı silinsin mi?`)) return;
+      const yeniListe = liste.map(item => {
+        if (item.id !== faturaId) return item;
+        return faturaOdemeOzetiniUygula({ ...item, odendi:false, odemeTarihi:"", odemeler:(item.odemeler || []).filter(kayit => kayit.id !== String(odemeId)) }, false);
+      });
+      faturaKaydet(yeniListe, `${inv.no} faturasından ödeme kaydı silindi`);
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      odemeYonetiminiGuncelle();
+      syncGoster("Ödeme kaydı silindi", "#4ade80");
+    }
+
+    function odemeYonetiminiKapat() {
+      document.getElementById("odeme-yonetim-overlay")?.classList.remove("aktif");
+    }
 
     // ── DÜZENLEME POPUP ────────────────────────────────────────────────────────
     function duzenleAc(id) {
@@ -2409,6 +2747,12 @@
       const tutar = document.getElementById("d-tutar").value.trim();
       const msg   = document.getElementById("d-msg");
       if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
+      const mevcutFatura = faturaYukle().find(i => i.id === id);
+      if (tutarSayiyaCevir(tutar) + 0.005 < faturaOdenenTutari(mevcutFatura)) {
+        msg.style.color="#f87171";
+        msg.textContent=`Fatura tutarı, ödenmiş ${formatPara(faturaOdenenTutari(mevcutFatura))} tutarından düşük olamaz.`;
+        return;
+      }
       faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
       duzenleKapat();
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
@@ -2424,7 +2768,7 @@
     function ozetGuncelle() {
       const hamListe=hamFaturaVerisiniYukle();
       const liste=faturaYukle(); let toplam=0,odenen=0;
-      liste.forEach(inv=>{ const t=Number(inv.tutar)||0; toplam+=t; if(inv.odendi) odenen+=t; });
+      liste.forEach(inv=>{ const t=tutarSayiyaCevir(inv.tutar); toplam+=t; odenen+=Math.min(t,faturaOdenenTutari(inv)); });
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
       document.getElementById("oz-odenen").textContent=formatPara(odenen);
       document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
@@ -2475,7 +2819,7 @@
       const msg     = document.getElementById("msg");
       if (!cari||!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
       const liste = faturaYukle();
-      const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"" };
+      const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"", odemeler:[] };
       if (liste.some(inv => faturaImzasi(inv) === faturaImzasi(yeniFatura))) {
         msg.style.color="#f59e0b";
         msg.textContent="Bu fatura zaten kayıtlı; ikinci kez eklenmedi.";
@@ -2503,13 +2847,11 @@
     }
     function faturasSil(id) {
       if (!yoneticiGerekli()) return;
+      const inv = faturaYukle().find(i => i.id === id);
+      if (!inv) return;
+      const odemeNotu = inv.odemeler?.length ? ` Bu faturaya bağlı ${inv.odemeler.length} ödeme kaydı da silinecek.` : "";
+      if (!confirm(`${inv.no} numaralı fatura silinsin mi?${odemeNotu}`)) return;
       faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi");
-      listeyiGoster(); rozetGuncelle(); ozetGuncelle();
-    }
-    function odendiBelirle(id,durum) {
-      if (!yoneticiGerekli()) return;
-      const odemeTarihi = durum ? bugununTarihi() : "";
-      faturaKaydet(faturaYukle().map(i=>i.id===id?{...i,odendi:durum,odemeTarihi}:i), durum ? "Fatura ödendi olarak işaretlendi" : "Ödeme durumu geri alındı");
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
@@ -2543,6 +2885,9 @@
           const g    = kalanGun(vade);
           const {label,renk,bg} = durumBilgi(g);
           const odendi = inv.odendi;
+          const odemeDurumu = faturaOdemeDurumu(inv);
+          const odenenTutar = faturaOdenenTutari(inv);
+          const kalanTutar = faturaKalanTutari(inv);
           const kimlik = String(inv.id);
           const secili = seciliFaturaKimlikleri.has(kimlik);
           return `<tr class="${odendi?'odendi-satir':''} ${secili?'secili-satir':''}">
@@ -2556,12 +2901,12 @@
             <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
             <td>${odendi
               ? '<span class="durum" style="color:#4ade80;background:#4ade8022"><i class="fa-solid fa-circle-check durum-nokta" aria-hidden="true"></i>Ödendi</span>'
+              : odemeDurumu === "kismi"
+                ? `<span class="durum kismi"><i class="fa-solid fa-circle-half-stroke durum-nokta" aria-hidden="true"></i>Kısmi Ödendi</span><span class="odeme-ilerleme">${formatPara(odenenTutar)} ödendi · ${formatPara(kalanTutar)} kaldı</span>`
               : `<span class="durum" style="color:${renk};background:${bg}"><i class="fa-solid fa-circle durum-nokta" aria-hidden="true"></i>${label}</span>`}
             </td>
             ${yoneticiMi() ? `<td><div class="islem-grup">
-              ${odendi
-                ? `<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>`
-                : `<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Öde</button>`}
+              <button class="btn-odendi btn-odeme-gir" onclick="odemeYonetiminiAc(${inv.id})"><i class="fa-solid fa-${odendi ? 'receipt' : 'money-check-dollar'}" aria-hidden="true"></i> ${odendi ? 'Ödemeler' : 'Ödeme Gir'}</button>
               <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
               <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
             </div></td>` : ''}
@@ -2599,11 +2944,15 @@
       document.getElementById("toplu-sil-overlay")?.addEventListener("click", e => {
         if (e.target.id === "toplu-sil-overlay") topluSilmeKapat();
       });
+      document.getElementById("odeme-yonetim-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "odeme-yonetim-overlay") odemeYonetiminiKapat();
+      });
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           yeniFaturaKapat();
           raporKapat();
           topluSilmeKapat();
+          odemeYonetiminiKapat();
         }
       });
     }

@@ -20,6 +20,7 @@ const context = {
   Map,
   Set,
   tutarSayiyaCevir,
+  faturaOdenenTutari: inv => (inv.odemeler || []).reduce((toplam, odeme) => toplam + tutarSayiyaCevir(odeme.tutar), 0),
   formatPara: deger => `${Number(deger)} ₺`,
   faturaImzasi: inv => [
     String(inv.cari || "").trim().toLocaleUpperCase("tr-TR"),

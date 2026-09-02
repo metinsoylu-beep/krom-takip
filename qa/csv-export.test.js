@@ -20,6 +20,11 @@ const context = {
   kalanGun() {},
   bugununTarihi() { return "2026-09-01"; },
   tutarSayiyaCevir: Number,
+  faturaOdenenTutari: inv => (inv.odemeler || []).reduce((toplam, odeme) => toplam + Number(odeme.tutar), 0),
+  faturaKalanTutari: inv => Math.max(0, Number(inv.tutar) - (inv.odemeler || []).reduce((toplam, odeme) => toplam + Number(odeme.tutar), 0)),
+  faturaOdemeDurumu: inv => inv.odendi ? "odendi" : (inv.odemeler || []).length ? "kismi" : "odenmedi",
+  faturaSonOdemeTarihi: inv => (inv.odemeler || []).reduce((son, odeme) => odeme.tarih > son ? odeme.tarih : son, ""),
+  Set,
   document: {
     createElement: () => ({ click() {}, remove() {} }),
     body: { appendChild() {} }

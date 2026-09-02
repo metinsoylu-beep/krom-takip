@@ -1,4 +1,5 @@
 const SHEET_NAME = "Faturalar";
+const PAYMENT_SHEET_NAME = "Ödemeler";
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -15,6 +16,16 @@ const VERI_BASLIK = [
   "Ödeme Durumu",
   "Ödeme Tarihi",
   "Durum"
+];
+const ODEME_BASLIK = [
+  "Ödeme ID",
+  "Fatura ID",
+  "Ödeme Tarihi",
+  "Tutar",
+  "Yöntem",
+  "Referans",
+  "Açıklama",
+  "Kayıt Zamanı"
 ];
 
 function jsonCevabi(deger) {
@@ -164,6 +175,64 @@ function odendiMi(deger) {
     String(deger || "").trim() === "Ödendi";
 }
 
+function odemeKaydiniNormallestir(ham, faturaId, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const tutar = tutarSayisi(ham.tutar);
+  const tarih = tarihMetni(ham.tarih || ham.odemeTarihi);
+  if (!(tutar > 0) || !tarih) return null;
+  const id = String(ham.id || ham.odemeId || "").trim() ||
+    ("odm-" + String(faturaId) + "-" + String(Date.now() + (sira || 0)));
+  return {
+    id: id.slice(0, 160),
+    faturaId: Number(faturaId),
+    tarih: tarih,
+    tutar: tutar,
+    yontem: String(ham.yontem || ham.yontemAdi || "Belirtilmedi").trim().slice(0, 80),
+    referans: String(ham.referans || "").trim().slice(0, 160),
+    aciklama: String(ham.aciklama || "").trim().slice(0, 500),
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
+  };
+}
+
+function odemeleriNormallestir(hamOdemeler, faturaId) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamOdemeler) ? hamOdemeler : []).forEach(function(ham, sira) {
+    const odeme = odemeKaydiniNormallestir(ham, faturaId, sira);
+    if (!odeme || gorulen[odeme.id]) return;
+    gorulen[odeme.id] = true;
+    sonuc.push(odeme);
+  });
+  return sonuc.sort(function(a, b) {
+    return a.tarih.localeCompare(b.tarih) ||
+      a.kayitZamani.localeCompare(b.kayitZamani) ||
+      a.id.localeCompare(b.id);
+  });
+}
+
+function faturaOdemeOzetiniUygula(item, eskiOdendi) {
+  if (!item.odemeler.length && eskiOdendi) {
+    item.odemeler.push({
+      id: "legacy-" + String(item.id),
+      faturaId: item.id,
+      tarih: item.odemeTarihi || item.tarih,
+      tutar: item.tutar,
+      yontem: "Eski kayıt",
+      referans: "",
+      aciklama: "Ödeme geçmişi özelliğinden önce ödendi olarak işaretlendi.",
+      kayitZamani: ""
+    });
+  }
+  const odenenTutar = item.odemeler.reduce(function(toplam, odeme) {
+    return toplam + tutarSayisi(odeme.tutar);
+  }, 0);
+  item.odendi = odenenTutar + 0.005 >= item.tutar;
+  item.odemeTarihi = item.odendi && item.odemeler.length
+    ? item.odemeler.reduce(function(son, odeme) { return odeme.tarih > son ? odeme.tarih : son; }, "")
+    : "";
+  return item;
+}
+
 function faturaImzasi(item) {
   return [
     String(item.cari || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " "),
@@ -182,6 +251,7 @@ function faturalariTekillestir(items) {
   (Array.isArray(items) ? items : []).forEach(function(ham, sira) {
     if (!ham || typeof ham !== "object") return;
     const idSayi = Number(ham.id);
+    const eskiOdendi = odendiMi(ham.odendi);
     const item = {
       id: isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
       no: String(ham.no || "").trim(),
@@ -189,11 +259,13 @@ function faturalariTekillestir(items) {
       tarih: tarihMetni(ham.tarih),
       vadeGun: parseInt(ham.vadeGun, 10) || 90,
       tutar: tutarSayisi(ham.tutar),
-      odendi: odendiMi(ham.odendi),
-      odemeTarihi: tarihMetni(ham.odemeTarihi)
+      odendi: eskiOdendi,
+      odemeTarihi: tarihMetni(ham.odemeTarihi),
+      odemeler: []
     };
     if (!item.no || !item.tarih || item.tutar <= 0) return;
-    if (!item.odendi) item.odemeTarihi = "";
+    item.odemeler = odemeleriNormallestir(ham.odemeler, item.id);
+    faturaOdemeOzetiniUygula(item, eskiOdendi);
 
     const idAnahtari = String(item.id);
     const imza = faturaImzasi(item);
@@ -212,6 +284,35 @@ function faturalariTekillestir(items) {
     imzaKonumlari[imza] = konum;
   });
   return sonuc;
+}
+
+function odemeVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PAYMENT_SHEET_NAME);
+  const gruplar = {};
+  if (!sheet) return gruplar;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) {
+    return String(row[0] || "").trim() === "Ödeme ID";
+  });
+  if (baslikSatiri < 0) return gruplar;
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  data.slice(baslikSatiri + 1).forEach(function(row, sira) {
+    const faturaId = Number(row[konum("Fatura ID")]);
+    const odeme = odemeKaydiniNormallestir({
+      id: row[konum("Ödeme ID")],
+      tarih: row[konum("Ödeme Tarihi")],
+      tutar: row[konum("Tutar")],
+      yontem: row[konum("Yöntem")],
+      referans: row[konum("Referans")],
+      aciklama: row[konum("Açıklama")],
+      kayitZamani: row[konum("Kayıt Zamanı")]
+    }, faturaId, sira);
+    if (!isFinite(faturaId) || !(faturaId > 0) || !odeme) return;
+    if (!gruplar[String(faturaId)]) gruplar[String(faturaId)] = [];
+    gruplar[String(faturaId)].push(odeme);
+  });
+  return gruplar;
 }
 
 function vadeTarihi(tarih, vadeGun) {
@@ -236,6 +337,7 @@ function durumHesapla(tarih, vadeGun, odendi) {
 
 function faturaVerileriniOku() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const odemeGruplari = odemeVerileriniOku();
   let items = [];
 
   if (sheet) {
@@ -260,15 +362,17 @@ function faturaVerileriniOku() {
           return row[0] && String(row[0]).trim() !== "id";
         })
         .map(function(row) {
+          const id = String(hucreOku(row, ["id"], 0));
           return {
-            id: String(hucreOku(row, ["id"], 0)),
+            id: id,
             no: String(hucreOku(row, ["Fatura No", "no"], 1) || ""),
             cari: String(hucreOku(row, ["Cari/Firma", "Cari", "cari"], -1) || ""),
             tarih: tarihMetni(hucreOku(row, ["Tarih", "tarih"], 2)),
             vadeGun: parseInt(String(hucreOku(row, ["Vade Günü", "vadeGun"], 3)).replace(/[^0-9]/g, ""), 10) || 90,
             tutar: String(hucreOku(row, ["Tutar", "tutar"], 5) || "0"),
             odendi: String(hucreOku(row, ["Ödeme Durumu", "odendi"], 6)).trim() === "Ödendi",
-            odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], 7))
+            odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], 7)),
+            odemeler: odemeGruplari[id] || []
           };
         });
       items = faturalariTekillestir(rows);
@@ -344,7 +448,6 @@ function doPost(e) {
       return jsonCevabi({ ok: false, code: "FORBIDDEN", message: "Salt görüntüleme hesabı değişiklik yapamaz." });
     }
 
-    const items = faturalariTekillestir(payload.items);
     const requestId = String(payload.requestId || "").trim().slice(0, 120);
     const baseRevisionHam = payload.baseRevision;
     const baseRevision = baseRevisionHam === null || baseRevisionHam === undefined || baseRevisionHam === ""
@@ -352,8 +455,18 @@ function doPost(e) {
       : parseInt(baseRevisionHam, 10);
     kilit.waitLock(30000);
 
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    // Eski bir ön yüz odemeler alanını hiç göndermiyorsa var olan ödeme
+    // hareketlerini koru. Yeni ön yüz [] gönderdiğinde ise bilinçli silme
+    // kabul edilir. Böylece dağıtım geçişinde ödeme geçmişi kaybolmaz.
+    const mevcutOdemeGruplari = odemeVerileriniOku();
+    const guvenliGelenItems = (Array.isArray(payload.items) ? payload.items : []).map(function(ham) {
+      if (!ham || typeof ham !== "object" || Object.prototype.hasOwnProperty.call(ham, "odemeler")) return ham;
+      const kopya = {};
+      Object.keys(ham).forEach(function(anahtar) { kopya[anahtar] = ham[anahtar]; });
+      kopya.odemeler = mevcutOdemeGruplari[String(ham.id)] || [];
+      return kopya;
+    });
+    const items = faturalariTekillestir(guvenliGelenItems);
     const properties = PropertiesService.getScriptProperties();
     const mevcutSurum = bulutSurumuOku(properties);
     const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
@@ -381,11 +494,18 @@ function doPost(e) {
       });
     }
 
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    const paymentSheet = ss.getSheetByName(PAYMENT_SHEET_NAME) || ss.insertSheet(PAYMENT_SHEET_NAME);
+
     let toplam = 0;
     let odenen = 0;
     items.forEach(function(item) {
       toplam += item.tutar;
-      if (item.odendi) odenen += item.tutar;
+      const faturaOdemesi = item.odemeler.reduce(function(araToplam, odeme) {
+        return araToplam + tutarSayisi(odeme.tutar);
+      }, 0);
+      odenen += Math.min(item.tutar, faturaOdemesi);
     });
 
     const satirlar = [
@@ -410,10 +530,28 @@ function doPost(e) {
         item.vadeGun + " gün",
         Utilities.formatDate(vadeTarihi(item.tarih, item.vadeGun), Session.getScriptTimeZone() || "Europe/Istanbul", "dd.MM.yyyy"),
         item.tutar,
-        item.odendi ? "Ödendi" : "Ödenmedi",
+        item.odendi ? "Ödendi" : (item.odemeler.length ? "Kısmi Ödendi" : "Ödenmedi"),
         item.odemeTarihi,
-        durumHesapla(item.tarih, item.vadeGun, item.odendi)
+        item.odemeler.length && !item.odendi
+          ? "🟡 Kısmi ödendi · " + Math.max(0, item.tutar - item.odemeler.reduce(function(araToplam, odeme) { return araToplam + tutarSayisi(odeme.tutar); }, 0)).toLocaleString("tr-TR") + " ₺ kaldı"
+          : durumHesapla(item.tarih, item.vadeGun, item.odendi)
       ]);
+    });
+
+    const odemeSatirlari = [ODEME_BASLIK];
+    items.forEach(function(item) {
+      item.odemeler.forEach(function(odeme) {
+        odemeSatirlari.push([
+          odeme.id,
+          item.id,
+          odeme.tarih,
+          odeme.tutar,
+          odeme.yontem,
+          odeme.referans,
+          odeme.aciklama,
+          odeme.kayitZamani
+        ]);
+      });
     });
 
     // Kilit altında tek seferde yazılır; eşzamanlı istekler satırları iç içe geçiremez.
@@ -432,6 +570,15 @@ function doPost(e) {
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
 
+    // Her ödeme ayrı satırda tutulur. Böylece kısmi ve çoklu ödemelerin
+    // tarihçesi fatura tablosundan bağımsız olarak denetlenebilir.
+    paymentSheet.clearContents();
+    paymentSheet.getRange(1, 1, odemeSatirlari.length, ODEME_BASLIK.length).setValues(odemeSatirlari);
+    paymentSheet.getRange(1, 1, 1, ODEME_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+
     const yeniSurum = mevcutSurum + 1;
     const yeniProperties = {};
     yeniProperties[SURUM_ANAHTAR] = String(yeniSurum);
@@ -443,7 +590,8 @@ function doPost(e) {
       role: yetki.role,
       revision: yeniSurum,
       requestId: requestId,
-      count: items.length
+      count: items.length,
+      paymentCount: odemeSatirlari.length - 1
     });
   } catch (err) {
     return jsonCevabi({

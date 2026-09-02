@@ -6,8 +6,15 @@ yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 
 İki rol vardır:
 
-- `admin`: Verileri görüntüler; fatura ekler, düzenler, öder, geri alır ve siler.
+- `admin`: Verileri görüntüler; fatura ve manuel ödeme kayıtlarını ekler, düzenler ve siler.
 - `viewer`: Verileri görüntüler ve filtreler; hiçbir kayıt değişikliği yapamaz.
+
+Manuel ödeme girişleri aynı çalışma kitabında otomatik oluşturulan `Ödemeler`
+sayfasında ayrı satırlar olarak saklanır. Her satır ödeme kimliği, bağlı fatura,
+tarih, tutar, yöntem, referans ve açıklama içerir. `Faturalar` sayfasındaki
+ödeme durumu bu kayıtların toplamından otomatik hesaplanır; kısmi ödemeler
+faturayı kapatmaz. Eski `Ödendi` kayıtları ilk geçişte `Eski kayıt` yöntemli
+geriye uyumlu bir ödeme hareketine dönüştürülür.
 
 Web uygulamasını dağıtan Google hesabı otomatik olarak `admin` kabul edilir.
 Ek hesaplar Apps Script içindeki **Proje Ayarları > Komut Dosyası Özellikleri**
