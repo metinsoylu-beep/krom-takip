@@ -519,6 +519,52 @@
     .cari-hesap-tablo .bakiye-alacak { color: #4ade80; font-weight: 750; }
     .cari-hesap-tablo .bakiye-kapali { color: #94a3b8; font-weight: 750; }
     .cari-ekstre-btn { padding: 6px 9px; border: 1px solid #38bdf855; border-radius: 6px; background: #38bdf810; color: #7dd3fc; cursor: pointer; }
+    .cari-ekstre-kart {
+      width: min(1080px,100%); max-width: 1080px; max-height: 96vh; overflow-y: auto;
+      border-top-color: #e6a91f; background: #dfe7ef;
+    }
+    .cari-ekstre-toolbar {
+      position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 11px 16px; background: #0b1c2f; border-bottom: 1px solid #29435c;
+    }
+    .cari-ekstre-toolbar-bilgi { color: #dbe7f1; font-size: 11px; }
+    .cari-ekstre-toolbar-bilgi small { display: block; margin-top: 3px; color: #8294a7; font-size: 9px; }
+    .cari-ekstre-toolbar-islem { display: flex; align-items: center; gap: 8px; }
+    .cari-ekstre-belge {
+      width: calc(100% - 36px); margin: 18px auto; padding: 30px 32px 24px; background: #fff; color: #1f2937;
+      border: 1px solid #cbd5e1; border-radius: 3px; box-shadow: 0 12px 36px #0614242d;
+      font-family: "Segoe UI",Arial,sans-serif;
+    }
+    .ekstre-belge-ust { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 2px solid #17324d; }
+    .ekstre-marka { color: #10243a; font: italic 800 27px Georgia,serif; letter-spacing: 4px; }
+    .ekstre-duzenleyen { margin-top: 5px; color: #64748b; font-size: 10px; }
+    .ekstre-belge-tur { text-align: right; }
+    .ekstre-belge-tur strong { display: block; color: #17324d; font: 800 20px Georgia,serif; letter-spacing: 1px; }
+    .ekstre-belge-tur span { display: block; margin-top: 6px; color: #64748b; font-size: 10px; }
+    .ekstre-kimlikler { display: grid; grid-template-columns: 1.5fr .8fr .9fr; gap: 12px; padding: 16px 0; }
+    .ekstre-kimlik { padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; }
+    .ekstre-kimlik span, .ekstre-ozet span { display: block; color: #64748b; font-size: 8px; font-weight: 750; letter-spacing: .45px; }
+    .ekstre-kimlik strong { display: block; margin-top: 5px; color: #172b3f; font-size: 11px; overflow-wrap: anywhere; }
+    .ekstre-ozetler { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; margin-bottom: 16px; }
+    .ekstre-ozet { padding: 10px 12px; border: 1px solid #d8e1ea; border-top: 3px solid var(--ekstre-renk); border-radius: 5px; }
+    .ekstre-ozet strong { display: block; margin-top: 5px; color: var(--ekstre-renk); font: 800 15px Georgia,serif; }
+    .ekstre-tablo-wrap { overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .ekstre-tablo { width: 100%; min-width: 760px; border-collapse: collapse; color: #24384d; font-size: 9px; }
+    .ekstre-tablo th { padding: 9px 10px; background: #17324d; color: #fff; border: 0; text-align: left; font-size: 8px; letter-spacing: .35px; }
+    .ekstre-tablo td { padding: 9px 10px; border: 0; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .ekstre-tablo tbody tr:nth-child(even) { background: #f8fafc; }
+    .ekstre-tablo tbody tr:last-child td { border-bottom: 0; }
+    .ekstre-tablo .ekstre-para { text-align: right; white-space: nowrap; }
+    .ekstre-tablo .ekstre-hareket-turu { color: #17324d; font-weight: 750; }
+    .ekstre-tablo .ekstre-aciklama { max-width: 310px; color: #526579; line-height: 1.35; }
+    .ekstre-tablo .ekstre-bakiye { font-weight: 750; }
+    .ekstre-bos { padding: 36px 20px; color: #64748b; text-align: center; }
+    .ekstre-belge-alt {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-top: 18px;
+      padding-top: 14px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 8px; line-height: 1.55;
+    }
+    .ekstre-belge-alt strong { display: block; color: #334155; font-size: 9px; }
+    .ekstre-belge-alt .ekstre-alt-sag { text-align: right; white-space: nowrap; }
     .kullanici-yonetim-kart { width: min(820px,100%); max-width: 820px; border-top-color: #a78bfa; }
     .kullanici-yonetim-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .kullanici-formu {
@@ -758,6 +804,15 @@
       .hareket-sonuc { grid-column: 2; grid-row: 2 / span 2; }
       .cari-hesap-arama { padding: 12px; }
       .cari-hesap-tablo-wrap { margin: 12px; }
+      .cari-ekstre-kart { min-height: 100vh; max-height: none; border-radius: 0; }
+      .cari-ekstre-toolbar { align-items: flex-start; flex-direction: column; }
+      .cari-ekstre-toolbar-islem { width: 100%; }
+      .cari-ekstre-toolbar-islem .rapor-btn { flex: 1; }
+      .cari-ekstre-belge { width: calc(100% - 20px); margin: 10px; padding: 20px 16px; }
+      .ekstre-belge-ust, .ekstre-belge-alt { flex-direction: column; }
+      .ekstre-belge-tur, .ekstre-belge-alt .ekstre-alt-sag { text-align: left; }
+      .ekstre-kimlikler { grid-template-columns: 1fr; }
+      .ekstre-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .kullanici-formu { grid-template-columns: 1fr; padding: 12px; }
       .kullanici-form-mesaj { grid-column: 1; }
       .kullanici-yetki-btn { width: 100%; }
@@ -821,7 +876,7 @@
       @page { size: A4 landscape; margin: 10mm; }
       body { background: #fff !important; color: #111 !important; }
       body > * { display: none !important; }
-      #rapor-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
+      body:not(.ekstre-yazdiriliyor) #rapor-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
       #rapor-overlay .rapor-kart { width: 100% !important; max-height: none !important; display: block !important; overflow: visible !important; background: #fff !important; border: 0 !important; box-shadow: none !important; }
       #rapor-overlay .rapor-filtreler, #rapor-overlay .rapor-butonlar, #rapor-overlay .modal-kapat { display: none !important; }
       #rapor-overlay .rapor-ust, #rapor-overlay .rapor-alt { border-color: #bbb !important; }
@@ -834,6 +889,15 @@
       #rapor-overlay .rapor-tablo thead { position: static !important; }
       #rapor-overlay .rapor-tablo thead tr { background: #e9edf2 !important; }
       #rapor-overlay .rapor-tablo th, #rapor-overlay .rapor-tablo td { color: #111 !important; border-color: #ccc !important; }
+      body.ekstre-yazdiriliyor #rapor-overlay { display: none !important; }
+      body.ekstre-yazdiriliyor #cari-ekstre-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
+      body.ekstre-yazdiriliyor #cari-ekstre-overlay .cari-ekstre-kart { width: 100% !important; max-width: none !important; max-height: none !important; display: block !important; overflow: visible !important; background: #fff !important; border: 0 !important; box-shadow: none !important; }
+      body.ekstre-yazdiriliyor #cari-ekstre-overlay .cari-ekstre-toolbar { display: none !important; }
+      body.ekstre-yazdiriliyor #cari-ekstre-belge { width: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
+      body.ekstre-yazdiriliyor .ekstre-tablo-wrap { overflow: visible !important; }
+      body.ekstre-yazdiriliyor .ekstre-tablo { min-width: 0 !important; }
+      body.ekstre-yazdiriliyor .ekstre-tablo thead { display: table-header-group; }
+      body.ekstre-yazdiriliyor .ekstre-tablo tr { break-inside: avoid; }
     }
   </style>
 </head>
@@ -942,6 +1006,58 @@
       </div>
       <div class="cari-hesap-arama"><input id="cari-hesap-arama" type="search" placeholder="Cari/firma ara" oninput="cariHesaplariniGoster()"/></div>
       <div class="cari-hesap-tablo-wrap" id="cari-hesap-tablo-wrap"></div>
+    </section>
+  </div>
+
+  <!-- MÜŞTERİYE GÖNDERİLEBİLİR CARİ HESAP EKSTRESİ -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="cari-ekstre-overlay">
+    <section class="popup-kutu cari-ekstre-kart" role="dialog" aria-modal="true" aria-labelledby="cari-ekstre-baslik">
+      <div class="cari-ekstre-toolbar">
+        <div class="cari-ekstre-toolbar-bilgi">
+          <strong id="cari-ekstre-baslik">Müşteri Hesap Ekstresi</strong>
+          <small>Yazdırma ekranında “PDF olarak kaydet” seçeneğini kullanabilirsiniz.</small>
+        </div>
+        <div class="cari-ekstre-toolbar-islem">
+          <button class="rapor-btn" type="button" onclick="cariEkstreCsvIndir()"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV İndir</button>
+          <button class="rapor-btn birincil" type="button" onclick="cariEkstreYazdir()"><i class="fa-solid fa-print" aria-hidden="true"></i> Yazdır / PDF</button>
+          <button class="modal-kapat" type="button" onclick="cariEkstreKapat()" aria-label="Cari hesap ekstresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <article class="cari-ekstre-belge" id="cari-ekstre-belge">
+        <header class="ekstre-belge-ust">
+          <div>
+            <div class="ekstre-marka">Arlinoks</div>
+            <div class="ekstre-duzenleyen" id="ekstre-duzenleyen-firma">Arlinoks</div>
+          </div>
+          <div class="ekstre-belge-tur">
+            <strong>CARİ HESAP EKSTRESİ</strong>
+            <span id="ekstre-belge-no">Ekstre No: —</span>
+          </div>
+        </header>
+        <div class="ekstre-kimlikler">
+          <div class="ekstre-kimlik"><span>CARİ / FİRMA</span><strong id="ekstre-cari-adi">—</strong></div>
+          <div class="ekstre-kimlik"><span>RAPOR TARİHİ</span><strong id="ekstre-rapor-tarihi">—</strong></div>
+          <div class="ekstre-kimlik"><span>HAREKET DÖNEMİ</span><strong id="ekstre-donem">—</strong></div>
+        </div>
+        <div class="ekstre-ozetler">
+          <div class="ekstre-ozet" style="--ekstre-renk:#b7791f"><span>TOPLAM FATURA / BORÇ</span><strong id="ekstre-toplam-borc">0 ₺</strong></div>
+          <div class="ekstre-ozet" style="--ekstre-renk:#17864b"><span>TOPLAM ÖDEME</span><strong id="ekstre-toplam-odeme">0 ₺</strong></div>
+          <div class="ekstre-ozet" style="--ekstre-renk:#6d4bc3"><span>VERİLEN ÇEK</span><strong id="ekstre-toplam-cek">0 ₺</strong></div>
+          <div class="ekstre-ozet" id="ekstre-bakiye-kart" style="--ekstre-renk:#c53030"><span id="ekstre-bakiye-etiket">GÜNCEL BAKİYE</span><strong id="ekstre-guncel-bakiye">0 ₺</strong></div>
+        </div>
+        <div class="ekstre-tablo-wrap" id="ekstre-tablo-wrap"></div>
+        <div class="ekstre-belge-alt">
+          <div>
+            <strong>Bilgilendirme</strong>
+            Hareketler işlem tarihine göre sıralanmıştır. İptal edilen çekler bakiyeye dahil edilmez.<br>
+            Bu belge cari hesap mutabakatı için bilgi amaçlı hazırlanmıştır.
+          </div>
+          <div class="ekstre-alt-sag">
+            <strong id="ekstre-alt-firma">Arlinoks</strong>
+            <span id="ekstre-alt-tarih">—</span>
+          </div>
+        </div>
+      </article>
     </section>
   </div>
 
@@ -1406,6 +1522,7 @@
       { email:"izleyici@ornek.com", role:"viewer", protected:false, current:false }
     ];
     let aktifRaporListesi = [];
+    let aktifCariEkstresi = null;
     const seciliFaturaKimlikleri = new Set();
     let topluSilmeKimlikleri = [];
 
@@ -3256,6 +3373,102 @@
       });
     }
 
+    function cariEkstreBelgesiVerisi(cari, hareketler, hesap, referans=new Date()) {
+      const cariAdi = String(cari || "Belirtilmedi").trim() || "Belirtilmedi";
+      const satirlar = Array.isArray(hareketler) ? hareketler.slice() : cariEkstreHareketleriniOlustur(cariAdi);
+      const hesapOzeti = hesap || cariOzetiniGetir(cariAdi);
+      const raporGunu = new Date(referans);
+      const ilkTarih = satirlar.length ? satirlar[0].tarih : "";
+      const sonTarih = satirlar.length ? satirlar[satirlar.length - 1].tarih : "";
+      const belgeKodu = String(cariLogoKimligi(cariAdi).kod || "cari").toLocaleUpperCase("tr-TR").slice(0,6);
+      return {
+        cari:cariAdi,
+        hareketler:satirlar,
+        hesap:{
+          faturaToplami:tutarSayiyaCevir(hesapOzeti.faturaToplami),
+          odemeToplami:tutarSayiyaCevir(hesapOzeti.odemeToplami),
+          cekToplami:tutarSayiyaCevir(hesapOzeti.cekToplami),
+          bekleyenCek:tutarSayiyaCevir(hesapOzeti.bekleyenCek),
+          bakiye:tutarSayiyaCevir(hesapOzeti.bakiye)
+        },
+        bakiye:bakiyeBilgisi(tutarSayiyaCevir(hesapOzeti.bakiye)),
+        raporTarihi:bugununTarihi(raporGunu),
+        ilkTarih,
+        sonTarih,
+        belgeNo:`EKT-${bugununTarihi(raporGunu).replace(/-/g,"")}-${belgeKodu}`
+      };
+    }
+
+    function cariEkstreBelgesiniGoster(veri) {
+      aktifCariEkstresi = veri;
+      const kayitliFirma = String(localStorage.getItem(FIRMA_ANAHTAR) || "").trim();
+      const duzenleyenFirma = !kayitliFirma || kayitliFirma === "X Firması" ? "Arlinoks" : kayitliFirma;
+      const donem = veri.ilkTarih || veri.sonTarih
+        ? `${veri.ilkTarih ? formatTarih(tarihOlusturYerel(veri.ilkTarih)) : "—"} – ${veri.sonTarih ? formatTarih(tarihOlusturYerel(veri.sonTarih)) : "—"}`
+        : "Hareket bulunmuyor";
+      document.getElementById("ekstre-duzenleyen-firma").textContent = duzenleyenFirma;
+      document.getElementById("ekstre-belge-no").textContent = `Ekstre No: ${veri.belgeNo}`;
+      document.getElementById("ekstre-cari-adi").textContent = veri.cari;
+      document.getElementById("ekstre-rapor-tarihi").textContent = formatTarih(tarihOlusturYerel(veri.raporTarihi));
+      document.getElementById("ekstre-donem").textContent = donem;
+      document.getElementById("ekstre-toplam-borc").textContent = formatPara(veri.hesap.faturaToplami);
+      document.getElementById("ekstre-toplam-odeme").textContent = formatPara(veri.hesap.odemeToplami);
+      document.getElementById("ekstre-toplam-cek").textContent = formatPara(veri.hesap.cekToplami);
+      document.getElementById("ekstre-bakiye-etiket").textContent = veri.bakiye.etiket.toLocaleUpperCase("tr-TR");
+      document.getElementById("ekstre-guncel-bakiye").textContent = formatPara(veri.bakiye.tutar);
+      document.getElementById("ekstre-bakiye-kart").style.setProperty("--ekstre-renk", veri.bakiye.sinif === "bakiye-alacak" ? "#17864b" : veri.bakiye.sinif === "bakiye-kapali" ? "#64748b" : "#c53030");
+      document.getElementById("ekstre-alt-firma").textContent = duzenleyenFirma;
+      document.getElementById("ekstre-alt-tarih").textContent = `${formatTarih(tarihOlusturYerel(veri.raporTarihi))} tarihinde oluşturuldu`;
+
+      const tablo = document.getElementById("ekstre-tablo-wrap");
+      tablo.innerHTML = veri.hareketler.length ? `<table class="ekstre-tablo">
+        <thead><tr><th>TARİH</th><th>İŞLEM</th><th>AÇIKLAMA / BELGE BİLGİSİ</th><th class="ekstre-para">BORÇ</th><th class="ekstre-para">ALACAK</th><th class="ekstre-para">BAKİYE</th></tr></thead>
+        <tbody>${veri.hareketler.map(satir => {
+          const satirBakiyesi = bakiyeBilgisi(satir.bakiye);
+          return `<tr>
+            <td>${formatTarih(tarihOlusturYerel(satir.tarih))}</td>
+            <td class="ekstre-hareket-turu">${htmlGuvenli(satir.tur)}</td>
+            <td class="ekstre-aciklama">${htmlGuvenli(satir.detay || "—")}</td>
+            <td class="ekstre-para">${satir.borc ? formatPara(satir.borc) : "—"}</td>
+            <td class="ekstre-para">${satir.alacak ? formatPara(satir.alacak) : "—"}</td>
+            <td class="ekstre-para ekstre-bakiye">${formatPara(satirBakiyesi.tutar)} · ${htmlGuvenli(satirBakiyesi.etiket.replace(" Bakiyesi",""))}</td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>` : '<div class="ekstre-bos"><i class="fa-solid fa-file-circle-xmark" aria-hidden="true"></i><br>Bu cari hesapta ekstre hareketi bulunmuyor.</div>';
+    }
+
+    function cariEkstreCsvIndir() {
+      if (!aktifCariEkstresi?.hareketler?.length) {
+        syncGoster("İndirilecek cari hareket bulunamadı", "#f59e0b");
+        return false;
+      }
+      const basliklar = ["Cari/Firma","Tarih","İşlem","Açıklama/Belge","Borç (TL)","Alacak (TL)","Bakiye (TL)","Bakiye Türü"];
+      const para = deger => tutarSayiyaCevir(deger).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2});
+      const satirlar = aktifCariEkstresi.hareketler.map(satir => {
+        const bakiye = bakiyeBilgisi(satir.bakiye);
+        return [aktifCariEkstresi.cari,satir.tarih,satir.tur,satir.detay || "",satir.borc ? para(satir.borc) : "",satir.alacak ? para(satir.alacak) : "",para(bakiye.tutar),bakiye.etiket].map(csvHucre).join(";");
+      });
+      const icerik = "\uFEFF" + [basliklar.map(csvHucre).join(";"), ...satirlar].join("\r\n");
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      const cariDosyaAdi = aktifCariEkstresi.cari.toLocaleLowerCase("tr-TR").normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "cari";
+      baglanti.href = adres;
+      baglanti.download = `${cariDosyaAdi}-hesap-ekstresi-${aktifCariEkstresi.raporTarihi}.csv`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      setTimeout(() => URL.revokeObjectURL(adres), 1000);
+      syncGoster(`${aktifCariEkstresi.cari} ekstresi CSV olarak hazırlandı`, "#4ade80");
+      return true;
+    }
+
+    function cariEkstreYazdir() {
+      if (!aktifCariEkstresi) return;
+      document.body.classList.add("ekstre-yazdiriliyor");
+      window.addEventListener("afterprint", () => document.body.classList.remove("ekstre-yazdiriliyor"), { once:true });
+      window.print();
+    }
+
     function odemeYonetiminiGuncelle() {
       const cari = document.getElementById("odeme-cari")?.value.trim() || "";
       const hesap = cariOzetiniGetir(cari || "Belirtilmedi");
@@ -3375,7 +3588,13 @@
 
     function cariEkstreAc(cari) {
       cariHesaplariKapat();
-      odemeYonetiminiAc(cari);
+      cariEkstreBelgesiniGoster(cariEkstreBelgesiVerisi(cari));
+      document.getElementById("cari-ekstre-overlay").classList.add("aktif");
+    }
+
+    function cariEkstreKapat() {
+      document.getElementById("cari-ekstre-overlay")?.classList.remove("aktif");
+      document.body.classList.remove("ekstre-yazdiriliyor");
     }
 
     function cariHesaplariKapat() {
@@ -3635,6 +3854,9 @@
       document.getElementById("cari-hesaplar-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cari-hesaplar-overlay") cariHesaplariKapat();
       });
+      document.getElementById("cari-ekstre-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "cari-ekstre-overlay") cariEkstreKapat();
+      });
       document.getElementById("kullanici-yonetim-overlay")?.addEventListener("click", e => {
         if (e.target.id === "kullanici-yonetim-overlay") kullaniciPaneliniKapat();
       });
@@ -3645,6 +3867,7 @@
           topluSilmeKapat();
           odemeYonetiminiKapat();
           cariHesaplariKapat();
+          cariEkstreKapat();
           kullaniciPaneliniKapat();
         }
       });
