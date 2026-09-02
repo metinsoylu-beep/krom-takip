@@ -4,8 +4,8 @@ const fs = require("node:fs");
 const worker = fs.readFileSync("sw.js", "utf8");
 const index = fs.readFileSync("index.html", "utf8");
 
-assert.match(worker, /odeme-takip-v12/, "Önbellek sürümü yükseltilmeli");
-assert.doesNotMatch(worker, /odeme-takip-v11/, "Eski önbellek sürümü kullanılmamalı");
+assert.match(worker, /odeme-takip-v13/, "Önbellek sürümü yükseltilmeli");
+assert.doesNotMatch(worker, /odeme-takip-v12/, "Eski önbellek sürümü kullanılmamalı");
 assert.match(worker, /e\.request\.mode === 'navigate'/, "Sayfa gezinmeleri ayrı ele alınmalı");
 assert.match(worker, /fetch\(e\.request, \{ cache: 'no-store' \}\)/, "Ana sayfa ağdan güncel alınmalı");
 assert.match(worker, /caches\.match\(`\$\{BASE\}index\.html`\)/, "Çevrimdışı ana sayfa yedeği korunmalı");

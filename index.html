@@ -411,6 +411,64 @@
     .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
     .veri-kontrol-not { margin-top: 8px; color: #718398; font-size: 9px; }
 
+    #rapor-ac-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+      border: 1px solid #c9a84c55; border-radius: 6px; background: #c9a84c12;
+      color: #e5bd57; font-family: inherit; font-size: 11px; white-space: nowrap; cursor: pointer;
+    }
+    #rapor-ac-btn:hover { background: #c9a84c24; border-color: #c9a84c88; }
+    .rapor-overlay { align-items: flex-start; overflow-y: auto; padding: 18px; }
+    .rapor-kart {
+      width: min(1120px, 100%); max-height: calc(100vh - 36px); display: flex; flex-direction: column;
+      margin: 0 auto; overflow: hidden; background: var(--panel-koyu); border: 1px solid var(--cizgi);
+      border-top: 3px solid var(--altin); border-radius: 12px; box-shadow: 0 26px 90px #020914c7;
+    }
+    .rapor-ust {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 16px 18px; border-bottom: 1px solid var(--cizgi-yumusak);
+    }
+    .rapor-baslik { color: #eef4fa; font: 700 17px Georgia, serif; }
+    .rapor-baslik i { margin-right: 7px; color: var(--altin-acik); }
+    .rapor-alt-baslik { margin-top: 4px; color: #8294a7; font-size: 10px; }
+    .rapor-filtreler {
+      display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr 1.3fr; gap: 10px;
+      padding: 13px 18px; background: #0a1a2b; border-bottom: 1px solid var(--cizgi-yumusak);
+    }
+    .rapor-alan label { display: block; margin-bottom: 5px; color: #91a3b5; font-size: 9px; }
+    .rapor-alan select, .rapor-alan input {
+      width: 100%; height: 38px; padding: 0 10px; background: #10243a; border: 1px solid var(--cizgi);
+      border-radius: 6px; color: #eef4fa; font: 11px "Segoe UI",Arial,sans-serif; outline: none;
+    }
+    .rapor-alan input:focus, .rapor-alan select:focus { border-color: var(--altin); }
+    .rapor-ozetler { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; padding: 13px 18px; }
+    .rapor-ozet {
+      display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px;
+      background: var(--panel); border: 1px solid var(--cizgi-yumusak); border-radius: 7px;
+    }
+    .rapor-ozet i { width: 24px; color: var(--rapor-renk); text-align: center; }
+    .rapor-ozet span { display: block; color: #8395a8; font-size: 8px; }
+    .rapor-ozet strong { display: block; margin-top: 3px; color: var(--rapor-renk); font: 700 15px Georgia,serif; white-space: nowrap; }
+    .rapor-tablo-wrap { min-height: 170px; overflow: auto; margin: 0 18px; border: 1px solid var(--cizgi); border-radius: 7px; }
+    .rapor-tablo { min-width: 850px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
+    .rapor-tablo thead { position: sticky; top: 0; z-index: 1; }
+    .rapor-tablo th { height: 34px; padding: 0 12px; }
+    .rapor-tablo td { height: 40px; padding: 7px 12px; }
+    .rapor-durum { font-weight: 700; white-space: nowrap; }
+    .rapor-bos { padding: 45px 20px; color: #718398; text-align: center; }
+    .rapor-alt {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 13px 18px; border-top: 1px solid var(--cizgi-yumusak);
+    }
+    .rapor-kapsam { color: #8294a7; font-size: 10px; }
+    .rapor-butonlar { display: flex; gap: 8px; }
+    .rapor-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px;
+      padding: 7px 13px; border: 1px solid var(--cizgi); border-radius: 6px; background: transparent;
+      color: #aebdcb; font: 600 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .rapor-btn.birincil { border-color: #e6a91f88; background: #e6a91f1a; color: #f3be3e; }
+    .rapor-btn:hover { background: #ffffff0a; }
+
     .kur-panel {
       width: 100%; margin: 0; display: grid; grid-template-columns: minmax(210px, .75fr) 2fr;
       background: var(--panel); border: 1px solid var(--cizgi); border-radius: 7px; box-shadow: none;
@@ -470,6 +528,14 @@
       .veri-kontrol-ok { grid-column: 3; grid-row: 1 / span 2; }
       .veri-kontrol-detay { padding-left: 13px; }
       .veri-kontrol-sayaclar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .rapor-overlay { padding: 0; }
+      .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
+      .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
+      .rapor-alan:last-child { grid-column: 1 / -1; }
+      .rapor-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 12px; }
+      .rapor-tablo-wrap { margin: 0 12px; }
+      .rapor-alt { align-items: stretch; flex-direction: column; padding: 12px; }
+      .rapor-butonlar { display: grid; grid-template-columns: 1fr 1fr; }
       .kur-panel { grid-template-columns: 1fr; }
       .kur-baslik-satir { border-right: 0; border-bottom: 1px solid var(--cizgi-yumusak); }
       .kur-satirlar { grid-template-columns: 1fr; }
@@ -514,6 +580,24 @@
     @media (max-width: 760px) {
       .oturum-eposta { display: none; }
       .giris-kart { padding: 28px 22px; }
+    }
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body { background: #fff !important; color: #111 !important; }
+      body > * { display: none !important; }
+      #rapor-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
+      #rapor-overlay .rapor-kart { width: 100% !important; max-height: none !important; display: block !important; overflow: visible !important; background: #fff !important; border: 0 !important; box-shadow: none !important; }
+      #rapor-overlay .rapor-filtreler, #rapor-overlay .rapor-butonlar, #rapor-overlay .modal-kapat { display: none !important; }
+      #rapor-overlay .rapor-ust, #rapor-overlay .rapor-alt { border-color: #bbb !important; }
+      #rapor-overlay .rapor-baslik, #rapor-overlay .rapor-ozet strong { color: #111 !important; }
+      #rapor-overlay .rapor-alt-baslik, #rapor-overlay .rapor-kapsam, #rapor-overlay .rapor-ozet span { color: #555 !important; }
+      #rapor-overlay .rapor-ozetler { padding-inline: 0 !important; }
+      #rapor-overlay .rapor-ozet { background: #fff !important; border-color: #bbb !important; }
+      #rapor-overlay .rapor-tablo-wrap { margin: 0 !important; overflow: visible !important; border-color: #999 !important; }
+      #rapor-overlay .rapor-tablo { min-width: 0 !important; color: #111 !important; font-size: 9px !important; }
+      #rapor-overlay .rapor-tablo thead { position: static !important; }
+      #rapor-overlay .rapor-tablo thead tr { background: #e9edf2 !important; }
+      #rapor-overlay .rapor-tablo th, #rapor-overlay .rapor-tablo td { color: #111 !important; border-color: #ccc !important; }
     }
   </style>
 </head>
@@ -597,6 +681,57 @@
         <button class="btn-duzenle-kaydet" onclick="duzenleKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Kaydet</button>
       </div>
     </div>
+  </div>
+
+  <!-- GELİŞMİŞ RAPOR -->
+  <div class="popup-overlay rapor-overlay" id="rapor-overlay">
+    <section class="rapor-kart" role="dialog" aria-modal="true" aria-labelledby="rapor-baslik">
+      <div class="rapor-ust">
+        <div>
+          <h2 class="rapor-baslik" id="rapor-baslik"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Gelişmiş Fatura Raporu</h2>
+          <p class="rapor-alt-baslik">Vade tarihine göre hazırlanır · Fatura verilerini değiştirmez</p>
+        </div>
+        <button class="modal-kapat" type="button" onclick="raporKapat()" aria-label="Rapor penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="rapor-filtreler">
+        <div class="rapor-alan">
+          <label for="rapor-donem">DÖNEM</label>
+          <select id="rapor-donem" onchange="raporDonemiDegisti()">
+            <option value="bu-ay">Bu ay</option>
+            <option value="gelecek-30">Gelecek 30 gün</option>
+            <option value="tumu">Tüm kayıtlar</option>
+            <option value="ozel">Özel tarih aralığı</option>
+          </select>
+        </div>
+        <div class="rapor-alan"><label for="rapor-baslangic">VADE BAŞLANGICI</label><input id="rapor-baslangic" type="date" onchange="raporOzelDonemeGec()"/></div>
+        <div class="rapor-alan"><label for="rapor-bitis">VADE BİTİŞİ</label><input id="rapor-bitis" type="date" onchange="raporOzelDonemeGec()"/></div>
+        <div class="rapor-alan">
+          <label for="rapor-durum">DURUM</label>
+          <select id="rapor-durum" onchange="raporuGuncelle()">
+            <option value="tumu">Tümü</option>
+            <option value="odenmedi">Ödenmedi</option>
+            <option value="odendi">Ödendi</option>
+            <option value="geciken">Geciken</option>
+            <option value="yaklasan">30 gün içinde</option>
+          </select>
+        </div>
+        <div class="rapor-alan"><label for="rapor-arama">FATURA NO</label><input id="rapor-arama" type="search" placeholder="Fatura numarası ara" oninput="raporuGuncelle()"/></div>
+      </div>
+      <div class="rapor-ozetler">
+        <div class="rapor-ozet" style="--rapor-renk:#67cdfa"><i class="fa-solid fa-file-invoice"></i><span><span>KAYIT</span><strong id="rapor-kayit">0</strong></span></div>
+        <div class="rapor-ozet" style="--rapor-renk:#f3be3e"><i class="fa-solid fa-coins"></i><span><span>TOPLAM</span><strong id="rapor-toplam">0 ₺</strong></span></div>
+        <div class="rapor-ozet" style="--rapor-renk:#4ade80"><i class="fa-solid fa-circle-check"></i><span><span>ÖDENEN</span><strong id="rapor-odenen">0 ₺</strong></span></div>
+        <div class="rapor-ozet" style="--rapor-renk:#ff5b67"><i class="fa-solid fa-triangle-exclamation"></i><span><span>KALAN</span><strong id="rapor-kalan">0 ₺</strong></span></div>
+      </div>
+      <div class="rapor-tablo-wrap" id="rapor-tablo-wrap"></div>
+      <div class="rapor-alt">
+        <span class="rapor-kapsam" id="rapor-kapsam">Rapor hazırlanıyor…</span>
+        <div class="rapor-butonlar">
+          <button class="rapor-btn yalnızca-yonetici" type="button" onclick="raporCsvIndir()"><i class="fa-solid fa-file-csv"></i> Raporu CSV İndir</button>
+          <button class="rapor-btn birincil" type="button" onclick="raporYazdir()"><i class="fa-solid fa-print"></i> Yazdır / PDF</button>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- NAVBAR -->
@@ -744,6 +879,10 @@
         <!-- EŞİTLEME DURUMU -->
         <div class="sync-satir">
           <span id="sync-durum"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i> Google Sheets'ten veriler yükleniyor...</span>
+          <button id="rapor-ac-btn" type="button" onclick="raporAc()" title="Gelişmiş fatura raporu oluştur">
+            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+            Rapor Oluştur
+          </button>
           <button id="csv-indir-btn" class="yalnizca-yonetici" type="button" onclick="csvRaporIndir()" title="Ekrandaki filtrelenmiş faturaları CSV olarak indir">
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
             CSV İndir
@@ -865,6 +1004,7 @@
     let kullaniciRolu = null;
     let uygulamaBaslatildi = false;
     let sonGirisHatasi = "";
+    let aktifRaporListesi = [];
 
     if ('serviceWorker' in navigator) {
       let servisCalisaniYenileniyor = false;
@@ -1678,12 +1818,10 @@
       if (/^[=+\-@]/.test(metin)) metin = "'" + metin;
       return `"${metin.replace(/"/g, '""')}"`;
     }
-    function csvRaporIndir() {
-      if (!yoneticiGerekli()) return;
-      const liste = goruntulenenFaturalariGetir();
+    function csvDosyasiIndir(liste, dosyaAdi) {
       if (!liste.length) {
         syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
-        return;
+        return false;
       }
       const basliklar = ["Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödeme Durumu","Ödeme Tarihi","Vade Durumu"];
       const satirlar = liste.map(inv=>{
@@ -1707,12 +1845,180 @@
       const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
       const baglanti = document.createElement("a");
       baglanti.href = adres;
-      baglanti.download = `arlinoks-fatura-raporu-${bugununTarihi()}.csv`;
+      baglanti.download = dosyaAdi;
       document.body.appendChild(baglanti);
       baglanti.click();
       baglanti.remove();
       setTimeout(()=>URL.revokeObjectURL(adres), 1000);
       syncGoster(`${liste.length} fatura CSV raporuna aktarıldı`, "#4ade80");
+      return true;
+    }
+    function csvRaporIndir() {
+      if (!yoneticiGerekli()) return;
+      csvDosyasiIndir(
+        goruntulenenFaturalariGetir(),
+        `arlinoks-fatura-raporu-${bugununTarihi()}.csv`
+      );
+    }
+
+    // ── GELİŞMİŞ RAPORLAMA ────────────────────────────────────────────────────
+    function raporDonemAraligi(tip, referans=new Date()) {
+      const gun = new Date(referans);
+      gun.setHours(12,0,0,0);
+      if (tip === "tumu") return { baslangic:"", bitis:"" };
+      if (tip === "gelecek-30") {
+        const bitis = new Date(gun);
+        bitis.setDate(bitis.getDate() + 29);
+        return { baslangic:bugununTarihi(gun), bitis:bugununTarihi(bitis) };
+      }
+      const baslangic = new Date(gun.getFullYear(), gun.getMonth(), 1, 12, 0, 0, 0);
+      const bitis = new Date(gun.getFullYear(), gun.getMonth() + 1, 0, 12, 0, 0, 0);
+      return { baslangic:bugununTarihi(baslangic), bitis:bugununTarihi(bitis) };
+    }
+
+    function raporListesiniOlustur(liste, kriterler={}, referans=new Date()) {
+      const bugun = new Date(referans);
+      bugun.setHours(0,0,0,0);
+      const sonraki30Gun = new Date(bugun);
+      sonraki30Gun.setDate(sonraki30Gun.getDate() + 30);
+      const arama = String(kriterler.arama || "").trim().toLocaleUpperCase("tr-TR");
+      const durum = kriterler.durum || "tumu";
+      const baslangic = String(kriterler.baslangic || "");
+      const bitis = String(kriterler.bitis || "");
+
+      return (Array.isArray(liste) ? liste : []).filter(inv => {
+        const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+        vade.setHours(0,0,0,0);
+        const vadeMetni = bugununTarihi(vade);
+        if (baslangic && vadeMetni < baslangic) return false;
+        if (bitis && vadeMetni > bitis) return false;
+        if (arama && !String(inv.no || "").toLocaleUpperCase("tr-TR").includes(arama)) return false;
+        if (durum === "odendi" && !inv.odendi) return false;
+        if (durum === "odenmedi" && inv.odendi) return false;
+        if (durum === "geciken" && (inv.odendi || vade >= bugun)) return false;
+        if (durum === "yaklasan" && (inv.odendi || vade < bugun || vade >= sonraki30Gun)) return false;
+        return true;
+      }).sort((a,b) => vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun));
+    }
+
+    function raporOzetiniHesapla(liste) {
+      let toplam = 0;
+      let odenen = 0;
+      (Array.isArray(liste) ? liste : []).forEach(inv => {
+        const tutar = tutarSayiyaCevir(inv.tutar);
+        toplam += tutar;
+        if (inv.odendi) odenen += tutar;
+      });
+      return { kayit:(liste || []).length, toplam, odenen, kalan:toplam-odenen };
+    }
+
+    function raporDurumBilgisi(inv, referans=new Date()) {
+      if (inv.odendi) return { metin:"Ödendi", renk:"#4ade80" };
+      const bugun = new Date(referans);
+      bugun.setHours(0,0,0,0);
+      const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+      vade.setHours(0,0,0,0);
+      const fark = Math.round((vade - bugun) / 86400000);
+      if (fark < 0) return { metin:`${Math.abs(fark)} gün gecikti`, renk:"#ff5b67" };
+      if (fark === 0) return { metin:"Bugün vadeli", renk:"#f59e0b" };
+      return { metin:`${fark} gün kaldı`, renk:fark <= 30 ? "#fbbf24" : "#67cdfa" };
+    }
+
+    function htmlGuvenli(deger) {
+      return String(deger ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+
+    function raporFiltreleriniOku() {
+      return {
+        baslangic:document.getElementById("rapor-baslangic").value,
+        bitis:document.getElementById("rapor-bitis").value,
+        durum:document.getElementById("rapor-durum").value,
+        arama:document.getElementById("rapor-arama").value
+      };
+    }
+
+    function raporDonemiDegisti() {
+      const tip = document.getElementById("rapor-donem").value;
+      if (tip !== "ozel") {
+        const aralik = raporDonemAraligi(tip);
+        document.getElementById("rapor-baslangic").value = aralik.baslangic;
+        document.getElementById("rapor-bitis").value = aralik.bitis;
+      }
+      raporuGuncelle();
+    }
+
+    function raporOzelDonemeGec() {
+      document.getElementById("rapor-donem").value = "ozel";
+      raporuGuncelle();
+    }
+
+    function raporAc() {
+      document.getElementById("rapor-donem").value = "bu-ay";
+      document.getElementById("rapor-durum").value = "tumu";
+      document.getElementById("rapor-arama").value = "";
+      document.getElementById("rapor-overlay").classList.add("aktif");
+      raporDonemiDegisti();
+    }
+
+    function raporKapat() {
+      document.getElementById("rapor-overlay")?.classList.remove("aktif");
+    }
+
+    function raporuGuncelle() {
+      const kriterler = raporFiltreleriniOku();
+      aktifRaporListesi = raporListesiniOlustur(faturaYukle(), kriterler);
+      const ozet = raporOzetiniHesapla(aktifRaporListesi);
+      document.getElementById("rapor-kayit").textContent = ozet.kayit;
+      document.getElementById("rapor-toplam").textContent = formatPara(ozet.toplam);
+      document.getElementById("rapor-odenen").textContent = formatPara(ozet.odenen);
+      document.getElementById("rapor-kalan").textContent = formatPara(ozet.kalan);
+
+      const tablo = document.getElementById("rapor-tablo-wrap");
+      if (!aktifRaporListesi.length) {
+        tablo.innerHTML = '<div class="rapor-bos"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><br>Bu ölçütlere uyan fatura bulunamadı.</div>';
+      } else {
+        tablo.innerHTML = `<table class="rapor-tablo">
+          <thead><tr><th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>ÖDEME TARİHİ</th></tr></thead>
+          <tbody>${aktifRaporListesi.map((inv,sira) => {
+            const vade = vadeTarihi(inv.tarih, inv.vadeGun);
+            const durum = raporDurumBilgisi(inv);
+            const odemeTarihi = inv.odemeTarihi ? formatTarih(tarihOlusturYerel(inv.odemeTarihi)) : "—";
+            return `<tr>
+              <td>${sira+1}</td>
+              <td><strong>${htmlGuvenli(inv.no)}</strong></td>
+              <td>${formatTarih(tarihOlusturYerel(inv.tarih))}</td>
+              <td>${formatTarih(vade)}</td>
+              <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
+              <td><span class="rapor-durum" style="color:${durum.renk}">${durum.metin}</span></td>
+              <td>${odemeTarihi}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>`;
+      }
+
+      const durumSecimi = document.getElementById("rapor-durum");
+      const durumMetni = durumSecimi.options[durumSecimi.selectedIndex].text;
+      const tarihMetni = kriterler.baslangic || kriterler.bitis
+        ? `${kriterler.baslangic ? formatTarih(tarihOlusturYerel(kriterler.baslangic)) : "Başlangıç yok"} – ${kriterler.bitis ? formatTarih(tarihOlusturYerel(kriterler.bitis)) : "Bitiş yok"}`
+        : "Tüm vade tarihleri";
+      document.getElementById("rapor-kapsam").textContent = `${tarihMetni} · ${durumMetni} · ${ozet.kayit} kayıt`;
+    }
+
+    function raporCsvIndir() {
+      if (!yoneticiGerekli()) return;
+      csvDosyasiIndir(
+        aktifRaporListesi,
+        `arlinoks-gelismis-rapor-${bugununTarihi()}.csv`
+      );
+    }
+
+    function raporYazdir() {
+      window.print();
     }
     function filtreBasligi(filtre) {
       return ({'bu-ay':'Bu ay eklenen','yaklasan':'7 gün içinde vadesi gelen','geciken':'Geciken','odenen-ay':'Bu ay ödenen'})[filtre] || '';
@@ -2019,8 +2325,14 @@
       document.getElementById("yeni-fatura-overlay")?.addEventListener("click", e => {
         if (e.target.id === "yeni-fatura-overlay") yeniFaturaKapat();
       });
+      document.getElementById("rapor-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "rapor-overlay") raporKapat();
+      });
       window.addEventListener("keydown", e => {
-        if (e.key === "Escape") yeniFaturaKapat();
+        if (e.key === "Escape") {
+          yeniFaturaKapat();
+          raporKapat();
+        }
       });
     }
 
