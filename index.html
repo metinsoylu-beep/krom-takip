@@ -2743,7 +2743,7 @@
 
     function cariBasHarfleri(cari) {
       const ad = String(cari || "").trim();
-      if (!ad) return "?";
+      if (!ad || cariAdiAnahtari(ad) === "BELİRTİLMEDİ") return "?";
       const kelimeler = ad.toLocaleUpperCase("tr-TR")
         .split(/\s+/)
         .map(kelime => (kelime.match(/[A-ZÇĞİÖŞÜ0-9]/u) || [""])[0])
