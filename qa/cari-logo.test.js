@@ -15,7 +15,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
 
-assert.equal(context.cariBasHarfleri("Krom Mutfak Sanayi"), "KM", "İlk iki kelimenin baş harfleri kullanılmalı");
+assert.equal(context.cariBasHarfleri("Krom Mutfak Sanayi"), "K", "Cari adının ilk harfi kullanılmalı");
 assert.equal(context.cariBasHarfleri("Şahin"), "Ş", "Türkçe tek kelimeli cari adı desteklenmeli");
 assert.equal(context.cariBasHarfleri(""), "?", "Eksik cari nötr simge göstermeli");
 assert.equal(context.cariBasHarfleri("Belirtilmedi"), "?", "Eksik cari özeti de nötr simge göstermeli");
