@@ -363,6 +363,54 @@
     #csv-indir-btn:hover { background: #38bdf824; border-color: #38bdf888; }
     button:disabled { opacity: .55; cursor: wait; }
 
+    .veri-kontrol-panel {
+      margin: 0 0 13px; overflow: hidden; background: var(--panel-koyu);
+      border: 1px solid var(--cizgi); border-left: 4px solid #4ade80; border-radius: 9px;
+      transition: border-color .18s, background .18s;
+    }
+    .veri-kontrol-panel.uyari { border-left-color: #f59e0b; background: #211b0d; }
+    .veri-kontrol-ust {
+      width: 100%; min-height: 54px; display: grid;
+      grid-template-columns: 32px minmax(0,1fr) auto 18px; align-items: center; gap: 10px;
+      padding: 9px 13px; border: 0; background: transparent; color: var(--metin);
+      text-align: left; font-family: inherit; cursor: pointer;
+    }
+    .veri-kontrol-ust:focus-visible { outline: 2px solid #4ade80; outline-offset: -3px; }
+    .veri-kontrol-panel.uyari .veri-kontrol-ust:focus-visible { outline-color: #f59e0b; }
+    .veri-kontrol-ikon {
+      width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px;
+      color: #4ade80; background: #4ade8018; border: 1px solid #4ade8038;
+    }
+    .veri-kontrol-panel.uyari .veri-kontrol-ikon {
+      color: #f59e0b; background: #f59e0b18; border-color: #f59e0b38;
+    }
+    .veri-kontrol-baslik { display: block; font-size: 11px; font-weight: 750; line-height: 1.3; }
+    .veri-kontrol-durum { display: block; margin-top: 2px; color: #91a3b5; font-size: 10px; line-height: 1.35; }
+    .veri-kontrol-rozet {
+      padding: 4px 8px; border-radius: 999px; color: #4ade80; background: #4ade8012;
+      border: 1px solid #4ade803d; font-size: 9px; font-weight: 750; white-space: nowrap;
+    }
+    .veri-kontrol-panel.uyari .veri-kontrol-rozet {
+      color: #fbbf24; background: #f59e0b12; border-color: #f59e0b44;
+    }
+    .veri-kontrol-ok { color: #718398; font-size: 10px; transition: transform .18s; }
+    .veri-kontrol-ust[aria-expanded="true"] .veri-kontrol-ok { transform: rotate(180deg); }
+    .veri-kontrol-detay { padding: 0 13px 13px 55px; }
+    .veri-kontrol-detay[hidden] { display: none; }
+    .veri-kontrol-sayaclar { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
+    .veri-kontrol-sayac {
+      min-width: 0; padding: 8px 9px; background: #07152580; border: 1px solid var(--cizgi-yumusak);
+      border-radius: 7px;
+    }
+    .veri-kontrol-sayac span { display: block; color: #8193a6; font-size: 8px; line-height: 1.25; }
+    .veri-kontrol-sayac strong { display: block; margin-top: 3px; color: #dce6ef; font-size: 13px; }
+    .veri-kontrol-sayac.sorun strong { color: #fbbf24; }
+    .veri-kontrol-sorunlar { display: grid; gap: 6px; margin-top: 9px; list-style: none; }
+    .veri-kontrol-sorunlar li { display: flex; align-items: flex-start; gap: 7px; color: #b9c5d1; font-size: 10px; line-height: 1.4; }
+    .veri-kontrol-sorunlar i { margin-top: 2px; color: #f59e0b; font-size: 9px; }
+    .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
+    .veri-kontrol-not { margin-top: 8px; color: #718398; font-size: 9px; }
+
     .kur-panel {
       width: 100%; margin: 0; display: grid; grid-template-columns: minmax(210px, .75fr) 2fr;
       background: var(--panel); border: 1px solid var(--cizgi); border-radius: 7px; box-shadow: none;
@@ -417,6 +465,11 @@
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
+      .veri-kontrol-ust { grid-template-columns: 32px minmax(0,1fr) 18px; }
+      .veri-kontrol-rozet { grid-column: 2; justify-self: start; }
+      .veri-kontrol-ok { grid-column: 3; grid-row: 1 / span 2; }
+      .veri-kontrol-detay { padding-left: 13px; }
+      .veri-kontrol-sayaclar { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .kur-panel { grid-template-columns: 1fr; }
       .kur-baslik-satir { border-right: 0; border-bottom: 1px solid var(--cizgi-yumusak); }
       .kur-satirlar { grid-template-columns: 1fr; }
@@ -658,6 +711,29 @@
               <span class="hizli-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
               <span class="hizli-metin"><span class="hizli-etiket">Bu Ay Ödenen</span><span class="hizli-sonuc"><span class="hizli-deger" id="hizli-odenen">0</span><span class="hizli-alt" id="hizli-odenen-alt">0 ₺</span></span></span>
             </button>
+          </div>
+        </section>
+
+        <!-- VERİ KONTROL MERKEZİ -->
+        <section class="veri-kontrol-panel" id="veri-kontrol-panel" aria-labelledby="veri-kontrol-baslik">
+          <button class="veri-kontrol-ust" id="veri-kontrol-dugme" type="button" aria-expanded="false" aria-controls="veri-kontrol-detay" onclick="veriKontrolDetayiniDegistir()">
+            <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+            <span>
+              <span class="veri-kontrol-baslik" id="veri-kontrol-baslik">Veri Kontrol Merkezi</span>
+              <span class="veri-kontrol-durum" id="veri-kontrol-durum" role="status">Kayıtlar denetleniyor…</span>
+            </span>
+            <span class="veri-kontrol-rozet" id="veri-kontrol-rozet">OTOMATİK KONTROL</span>
+            <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
+          </button>
+          <div class="veri-kontrol-detay" id="veri-kontrol-detay" hidden>
+            <div class="veri-kontrol-sayaclar">
+              <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
+              <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
+              <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
+              <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
+            </div>
+            <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
+            <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez.</p>
           </div>
         </section>
 
@@ -1175,6 +1251,187 @@
       } catch { return []; }
     }
 
+    // ── VERİ KONTROL MERKEZİ ─────────────────────────────────────────────────
+    function hamFaturaVerisiniYukle() {
+      try {
+        const ham = JSON.parse(localStorage.getItem(ANAHTAR) || "[]");
+        return Array.isArray(ham) ? ham : [];
+      } catch { return []; }
+    }
+
+    function tarihGecerliMi(deger) {
+      const eslesme = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(deger || "").split("T")[0]);
+      if (!eslesme) return false;
+      const yil = Number(eslesme[1]);
+      const ay = Number(eslesme[2]);
+      const gun = Number(eslesme[3]);
+      const tarih = new Date(yil, ay - 1, gun, 12, 0, 0, 0);
+      return tarih.getFullYear() === yil && tarih.getMonth() === ay - 1 && tarih.getDate() === gun;
+    }
+
+    function faturaNumarasiAnahtari(no) {
+      return String(no || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+    }
+
+    function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null) {
+      const hamKayitlar = Array.isArray(hamListe) ? hamListe : [];
+      const gecerliKayitlar = Array.isArray(liste) ? liste : [];
+      const gecersizAciklamalar = [];
+      const yinelenenSatirlar = new Set();
+      const gorulenId = new Map();
+      const gorulenImza = new Map();
+      const numaraGruplari = new Map();
+
+      hamKayitlar.forEach((ham, sira) => {
+        const satir = sira + 1;
+        if (!ham || typeof ham !== "object") {
+          gecersizAciklamalar.push(`${satir}. satır: kayıt yapısı geçersiz`);
+          return;
+        }
+
+        const no = String(ham.no || "").trim();
+        const tarih = String(ham.tarih || "").split("T")[0];
+        const vadeGun = Number(ham.vadeGun);
+        const tutar = tutarSayiyaCevir(ham.tutar);
+        const odendi = ham.odendi === true || ham.odendi === "true" || ham.odendi === "TRUE" || ham.odendi === "Ödendi";
+        const hatalar = [];
+
+        if (!no) hatalar.push("fatura numarası eksik");
+        if (!tarihGecerliMi(tarih)) hatalar.push("fatura tarihi geçersiz");
+        if (!Number.isInteger(vadeGun) || vadeGun <= 0) hatalar.push("vade günü geçersiz");
+        if (!(tutar > 0)) hatalar.push("tutar eksik veya geçersiz");
+        if (odendi && !tarihGecerliMi(ham.odemeTarihi)) hatalar.push("ödeme tarihi eksik veya geçersiz");
+
+        if (hatalar.length) {
+          const etiket = no ? `“${no.slice(0, 60)}”` : `${satir}. satır`;
+          gecersizAciklamalar.push(`${etiket}: ${hatalar.join(", ")}`);
+        }
+
+        const id = String(ham.id ?? "").trim();
+        if (id && gorulenId.has(id)) yinelenenSatirlar.add(sira);
+        else if (id) gorulenId.set(id, sira);
+
+        if (no && tarihGecerliMi(tarih) && Number.isInteger(vadeGun) && vadeGun > 0 && tutar > 0) {
+          const imza = faturaImzasi({ no, tarih, vadeGun, tutar });
+          if (gorulenImza.has(imza)) yinelenenSatirlar.add(sira);
+          else gorulenImza.set(imza, sira);
+        }
+      });
+
+      gecerliKayitlar.forEach(inv => {
+        const anahtar = faturaNumarasiAnahtari(inv.no);
+        if (!anahtar) return;
+        const grup = numaraGruplari.get(anahtar) || [];
+        grup.push(String(inv.no || "").trim());
+        numaraGruplari.set(anahtar, grup);
+      });
+      const ayniNumaraGruplari = [...numaraGruplari.entries()].filter(([, kayitlar]) => kayitlar.length > 1);
+
+      let toplam = 0;
+      let odenen = 0;
+      gecerliKayitlar.forEach(inv => {
+        const tutar = tutarSayiyaCevir(inv.tutar);
+        toplam += tutar;
+        if (inv.odendi) odenen += tutar;
+      });
+      const beklenenOzet = {
+        toplam: formatPara(toplam),
+        odenen: formatPara(odenen),
+        kalan: formatPara(toplam - odenen)
+      };
+      const toplamlarDogru = !ozetMetinleri ||
+        (ozetMetinleri.toplam === beklenenOzet.toplam &&
+         ozetMetinleri.odenen === beklenenOzet.odenen &&
+         ozetMetinleri.kalan === beklenenOzet.kalan);
+
+      const mesajlar = gecersizAciklamalar.map(metin => `Kontrol gerekli: ${metin}`);
+      if (yinelenenSatirlar.size) {
+        mesajlar.push(`${yinelenenSatirlar.size} yinelenen kayıt tespit edildi. Kayıtlar otomatik değiştirilmedi.`);
+      }
+      ayniNumaraGruplari.forEach(([, kayitlar]) => {
+        mesajlar.push(`“${kayitlar[0].slice(0, 60)}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
+      });
+      if (!toplamlarDogru) {
+        mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
+      }
+
+      const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size +
+        ayniNumaraGruplari.length + (toplamlarDogru ? 0 : 1);
+      return {
+        kayitSayisi: gecerliKayitlar.length,
+        gecersizSayisi: gecersizAciklamalar.length,
+        yinelenenSayisi: yinelenenSatirlar.size,
+        ayniNumaraSayisi: ayniNumaraGruplari.length,
+        toplamlarDogru,
+        uyariSayisi,
+        mesajlar
+      };
+    }
+
+    function veriKontrolSayaciniGuncelle(kartId, degerId, deger, sorun) {
+      document.getElementById(degerId).textContent = String(deger);
+      document.getElementById(kartId).classList.toggle("sorun", Boolean(sorun));
+    }
+
+    function veriKontrolunuGuncelle(hamListe, liste) {
+      const ozetMetinleri = {
+        toplam: document.getElementById("oz-toplam")?.textContent || "",
+        odenen: document.getElementById("oz-odenen")?.textContent || "",
+        kalan: document.getElementById("oz-kalan")?.textContent || ""
+      };
+      const rapor = veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri);
+      const uyariVar = rapor.uyariSayisi > 0;
+      const panel = document.getElementById("veri-kontrol-panel");
+      panel.classList.toggle("uyari", uyariVar);
+      panel.querySelector(".veri-kontrol-ikon i").className = uyariVar
+        ? "fa-solid fa-triangle-exclamation"
+        : "fa-solid fa-shield-circle-check";
+      document.getElementById("veri-kontrol-durum").textContent = uyariVar
+        ? `${rapor.kayitSayisi} geçerli kayıt · ${rapor.uyariSayisi} kontrol uyarısı bulundu`
+        : `${rapor.kayitSayisi} kayıt kontrol edildi · Sorun bulunmadı`;
+      document.getElementById("veri-kontrol-rozet").textContent = uyariVar
+        ? `${rapor.uyariSayisi} UYARI`
+        : "SAĞLIKLI";
+
+      veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-yinelenen-kart", "kontrol-yinelenen", rapor.yinelenenSayisi, rapor.yinelenenSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-ayni-no-kart", "kontrol-ayni-no", rapor.ayniNumaraSayisi, rapor.ayniNumaraSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);
+
+      const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
+      sorunListesi.replaceChildren();
+      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, tarihler, tutarlar ve özet toplamları tutarlı."];
+      gosterilecekler.forEach(metin => {
+        const satir = document.createElement("li");
+        if (!uyariVar) satir.className = "basarili";
+        const ikon = document.createElement("i");
+        ikon.className = uyariVar ? "fa-solid fa-circle-exclamation" : "fa-solid fa-circle-check";
+        ikon.setAttribute("aria-hidden", "true");
+        const yazi = document.createElement("span");
+        yazi.textContent = metin;
+        satir.append(ikon, yazi);
+        sorunListesi.appendChild(satir);
+      });
+      if (rapor.mesajlar.length > 8) {
+        const satir = document.createElement("li");
+        const ikon = document.createElement("i");
+        ikon.className = "fa-solid fa-ellipsis";
+        ikon.setAttribute("aria-hidden", "true");
+        const yazi = document.createElement("span");
+        yazi.textContent = `${rapor.mesajlar.length - 8} ek uyarı daha var.`;
+        satir.append(ikon, yazi);
+        sorunListesi.appendChild(satir);
+      }
+    }
+
+    function veriKontrolDetayiniDegistir() {
+      const dugme = document.getElementById("veri-kontrol-dugme");
+      const detay = document.getElementById("veri-kontrol-detay");
+      const acilacak = dugme.getAttribute("aria-expanded") !== "true";
+      dugme.setAttribute("aria-expanded", String(acilacak));
+      detay.hidden = !acilacak;
+    }
+
     // ── OTURUM VE YETKİ ──────────────────────────────────────────────────────
     function yoneticiMi() { return kullaniciRolu === "admin"; }
 
@@ -1601,12 +1858,14 @@
 
     // ── ÖZET ───────────────────────────────────────────────────────────────────
     function ozetGuncelle() {
+      const hamListe=hamFaturaVerisiniYukle();
       const liste=faturaYukle(); let toplam=0,odenen=0;
       liste.forEach(inv=>{ const t=Number(inv.tutar)||0; toplam+=t; if(inv.odendi) odenen+=t; });
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
       document.getElementById("oz-odenen").textContent=formatPara(odenen);
       document.getElementById("oz-kalan").textContent=formatPara(toplam-odenen);
       istatistikGuncelle();
+      veriKontrolunuGuncelle(hamListe, liste);
     }
 
     // ── BİLDİRİM ───────────────────────────────────────────────────────────────
