@@ -6,6 +6,7 @@ const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
 const YONETICI_EPOSTALARI_ANAHTAR = "ADMIN_EMAILS";
+const ESKI_ODEME_GECISI_ANAHTAR = "LEGACY_PAYMENT_MIGRATION_DONE";
 const FIREBASE_API_KEY = "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk";
 const VERI_BASLIK = [
   "id",
@@ -15,7 +16,9 @@ const VERI_BASLIK = [
   "Vade Günü",
   "Vade Tarihi",
   "Tutar",
-  "Vade Durumu"
+  "Vade Durumu",
+  "Takip Durumu",
+  "Kapanış Tarihi"
 ];
 const ODEME_BASLIK = [
   "Ödeme ID",
@@ -36,6 +39,7 @@ const CARI_HAREKET_BASLIK = [
   "Referans",
   "Açıklama",
   "Kaynak Fatura ID",
+  "Geçiş Kaydı",
   "Kayıt Zamanı"
 ];
 const CEK_BASLIK = [
@@ -199,6 +203,12 @@ function odendiMi(deger) {
     String(deger || "").trim() === "Ödendi";
 }
 
+function takipKapaliMi(deger) {
+  const metin = String(deger || "").trim().toLocaleLowerCase("tr-TR");
+  return deger === true || deger === "true" || deger === "TRUE" ||
+    metin === "kapalı" || metin === "kapali" || metin === "ödendi" || metin === "odendi";
+}
+
 function odemeKaydiniNormallestir(ham, faturaId, sira) {
   if (!ham || typeof ham !== "object") return null;
   const tutar = tutarSayisi(ham.tutar);
@@ -276,6 +286,7 @@ function faturalariTekillestir(items) {
     if (!ham || typeof ham !== "object") return;
     const idSayi = Number(ham.id);
     const eskiOdendi = odendiMi(ham.odendi);
+    const takipKapali = takipKapaliMi(ham.takipKapali) || eskiOdendi;
     const item = {
       id: isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
       no: String(ham.no || "").trim(),
@@ -285,11 +296,17 @@ function faturalariTekillestir(items) {
       tutar: tutarSayisi(ham.tutar),
       odendi: eskiOdendi,
       odemeTarihi: tarihMetni(ham.odemeTarihi),
+      takipKapali: takipKapali,
+      kapanisTarihi: tarihMetni(ham.kapanisTarihi || (takipKapali ? ham.odemeTarihi : "")),
       odemeler: []
     };
     if (!item.no || !item.tarih || item.tutar <= 0) return;
     item.odemeler = odemeleriNormallestir(ham.odemeler, item.id);
     faturaOdemeOzetiniUygula(item, eskiOdendi);
+    if (item.odendi) {
+      item.takipKapali = true;
+      item.kapanisTarihi = item.kapanisTarihi || item.odemeTarihi || item.tarih;
+    }
 
     const idAnahtari = String(item.id);
     const imza = faturaImzasi(item);
@@ -354,6 +371,7 @@ function cariHareketiniNormallestir(ham, sira) {
     referans: String(ham.referans || "").trim().slice(0, 160),
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
     kaynakFaturaId: Number(ham.kaynakFaturaId) || null,
+    gecisKaydi: ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
     kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
   };
 }
@@ -427,6 +445,7 @@ function cariHareketVerileriniOku() {
       referans: row[konum("Referans")],
       aciklama: row[konum("Açıklama")],
       kaynakFaturaId: row[konum("Kaynak Fatura ID")],
+      gecisKaydi: row[konum("Geçiş Kaydı")],
       kayitZamani: row[konum("Kayıt Zamanı")]
     };
   }));
@@ -470,6 +489,7 @@ function eskiOdemeleriCariHareketlereDonustur(items) {
         referans: odeme.referans || "",
         aciklama: odeme.aciklama || "Eski fatura ödeme kaydından cari harekete aktarıldı.",
         kaynakFaturaId: item.id,
+        gecisKaydi: true,
         kayitZamani: odeme.kayitZamani || ""
       }, sira);
       if (hareket) hareketler.push(hareket);
@@ -484,7 +504,8 @@ function vadeTarihi(tarih, vadeGun) {
   return d;
 }
 
-function durumHesapla(tarih, vadeGun) {
+function durumHesapla(tarih, vadeGun, takipKapali) {
+  if (takipKapaliMi(takipKapali)) return "✅ Takip kapalı";
   const bugun = new Date();
   bugun.setHours(0, 0, 0, 0);
   const vade = vadeTarihi(tarih, vadeGun);
@@ -525,6 +546,8 @@ function faturaVerileriniOku() {
         })
         .map(function(row) {
           const id = String(hucreOku(row, ["id"], 0));
+          const odemeDurumu = hucreOku(row, ["Ödeme Durumu", "odendi"], -1);
+          const takipDurumu = hucreOku(row, ["Takip Durumu", "takipKapali"], -1);
           return {
             id: id,
             no: String(hucreOku(row, ["Fatura No", "no"], 1) || ""),
@@ -532,8 +555,10 @@ function faturaVerileriniOku() {
             tarih: tarihMetni(hucreOku(row, ["Tarih", "tarih"], 2)),
             vadeGun: parseInt(String(hucreOku(row, ["Vade Günü", "vadeGun"], 3)).replace(/[^0-9]/g, ""), 10) || 90,
             tutar: String(hucreOku(row, ["Tutar", "tutar"], 5) || "0"),
-            odendi: String(hucreOku(row, ["Ödeme Durumu", "odendi"], 6)).trim() === "Ödendi",
-            odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], 7)),
+            odendi: odendiMi(odemeDurumu),
+            odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], -1)),
+            takipKapali: takipKapaliMi(takipDurumu) || odendiMi(odemeDurumu),
+            kapanisTarihi: tarihMetni(hucreOku(row, ["Kapanış Tarihi", "kapanisTarihi", "Ödeme Tarihi", "odemeTarihi"], -1)),
             odemeler: odemeGruplari[id] || []
           };
         });
@@ -541,12 +566,15 @@ function faturaVerileriniOku() {
     }
   }
 
-  const kayitliCariHareketler = cariHareketVerileriniOku();
-  const cariHareketler = kayitliCariHareketler === null
-    ? eskiOdemeleriCariHareketlereDonustur(items)
-    : kayitliCariHareketler;
-  const cekler = cekVerileriniOku();
   const properties = PropertiesService.getScriptProperties();
+  const kayitliCariHareketler = cariHareketVerileriniOku();
+  const eskiCariHareketler = eskiOdemeleriCariHareketlereDonustur(items);
+  const gecisTamamlandi = properties.getProperty(ESKI_ODEME_GECISI_ANAHTAR) === "1";
+  const cariHareketler = !gecisTamamlandi && eskiCariHareketler.length &&
+      (kayitliCariHareketler === null || kayitliCariHareketler.length === 0)
+    ? eskiCariHareketler
+    : (kayitliCariHareketler || []);
+  const cekler = cekVerileriniOku();
   return {
     revision: bulutSurumuOku(properties),
     lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
@@ -636,17 +664,23 @@ function doPost(e) {
       return kopya;
     });
     const items = faturalariTekillestir(guvenliGelenItems);
+    const properties = PropertiesService.getScriptProperties();
+    const gecisTamamlandi = properties.getProperty(ESKI_ODEME_GECISI_ANAHTAR) === "1";
+    const eskiCariHareketler = eskiOdemeleriCariHareketlereDonustur(items);
     const mevcutCariHareketlerHam = cariHareketVerileriniOku();
-    const mevcutCariHareketler = mevcutCariHareketlerHam === null
-      ? eskiOdemeleriCariHareketlereDonustur(items)
-      : mevcutCariHareketlerHam;
-    const cariHareketler = Object.prototype.hasOwnProperty.call(payload, "cariHareketler")
+    const mevcutCariHareketler = !gecisTamamlandi && eskiCariHareketler.length &&
+        (mevcutCariHareketlerHam === null || mevcutCariHareketlerHam.length === 0)
+      ? eskiCariHareketler
+      : (mevcutCariHareketlerHam || []);
+    let cariHareketler = Object.prototype.hasOwnProperty.call(payload, "cariHareketler")
       ? cariHareketleriNormallestir(payload.cariHareketler)
       : mevcutCariHareketler;
+    if (!gecisTamamlandi && !cariHareketler.length && eskiCariHareketler.length) {
+      cariHareketler = eskiCariHareketler;
+    }
     const cekler = Object.prototype.hasOwnProperty.call(payload, "cekler")
       ? cekleriNormallestir(payload.cekler)
       : cekVerileriniOku();
-    const properties = PropertiesService.getScriptProperties();
     const mevcutSurum = bulutSurumuOku(properties);
     const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
 
@@ -687,15 +721,15 @@ function doPost(e) {
     const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
 
     const satirlar = [
-      ["💰 FATURA BORCU", "✅ ÖDEME / ÇEK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", ""],
+      ["💰 FATURA BORCU", "✅ ÖDEME / ÇEK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", ""],
       [
         toplam.toLocaleString("tr-TR") + " ₺",
         toplamAlacak.toLocaleString("tr-TR") + " ₺",
         Math.abs(netBakiye).toLocaleString("tr-TR") + " ₺",
         new Date().toLocaleString("tr-TR"),
-        "", "", "", ""
+        "", "", "", "", "", ""
       ],
-      ["", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", ""],
       VERI_BASLIK
     ];
 
@@ -708,7 +742,9 @@ function doPost(e) {
         item.vadeGun + " gün",
         Utilities.formatDate(vadeTarihi(item.tarih, item.vadeGun), Session.getScriptTimeZone() || "Europe/Istanbul", "dd.MM.yyyy"),
         item.tutar,
-        durumHesapla(item.tarih, item.vadeGun)
+        durumHesapla(item.tarih, item.vadeGun, item.takipKapali),
+        item.takipKapali ? "Kapalı" : "Açık",
+        item.takipKapali ? (item.kapanisTarihi || "") : ""
       ]);
     });
 
@@ -723,6 +759,7 @@ function doPost(e) {
         hareket.referans,
         hareket.aciklama,
         hareket.kaynakFaturaId || "",
+        hareket.gecisKaydi ? "Evet" : "Hayır",
         hareket.kayitZamani
       ]);
     });
@@ -777,6 +814,7 @@ function doPost(e) {
     const yeniSurum = mevcutSurum + 1;
     const yeniProperties = {};
     yeniProperties[SURUM_ANAHTAR] = String(yeniSurum);
+    yeniProperties[ESKI_ODEME_GECISI_ANAHTAR] = "1";
     if (requestId) yeniProperties[SON_ISTEK_ANAHTAR] = requestId;
     properties.setProperties(yeniProperties, false);
 

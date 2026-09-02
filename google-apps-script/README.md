@@ -9,12 +9,18 @@ yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 - `admin`: Verileri görüntüler; fatura ve manuel ödeme kayıtlarını ekler, düzenler ve siler.
 - `viewer`: Verileri görüntüler ve filtreler; hiçbir kayıt değişikliği yapamaz.
 
-Manuel ödeme girişleri aynı çalışma kitabında otomatik oluşturulan `Ödemeler`
-sayfasında ayrı satırlar olarak saklanır. Her satır ödeme kimliği, bağlı fatura,
-tarih, tutar, yöntem, referans ve açıklama içerir. `Faturalar` sayfasındaki
-ödeme durumu bu kayıtların toplamından otomatik hesaplanır; kısmi ödemeler
-faturayı kapatmaz. Eski `Ödendi` kayıtları ilk geçişte `Eski kayıt` yöntemli
-geriye uyumlu bir ödeme hareketine dönüştürülür.
+Yeni manuel ödemeler faturadan bağımsız olarak `Cari Hareketler` sayfasına,
+verilen çekler ise `Çekler` sayfasına yazılır. Cari bakiye; toplam fatura borcu
+eksi ödeme ve iptal edilmemiş çekler şeklinde hesaplanır. Ödeme tutarı bir
+faturaya otomatik dağıtılmaz.
+
+`Faturalar` sayfasındaki `Takip Durumu` cari bakiyeden ayrıdır. Kapalı faturalar
+vadesi geçen ve yaklaşan vade listelerine girmez; fatura düzenleme ekranından
+yeniden açılabilir. Eski `Ödemeler` sayfası geçiş arşivi olarak korunur. Eski
+ödeme kayıtları ilk geçişte bir kez cari harekete dönüştürülür ve ödendiği
+bilinen faturaların vade takibi kapalı tutulur. Bu hareketler `Geçiş Kaydı`
+olarak işaretlendiği için cari bakiyeyi düzeltir, fakat “Bu Ay Yapılan
+Ödemeler” sayacını yapay olarak artırmaz.
 
 Web uygulamasını dağıtan Google hesabı otomatik olarak `admin` kabul edilir.
 Ek hesaplar Apps Script içindeki **Proje Ayarları > Komut Dosyası Özellikleri**
