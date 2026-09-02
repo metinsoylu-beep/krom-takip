@@ -25,6 +25,7 @@ const context = {
   bugununTarihi,
   vadeTarihi,
   tutarSayiyaCevir: deger => Number(deger) || 0,
+  faturaTakibiKapali: inv => inv.takipKapali === true || inv.odendi === true,
   cariAdiAnahtari: cari => String(cari || "").toUpperCase(),
   cariOzetleriniHesapla: () => [
     { anahtar:"ÖRNEK METAL", bakiye:100 },
@@ -70,7 +71,7 @@ const geciken = context.raporListesiniOlustur(liste, { durum:"geciken" }, refera
 assert.deepEqual(Array.from(geciken, x => x.no), ["F-2"], "Geciken raporu yalnızca ödenmemiş geçmiş vadeleri içermeli");
 
 const yaklasan = context.raporListesiniOlustur(liste, { durum:"yaklasan" }, referans);
-assert.deepEqual(Array.from(yaklasan, x => x.no), ["F-1","F-3"], "30 gün içindeki fatura vadeleri ödeme durumundan bağımsız seçilmeli");
+assert.deepEqual(Array.from(yaklasan, x => x.no), ["F-1"], "30 gün içindeki yalnızca takibi açık faturalar seçilmeli");
 
 const cariAramasi = context.raporListesiniOlustur(liste, { arama:"örnek metal" }, referans);
 assert.deepEqual(Array.from(cariAramasi, x => x.no), ["F-1","F-3"], "Rapor cari/firma adına göre aranabilmeli");

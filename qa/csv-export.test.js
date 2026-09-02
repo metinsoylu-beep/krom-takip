@@ -24,6 +24,7 @@ const context = {
   faturaKalanTutari: inv => Math.max(0, Number(inv.tutar) - (inv.odemeler || []).reduce((toplam, odeme) => toplam + Number(odeme.tutar), 0)),
   faturaOdemeDurumu: inv => inv.odendi ? "odendi" : (inv.odemeler || []).length ? "kismi" : "odenmedi",
   faturaSonOdemeTarihi: inv => (inv.odemeler || []).reduce((son, odeme) => odeme.tarih > son ? odeme.tarih : son, ""),
+  faturaTakibiKapali: inv => inv.takipKapali === true || inv.odendi === true,
   Set,
   document: {
     createElement: () => ({ click() {}, remove() {} }),
