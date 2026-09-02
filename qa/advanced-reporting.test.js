@@ -47,10 +47,10 @@ assert.deepEqual(
 );
 
 const liste = [
-  { id:1, no:"F-1", tarih:"2026-01-01", vadeGun:40, tutar:"100", odendi:false },
-  { id:2, no:"F-2", tarih:"2026-01-01", vadeGun:30, tutar:"200", odendi:false },
-  { id:3, no:"F-3", tarih:"2026-02-01", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05" },
-  { id:4, no:"F-4", tarih:"2026-02-15", vadeGun:30, tutar:"400", odendi:false }
+  { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-01-01", vadeGun:40, tutar:"100", odendi:false },
+  { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-01-01", vadeGun:30, tutar:"200", odendi:false },
+  { id:3, cari:"Örnek Metal", no:"F-3", tarih:"2026-02-01", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05" },
+  { id:4, cari:"Yılmaz Makina", no:"F-4", tarih:"2026-02-15", vadeGun:30, tutar:"400", odendi:false }
 ];
 const referans = new Date(2026,1,10);
 const aylik = context.raporListesiniOlustur(
@@ -65,6 +65,9 @@ assert.deepEqual(Array.from(geciken, x => x.no), ["F-2"], "Geciken raporu yalnı
 
 const yaklasan = context.raporListesiniOlustur(liste, { durum:"yaklasan" }, referans);
 assert.deepEqual(Array.from(yaklasan, x => x.no), ["F-1"], "30 gün içindeki ödenmemiş vadeler doğru seçilmeli");
+
+const cariAramasi = context.raporListesiniOlustur(liste, { arama:"örnek metal" }, referans);
+assert.deepEqual(Array.from(cariAramasi, x => x.no), ["F-1","F-3"], "Rapor cari/firma adına göre aranabilmeli");
 
 const ozet = context.raporOzetiniHesapla(aylik);
 assert.deepEqual({ ...ozet }, { kayit:2, toplam:400, odenen:300, kalan:100 });

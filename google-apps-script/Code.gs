@@ -7,6 +7,7 @@ const FIREBASE_API_KEY = "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk";
 const VERI_BASLIK = [
   "id",
   "Fatura No",
+  "Cari/Firma",
   "Tarih",
   "Vade Günü",
   "Vade Tarihi",
@@ -165,6 +166,7 @@ function odendiMi(deger) {
 
 function faturaImzasi(item) {
   return [
+    String(item.cari || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " "),
     String(item.no || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " "),
     tarihMetni(item.tarih),
     parseInt(item.vadeGun, 10) || 90,
@@ -183,6 +185,7 @@ function faturalariTekillestir(items) {
     const item = {
       id: isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
       no: String(ham.no || "").trim(),
+      cari: String(ham.cari || "").trim(),
       tarih: tarihMetni(ham.tarih),
       vadeGun: parseInt(ham.vadeGun, 10) || 90,
       tutar: tutarSayisi(ham.tutar),
@@ -242,19 +245,30 @@ function faturaVerileriniOku() {
     });
 
     if (baslikSatiri >= 0) {
+      const basliklar = data[baslikSatiri].map(function(hucre) {
+        return String(hucre || "").trim();
+      });
+      const hucreOku = function(row, adlar, eskiKonum) {
+        for (let i = 0; i < adlar.length; i++) {
+          const konum = basliklar.indexOf(adlar[i]);
+          if (konum >= 0) return row[konum];
+        }
+        return eskiKonum >= 0 ? row[eskiKonum] : "";
+      };
       const rows = data.slice(baslikSatiri + 1)
         .filter(function(row) {
           return row[0] && String(row[0]).trim() !== "id";
         })
         .map(function(row) {
           return {
-            id: String(row[0]),
-            no: String(row[1] || ""),
-            tarih: tarihMetni(row[2]),
-            vadeGun: parseInt(String(row[3]).replace(/[^0-9]/g, ""), 10) || 90,
-            tutar: String(row[5] || "0"),
-            odendi: String(row[6]).trim() === "Ödendi",
-            odemeTarihi: tarihMetni(row[7])
+            id: String(hucreOku(row, ["id"], 0)),
+            no: String(hucreOku(row, ["Fatura No", "no"], 1) || ""),
+            cari: String(hucreOku(row, ["Cari/Firma", "Cari", "cari"], -1) || ""),
+            tarih: tarihMetni(hucreOku(row, ["Tarih", "tarih"], 2)),
+            vadeGun: parseInt(String(hucreOku(row, ["Vade Günü", "vadeGun"], 3)).replace(/[^0-9]/g, ""), 10) || 90,
+            tutar: String(hucreOku(row, ["Tutar", "tutar"], 5) || "0"),
+            odendi: String(hucreOku(row, ["Ödeme Durumu", "odendi"], 6)).trim() === "Ödendi",
+            odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], 7))
           };
         });
       items = faturalariTekillestir(rows);
@@ -351,15 +365,15 @@ function doPost(e) {
     });
 
     const satirlar = [
-      ["💰 TOPLAM TUTAR", "✅ ÖDENEN", "🔴 KALAN", "🕐 Son Güncelleme", "", "", "", "", ""],
+      ["💰 TOPLAM TUTAR", "✅ ÖDENEN", "🔴 KALAN", "🕐 Son Güncelleme", "", "", "", "", "", ""],
       [
         toplam.toLocaleString("tr-TR") + " ₺",
         odenen.toLocaleString("tr-TR") + " ₺",
         (toplam - odenen).toLocaleString("tr-TR") + " ₺",
         new Date().toLocaleString("tr-TR"),
-        "", "", "", "", ""
+        "", "", "", "", "", ""
       ],
-      ["", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", ""],
       VERI_BASLIK
     ];
 
@@ -367,6 +381,7 @@ function doPost(e) {
       satirlar.push([
         item.id,
         item.no,
+        item.cari,
         item.tarih,
         item.vadeGun + " gün",
         Utilities.formatDate(vadeTarihi(item.tarih, item.vadeGun), Session.getScriptTimeZone() || "Europe/Istanbul", "dd.MM.yyyy"),

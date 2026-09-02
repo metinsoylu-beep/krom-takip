@@ -104,6 +104,7 @@
     #duzenle-popup { border: 2px solid #c9a84c55; }
     #duzenle-popup .popup-baslik { color: #c9a84c; }
     .duzenle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px; }
+    .duzenle-alan-genis, .form-alan-genis { grid-column: 1 / -1; }
     .duzenle-alan label { color: #94a3b8; font-size: 11px; display: block; margin-bottom: 5px; letter-spacing: 0.5px; }
     #duzenle-vade-hint { color: #c9a84c; font-size: 11px; margin-top: 4px; min-height: 16px; }
     .duzenle-btn-grup { display: flex; gap: 10px; margin-top: 16px; }
@@ -318,6 +319,8 @@
     .tablo-wrap {
       border: 1px solid var(--cizgi); border-radius: 7px; background: #0b1b2d;
     }
+    .cari-hucre { min-width: 180px; color: #dbe7f2; font-weight: 650; }
+    .cari-belirsiz { color: #718398; font-style: italic; font-weight: 400; }
     table { font-family: inherit; font-size: 12px; }
     thead tr { background: #153557; }
     thead th {
@@ -449,7 +452,7 @@
     .rapor-ozet span { display: block; color: #8395a8; font-size: 8px; }
     .rapor-ozet strong { display: block; margin-top: 3px; color: var(--rapor-renk); font: 700 15px Georgia,serif; white-space: nowrap; }
     .rapor-tablo-wrap { min-height: 170px; overflow: auto; margin: 0 18px; border: 1px solid var(--cizgi); border-radius: 7px; }
-    .rapor-tablo { min-width: 850px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
+    .rapor-tablo { min-width: 1000px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
     .rapor-tablo thead { position: sticky; top: 0; z-index: 1; }
     .rapor-tablo th { height: 34px; padding: 0 12px; }
     .rapor-tablo td { height: 40px; padding: 7px 12px; }
@@ -541,7 +544,7 @@
       .kur-satirlar { grid-template-columns: 1fr; }
       .kur-satir + .kur-satir { border-left: 0; border-top: 1px solid var(--cizgi-yumusak); }
       .form-grid { grid-template-columns: 1fr; }
-      table { min-width: 920px; }
+      table { min-width: 1080px; }
     }
     body.auth-bekliyor .navbar,
     body.auth-bekliyor .konteyner,
@@ -656,6 +659,10 @@
         </div>
       </div>
       <div class="duzenle-grid">
+        <div class="duzenle-alan duzenle-alan-genis">
+          <label>CARİ / FİRMA ADI</label>
+          <input type="text" id="d-cari" placeholder="Firma adını yazın" maxlength="120" autocomplete="organization"/>
+        </div>
         <div class="duzenle-alan">
           <label>FATURA NO</label>
           <input type="text" id="d-no" placeholder="FTR-001"/>
@@ -715,7 +722,7 @@
             <option value="yaklasan">30 gün içinde</option>
           </select>
         </div>
-        <div class="rapor-alan"><label for="rapor-arama">FATURA NO</label><input id="rapor-arama" type="search" placeholder="Fatura numarası ara" oninput="raporuGuncelle()"/></div>
+        <div class="rapor-alan"><label for="rapor-arama">CARİ / FATURA NO</label><input id="rapor-arama" type="search" placeholder="Cari veya fatura numarası ara" oninput="raporuGuncelle()"/></div>
       </div>
       <div class="rapor-ozetler">
         <div class="rapor-ozet" style="--rapor-renk:#67cdfa"><i class="fa-solid fa-file-invoice"></i><span><span>KAYIT</span><strong id="rapor-kayit">0</strong></span></div>
@@ -768,7 +775,7 @@
         <section class="filtre-panel" aria-label="Fatura arama ve filtreleme">
           <div class="arama-kutusu">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <input id="filtre-arama" type="search" placeholder="Fatura no ara" oninput="filtreleriGuncelle()"/>
+            <input id="filtre-arama" type="search" placeholder="Cari veya fatura no ara" oninput="filtreleriGuncelle()"/>
           </div>
           <div class="filtre-alan">
             <label for="filtre-durum">Durum</label>
@@ -932,6 +939,7 @@
             <button class="modal-kapat" type="button" onclick="yeniFaturaKapat()" aria-label="Yeni fatura penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </div>
           <div class="form-grid">
+            <div class="form-alan form-alan-genis"><label>CARİ / FİRMA ADI</label><input type="text" id="inp-cari" placeholder="Örn. Örnek Metal San. ve Tic. A.Ş." maxlength="120" autocomplete="organization"/></div>
             <div class="form-alan"><label>FATURA NO</label><input type="text" id="inp-no" placeholder="FTR-001"/></div>
             <div class="form-alan"><label>FATURA TARİHİ</label><input type="date" id="inp-tarih" oninput="gosterVade()"/></div>
             <div class="form-alan"><label>VADE GÜNÜ <span class="hint">(gün)</span></label><input type="number" id="inp-vade-gun" placeholder="90" min="1" value="90" oninput="gosterVade()"/><div id="vade-hint"></div></div>
@@ -1092,6 +1100,7 @@
           .map(inv => ({
             id: Number(inv.id),
             no: String(inv.no),
+            cari: String(inv.cari || ""),
             tarih: String(inv.tarih),
             vadeGun: Number(inv.vadeGun),
             tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
@@ -1226,7 +1235,7 @@
         if (uzakDurum.revision !== null) bulutSurumunuKaydet(uzakDurum.revision);
 
         if (Array.isArray(data) && data.length > 0) {
-          // Sheets sütun adları: id, "Fatura No", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
+          // Sheets sütun adları: id, "Fatura No", "Cari/Firma", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
           const gecerli = data.filter(row => {
             const id    = row["id"]           || row["id"];
             const no    = row["Fatura No"]    || row["no"];
@@ -1255,6 +1264,7 @@
             return {
               id:      Number(row["id"]),
               no:      String(row["Fatura No"]  || row["no"]    || ""),
+              cari:    String(row["Cari/Firma"] || row["Cari"] || row["cari"] || "").trim(),
               tarih:   String(row["Tarih"]      || row["tarih"] || ""),
               vadeGun: vadeGunSayi,
               tutar:   String(row["Tutar"]      || row["tutar"] || "0"),
@@ -1330,11 +1340,12 @@
     }
 
     function faturaImzasi(inv) {
+      const cari = String(inv.cari ?? "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
       const no = String(inv.no ?? "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
       const tarih = String(inv.tarih ?? "").split("T")[0];
       const vadeGun = parseInt(inv.vadeGun, 10) || 90;
       const tutar = tutarSayiyaCevir(inv.tutar).toFixed(2);
-      return `${no}|${tarih}|${vadeGun}|${tutar}`;
+      return `${cari}|${no}|${tarih}|${vadeGun}|${tutar}`;
     }
 
     function faturalariTekillestir(hamListe) {
@@ -1350,6 +1361,7 @@
         const inv = {
           id: Number.isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
           no: String(ham.no ?? "").trim(),
+          cari: String(ham.cari ?? "").trim(),
           tarih: String(ham.tarih ?? "").split("T")[0],
           vadeGun: parseInt(ham.vadeGun, 10) || 90,
           tutar: String(tutarSayiyaCevir(ham.tutar)),
@@ -1409,8 +1421,10 @@
       return tarih.getFullYear() === yil && tarih.getMonth() === ay - 1 && tarih.getDate() === gun;
     }
 
-    function faturaNumarasiAnahtari(no) {
-      return String(no || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+    function faturaNumarasiAnahtari(no, cari="") {
+      const temizNo = String(no || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+      const temizCari = String(cari || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+      return temizNo ? `${temizCari}|${temizNo}` : "";
     }
 
     function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null) {
@@ -1430,6 +1444,7 @@
         }
 
         const no = String(ham.no || "").trim();
+        const cari = String(ham.cari || "").trim();
         const tarih = String(ham.tarih || "").split("T")[0];
         const vadeGun = Number(ham.vadeGun);
         const tutar = tutarSayiyaCevir(ham.tutar);
@@ -1452,17 +1467,17 @@
         else if (id) gorulenId.set(id, sira);
 
         if (no && tarihGecerliMi(tarih) && Number.isInteger(vadeGun) && vadeGun > 0 && tutar > 0) {
-          const imza = faturaImzasi({ no, tarih, vadeGun, tutar });
+          const imza = faturaImzasi({ no, cari, tarih, vadeGun, tutar });
           if (gorulenImza.has(imza)) yinelenenSatirlar.add(sira);
           else gorulenImza.set(imza, sira);
         }
       });
 
       gecerliKayitlar.forEach(inv => {
-        const anahtar = faturaNumarasiAnahtari(inv.no);
+        const anahtar = faturaNumarasiAnahtari(inv.no, inv.cari);
         if (!anahtar) return;
         const grup = numaraGruplari.get(anahtar) || [];
-        grup.push(String(inv.no || "").trim());
+        grup.push({ no:String(inv.no || "").trim(), cari:String(inv.cari || "").trim() });
         numaraGruplari.set(anahtar, grup);
       });
       const ayniNumaraGruplari = [...numaraGruplari.entries()].filter(([, kayitlar]) => kayitlar.length > 1);
@@ -1489,7 +1504,9 @@
         mesajlar.push(`${yinelenenSatirlar.size} yinelenen kayıt tespit edildi. Kayıtlar otomatik değiştirilmedi.`);
       }
       ayniNumaraGruplari.forEach(([, kayitlar]) => {
-        mesajlar.push(`“${kayitlar[0].slice(0, 60)}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
+        const ilk = kayitlar[0];
+        const etiket = ilk.cari ? `${ilk.cari.slice(0, 45)} · ${ilk.no.slice(0, 45)}` : ilk.no.slice(0, 60);
+        mesajlar.push(`“${etiket}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
       });
       if (!toplamlarDogru) {
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
@@ -1787,7 +1804,8 @@
       const gun = kalanGun(vade);
       const tutar = tutarSayiyaCevir(inv.tutar);
 
-      if (arama && !String(inv.no || '').toLocaleUpperCase('tr-TR').includes(arama)) return false;
+      const aramaMetni = `${inv.cari || ''} ${inv.no || ''}`.toLocaleUpperCase('tr-TR');
+      if (arama && !aramaMetni.includes(arama)) return false;
       if (durum === 'odenmedi' && inv.odendi) return false;
       if (durum === 'odendi' && !inv.odendi) return false;
       if (durum === 'geciken' && (inv.odendi || gun >= 0)) return false;
@@ -1823,7 +1841,7 @@
         syncGoster("İndirilecek fatura bulunamadı", "#f59e0b");
         return false;
       }
-      const basliklar = ["Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödeme Durumu","Ödeme Tarihi","Vade Durumu"];
+      const basliklar = ["Cari/Firma","Fatura No","Fatura Tarihi","Vade Günü","Vade Tarihi","Tutar (TL)","Ödeme Durumu","Ödeme Tarihi","Vade Durumu"];
       const satirlar = liste.map(inv=>{
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         const gun = kalanGun(vade);
@@ -1831,6 +1849,7 @@
           ? "Ödendi"
           : gun < 0 ? `${Math.abs(gun)} gün gecikti` : gun === 0 ? "Bugün vadeli" : `${gun} gün kaldı`;
         return [
+          inv.cari || "Belirtilmedi",
           inv.no,
           inv.tarih,
           inv.vadeGun || 90,
@@ -1892,7 +1911,8 @@
         const vadeMetni = bugununTarihi(vade);
         if (baslangic && vadeMetni < baslangic) return false;
         if (bitis && vadeMetni > bitis) return false;
-        if (arama && !String(inv.no || "").toLocaleUpperCase("tr-TR").includes(arama)) return false;
+        const aramaMetni = `${inv.cari || ""} ${inv.no || ""}`.toLocaleUpperCase("tr-TR");
+        if (arama && !aramaMetni.includes(arama)) return false;
         if (durum === "odendi" && !inv.odendi) return false;
         if (durum === "odenmedi" && inv.odendi) return false;
         if (durum === "geciken" && (inv.odendi || vade >= bugun)) return false;
@@ -1983,13 +2003,14 @@
         tablo.innerHTML = '<div class="rapor-bos"><i class="fa-solid fa-folder-open" aria-hidden="true"></i><br>Bu ölçütlere uyan fatura bulunamadı.</div>';
       } else {
         tablo.innerHTML = `<table class="rapor-tablo">
-          <thead><tr><th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>ÖDEME TARİHİ</th></tr></thead>
+          <thead><tr><th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>TUTAR</th><th>DURUM</th><th>ÖDEME TARİHİ</th></tr></thead>
           <tbody>${aktifRaporListesi.map((inv,sira) => {
             const vade = vadeTarihi(inv.tarih, inv.vadeGun);
             const durum = raporDurumBilgisi(inv);
             const odemeTarihi = inv.odemeTarihi ? formatTarih(tarihOlusturYerel(inv.odemeTarihi)) : "—";
             return `<tr>
               <td>${sira+1}</td>
+              <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
               <td><strong>${htmlGuvenli(inv.no)}</strong></td>
               <td>${formatTarih(tarihOlusturYerel(inv.tarih))}</td>
               <td>${formatTarih(vade)}</td>
@@ -2111,7 +2132,7 @@
           ? `<span class="od-gun" style="color:#ef4444"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ${Math.abs(g)} gün gecikmiş</span>`
           : `<span class="od-gun" style="color:#f97316"><i class="fa-solid fa-clock" aria-hidden="true"></i> Bugün son gün!</span>`;
         return `<div class="odeme-satir">
-          <div><div class="od-no">${inv.no}</div>${gunMetin}</div>
+          <div><div class="od-no">${htmlGuvenli(inv.cari || "Cari belirtilmedi")} · ${htmlGuvenli(inv.no)}</div>${gunMetin}</div>
           <div class="od-tutar">${formatPara(inv.tutar)}</div>
         </div>`;
       }).join("");
@@ -2126,6 +2147,7 @@
       const inv = faturaYukle().find(i => i.id === id);
       if (!inv) return;
       document.getElementById("d-id").value       = inv.id;
+      document.getElementById("d-cari").value     = inv.cari || "";
       document.getElementById("d-no").value       = inv.no;
       document.getElementById("d-tarih").value    = inv.tarih;
       document.getElementById("d-vade-gun").value = inv.vadeGun || 90;
@@ -2145,13 +2167,14 @@
     function duzenleKaydet() {
       if (!yoneticiGerekli()) return;
       const id    = Number(document.getElementById("d-id").value);
+      const cari  = document.getElementById("d-cari").value.trim();
       const no    = document.getElementById("d-no").value.trim();
       const tarih = document.getElementById("d-tarih").value;
       const vadeG = document.getElementById("d-vade-gun").value;
       const tutar = document.getElementById("d-tutar").value.trim();
       const msg   = document.getElementById("d-msg");
-      if (!no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Tüm alanları doldurun."; return; }
-      faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
+      if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
+      faturaKaydet(faturaYukle().map(i => i.id===id ? {...i, cari, no, tarih, vadeGun:parseInt(vadeG), tutar} : i), "Fatura düzenlendi");
       duzenleKapat();
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
@@ -2200,7 +2223,7 @@
     function yeniFaturaAc() {
       if (!yoneticiGerekli()) return;
       document.getElementById("yeni-fatura-overlay")?.classList.add("aktif");
-      setTimeout(() => document.getElementById("inp-no")?.focus(), 60);
+      setTimeout(() => document.getElementById("inp-cari")?.focus(), 60);
     }
     function yeniFaturaKapat() {
       if (faturaEklemeKilidi) return;
@@ -2209,14 +2232,15 @@
     function faturaEkle() {
       if (!yoneticiGerekli()) return;
       if (faturaEklemeKilidi) return;
+      const cari    = document.getElementById("inp-cari").value.trim();
       const no      = document.getElementById("inp-no").value.trim();
       const tarih   = document.getElementById("inp-tarih").value;
       const vadeGun = document.getElementById("inp-vade-gun").value;
       const tutar   = document.getElementById("inp-tutar").value.trim();
       const msg     = document.getElementById("msg");
-      if (!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Lütfen tüm alanları doldurun."; return; }
+      if (!cari||!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
       const liste = faturaYukle();
-      const yeniFatura = { id:Date.now(), no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"" };
+      const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar, odendi:false, odemeTarihi:"" };
       if (liste.some(inv => faturaImzasi(inv) === faturaImzasi(yeniFatura))) {
         msg.style.color="#f59e0b";
         msg.textContent="Bu fatura zaten kayıtlı; ikinci kez eklenmedi.";
@@ -2227,6 +2251,7 @@
       if (kaydetBtn) { kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor…"; }
       liste.push(yeniFatura);
       faturaKaydet(liste, "Fatura eklendi");
+      document.getElementById("inp-cari").value     = "";
       document.getElementById("inp-no").value       = "";
       document.getElementById("inp-tarih").value    = "";
       document.getElementById("inp-vade-gun").value = "90";
@@ -2270,7 +2295,7 @@
         : liste.length + " fatura · Vadeye göre sıralı";
       konteyner.innerHTML = `<div class="tablo-wrap"><table>
         <thead><tr>
-          <th>#</th><th>FATURA NO</th><th>FATURA TARİHİ</th>
+          <th>#</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th>
           <th>VADE GÜNÜ</th><th>VADE TARİHİ</th>
           <th>TUTAR</th><th>DURUM</th>${yoneticiMi() ? '<th>İŞLEM</th>' : ''}
         </tr></thead>
@@ -2282,7 +2307,8 @@
           const odendi = inv.odendi;
           return `<tr class="${odendi?'odendi-satir':''}">
             <td style="color:#64748b">${i+1}</td>
-            <td><strong>${inv.no}</strong></td>
+            <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
+            <td><strong>${htmlGuvenli(inv.no)}</strong></td>
             <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
             <td style="text-align:center;color:#94a3b8">${vg} gün</td>
             <td>${formatTarih(vade)}</td>
@@ -2295,8 +2321,8 @@
               ${odendi
                 ? `<button class="btn-geri-al" onclick="odendiBelirle(${inv.id},false)"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>`
                 : `<button class="btn-odendi" onclick="odendiBelirle(${inv.id},true)"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Öde</button>`}
-              <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${inv.no} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
-              <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${inv.no} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+              <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+              <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
             </div></td>` : ''}
           </tr>`;
         }).join("")}</tbody>

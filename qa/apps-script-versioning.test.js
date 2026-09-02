@@ -113,8 +113,8 @@ const read = output => JSON.parse(output.text);
 const post = (payload, idToken = "admin-token") => read(context.doPost({
   parameter: { payload: JSON.stringify({ ...payload, idToken }) }
 }));
-const item1 = { id: 1, no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: 100, odendi: false, odemeTarihi: "" };
-const item2 = { id: 2, no: "F-2", tarih: "2026-09-02", vadeGun: 45, tutar: 250, odendi: false, odemeTarihi: "" };
+const item1 = { id: 1, cari: "Örnek Metal", no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: 100, odendi: false, odemeTarihi: "" };
+const item2 = { id: 2, cari: "Başarı Çelik", no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: 100, odendi: false, odemeTarihi: "" };
 
 const anonymousRead = read(context.doGet());
 assert.equal(anonymousRead.code, "AUTH_REQUIRED");
@@ -123,6 +123,7 @@ const firstRead = post({ action: "read" });
 assert.equal(firstRead.role, "admin");
 assert.equal(firstRead.revision, 0);
 assert.equal(firstRead.items.length, 1);
+assert.equal(firstRead.items[0].cari, "", "Eski sütun düzenindeki faturalar veri kaybı olmadan okunmalı");
 
 const viewerRead = post({ action: "read" }, "viewer-token");
 assert.equal(viewerRead.role, "viewer");
@@ -136,6 +137,7 @@ assert.equal(unknownRead.code, "ACCESS_DENIED");
 
 const saved = post({ action: "save", baseRevision: 0, requestId: "request-1", items: [item1, item2] });
 assert.deepEqual({ ok: saved.ok, revision: saved.revision, count: saved.count }, { ok: true, revision: 1, count: 2 });
+assert.equal(post({ action: "read" }).items[0].cari, "Örnek Metal", "Cari bilgisi Sheets yazma-okuma döngüsünde korunmalı");
 
 const replayed = post({ action: "save", baseRevision: 0, requestId: "request-1", items: [item1, item2] });
 assert.equal(replayed.replayed, true);

@@ -22,6 +22,7 @@ const context = {
   tutarSayiyaCevir,
   formatPara: deger => `${Number(deger)} ₺`,
   faturaImzasi: inv => [
+    String(inv.cari || "").trim().toLocaleUpperCase("tr-TR"),
     String(inv.no).trim().toLocaleUpperCase("tr-TR"),
     inv.tarih,
     Number(inv.vadeGun),
@@ -58,6 +59,14 @@ const hataliOzet = context.veriKontrolRaporuOlustur(
 );
 assert.equal(hataliOzet.toplamlarDogru, false, "Özet ve tablo toplamı farkı yakalanmalı");
 assert.equal(hataliOzet.uyariSayisi, 4, "Toplam uyuşmazlığı ek uyarı oluşturmalı");
+
+const farkliCariler = [
+  { id:10, cari:"Firma A", no:"ORTAK-1", tarih:"2026-09-01", vadeGun:30, tutar:"100", odendi:false },
+  { id:11, cari:"Firma B", no:"ORTAK-1", tarih:"2026-09-01", vadeGun:30, tutar:"100", odendi:false }
+];
+const cariRaporu = context.veriKontrolRaporuOlustur(farkliCariler, farkliCariler);
+assert.equal(cariRaporu.yinelenenSayisi, 0, "Farklı carilerin aynı numaralı faturaları yinelenen sayılmamalı");
+assert.equal(cariRaporu.ayniNumaraSayisi, 0, "Aynı fatura numarası farklı carilerde kullanılabilmeli");
 
 assert.match(index, /Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez\./);
 console.log("Veri Kontrol Merkezi doğrulama testleri başarılı.");
