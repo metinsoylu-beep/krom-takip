@@ -18,7 +18,7 @@ const faturalar = [{
   tarih: "2026-01-01",
   vadeGun: 30,
   tutar: "1250",
-  takipKapali: false
+  takipKapali: true
 }];
 const context = {
   console, Date, String, Set, JSON,
@@ -59,6 +59,7 @@ assert.deepEqual(
   "Geçmiş ödeme bir kez ve izlenebilir kaynak kimliğiyle cari hesaba yazılmalı"
 );
 assert.equal(bulutListe[0].takipKapali, true, "Kapalı takip durumu buluta gönderilmeli");
+assert.equal(kayitliHareketler.length, 1, "Takibi önceden kapalı eski fatura da cari harekete bir kez aktarılmalı");
 
 assert.match(index, /filtre==='geciken'\) return !takipKapali && gun<0/, "Kapalı fatura geciken filtresine girmemeli");
 assert.match(index, /durumBilgi\(g, takipKapali\)/, "Tablo kapalı takip durumunu göstermeli");
