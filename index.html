@@ -342,8 +342,27 @@
     .tablo-wrap {
       border: 1px solid var(--cizgi); border-radius: 7px; background: #0b1b2d;
     }
-    .cari-hucre { min-width: 180px; color: #dbe7f2; font-weight: 650; }
+    .cari-hucre { min-width: 210px; color: #dbe7f2; font-weight: 650; }
     .cari-belirsiz { color: #718398; font-style: italic; font-weight: 400; }
+    .cari-kimlik { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+    .cari-logo {
+      width: 30px; height: 30px; display: inline-grid; place-items: center; flex: 0 0 30px;
+      border: 1px solid color-mix(in srgb, var(--logo-renk) 48%, transparent); border-radius: 8px;
+      background: color-mix(in srgb, var(--logo-renk) 20%, #081525); color: var(--logo-renk);
+      box-shadow: inset 0 0 14px color-mix(in srgb, var(--logo-renk) 9%, transparent);
+      font: normal 800 11px/1 "Segoe UI",Arial,sans-serif; letter-spacing: .2px;
+    }
+    .cari-adi { min-width: 0; line-height: 1.25; }
+    .cari-logo-0 { --logo-renk:#38bdf8; }
+    .cari-logo-1 { --logo-renk:#f59e0b; }
+    .cari-logo-2 { --logo-renk:#4ade80; }
+    .cari-logo-3 { --logo-renk:#a78bfa; }
+    .cari-logo-4 { --logo-renk:#fb7185; }
+    .cari-logo-5 { --logo-renk:#2dd4bf; }
+    .cari-logo-6 { --logo-renk:#f97316; }
+    .cari-logo-7 { --logo-renk:#60a5fa; }
+    .cari-logo-belirsiz { --logo-renk:#94a3b8; }
+    .cari-hesap-tablo .cari-logo, .rapor-tablo .cari-logo { width: 28px; height: 28px; flex-basis: 28px; }
     table { font-family: inherit; font-size: 12px; }
     thead tr { background: #153557; }
     thead th {
@@ -2722,6 +2741,29 @@
         .replace(/'/g,"&#39;");
     }
 
+    function cariBasHarfleri(cari) {
+      const ad = String(cari || "").trim();
+      if (!ad) return "?";
+      const kelimeler = ad.toLocaleUpperCase("tr-TR")
+        .split(/\s+/)
+        .map(kelime => (kelime.match(/[A-ZÇĞİÖŞÜ0-9]/u) || [""])[0])
+        .filter(Boolean);
+      return (kelimeler.slice(0,2).join("") || "?").slice(0,2);
+    }
+
+    function cariLogoRenkSinifi(cari) {
+      const anahtar = cariAdiAnahtari(cari);
+      if (anahtar === "BELİRTİLMEDİ") return "cari-logo-belirsiz";
+      let karma = 0;
+      Array.from(anahtar).forEach(harf => { karma = (karma * 31 + harf.codePointAt(0)) >>> 0; });
+      return `cari-logo-${karma % 8}`;
+    }
+
+    function cariLogosuHtml(cari) {
+      const ad = String(cari || "").trim() || "Belirtilmedi";
+      return `<span class="cari-kimlik"><span class="cari-logo ${cariLogoRenkSinifi(cari)}" aria-hidden="true">${htmlGuvenli(cariBasHarfleri(cari))}</span><span class="cari-adi">${htmlGuvenli(ad)}</span></span>`;
+    }
+
     function raporFiltreleriniOku() {
       return {
         baslangic:document.getElementById("rapor-baslangic").value,
@@ -2780,7 +2822,7 @@
             const bakiye = bakiyeBilgisi(cariOzetiniGetir(inv.cari).bakiye);
             return `<tr>
               <td>${sira+1}</td>
-              <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
+              <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${cariLogosuHtml(inv.cari)}</td>
               <td><strong>${htmlGuvenli(inv.no)}</strong></td>
               <td>${formatTarih(tarihOlusturYerel(inv.tarih))}</td>
               <td>${formatTarih(vade)}</td>
@@ -3099,7 +3141,7 @@
       const hesaplar = cariOzetleriniHesapla().filter(hesap => !arama || hesap.cari.toLocaleUpperCase("tr-TR").includes(arama));
       tablo.innerHTML = hesaplar.length ? `<table class="cari-hesap-tablo"><thead><tr><th>CARİ / FİRMA</th><th>FATURA BORCU</th><th>ÖDEMELER</th><th>VERİLEN ÇEK</th><th>BEKLEYEN ÇEK</th><th>BAKİYE</th><th></th></tr></thead><tbody>${hesaplar.map(hesap => {
         const bakiye = bakiyeBilgisi(hesap.bakiye);
-        return `<tr><td><strong>${htmlGuvenli(hesap.cari)}</strong></td><td>${formatPara(hesap.faturaToplami)}</td><td style="color:#4ade80">${formatPara(hesap.odemeToplami)}</td><td style="color:#a78bfa">${formatPara(hesap.cekToplami)}</td><td>${formatPara(hesap.bekleyenCek)}</td><td class="${bakiye.sinif}">${formatPara(bakiye.tutar)} · ${bakiye.etiket}</td><td><button class="cari-ekstre-btn" type="button" data-cari="${htmlGuvenli(hesap.cari)}" onclick="cariEkstreAc(this.dataset.cari)">Ekstre</button></td></tr>`;
+        return `<tr><td>${cariLogosuHtml(hesap.cari)}</td><td>${formatPara(hesap.faturaToplami)}</td><td style="color:#4ade80">${formatPara(hesap.odemeToplami)}</td><td style="color:#a78bfa">${formatPara(hesap.cekToplami)}</td><td>${formatPara(hesap.bekleyenCek)}</td><td class="${bakiye.sinif}">${formatPara(bakiye.tutar)} · ${bakiye.etiket}</td><td><button class="cari-ekstre-btn" type="button" data-cari="${htmlGuvenli(hesap.cari)}" onclick="cariEkstreAc(this.dataset.cari)">Ekstre</button></td></tr>`;
       }).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos">Cari hesap bulunamadı.</div>';
     }
 
@@ -3314,7 +3356,7 @@
           return `<tr class="${[secili?'secili-satir':'',takipKapali?'odendi-satir':''].filter(Boolean).join(' ')}">
             ${yoneticiMi() ? `<td class="secim-hucre"><input class="fatura-secim" type="checkbox" data-fatura-id="${htmlGuvenli(kimlik)}" ${secili ? 'checked' : ''} onchange="secimDegistir(this.dataset.faturaId,this.checked,this)" aria-label="${htmlGuvenli(inv.no)} faturasını seç"/></td>` : ''}
             <td style="color:#64748b">${i+1}</td>
-            <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${htmlGuvenli(inv.cari || "Belirtilmedi")}</td>
+            <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${cariLogosuHtml(inv.cari)}</td>
             <td><strong>${htmlGuvenli(inv.no)}</strong></td>
             <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
             <td style="text-align:center;color:#94a3b8">${vg} gün</td>
