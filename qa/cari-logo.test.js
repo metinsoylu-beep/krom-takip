@@ -19,12 +19,17 @@ assert.equal(context.cariBasHarfleri("Krom Mutfak Sanayi"), "K", "Cari adının 
 assert.equal(context.cariBasHarfleri("Şahin"), "Ş", "Türkçe tek kelimeli cari adı desteklenmeli");
 assert.equal(context.cariBasHarfleri(""), "?", "Eksik cari nötr simge göstermeli");
 assert.equal(context.cariBasHarfleri("Belirtilmedi"), "?", "Eksik cari özeti de nötr simge göstermeli");
-assert.equal(context.cariLogoRenkSinifi("Krom Mutfak"), context.cariLogoRenkSinifi("Krom Mutfak"), "Aynı cari her zaman aynı renkte olmalı");
+assert.deepEqual(context.cariLogoKimligi("Krom Mutfak"), context.cariLogoKimligi("Krom Mutfak"), "Aynı cari her zaman aynı logoyu kullanmalı");
+assert.notEqual(context.cariLogoKimligi("Krom Mutfak").kod, context.cariLogoKimligi("Kütahya Askeriye").kod, "Aynı harfle başlayan farklı firmaların logoları ayrılmalı");
+assert.notEqual(context.cariLogoKimligi("Krom Mutfak").stil, context.cariLogoKimligi("Kütahya Askeriye").stil, "Farklı firmaların görsel kimlikleri farklı olmalı");
+assert.equal(context.cariLogoKimligi("").sinif, "cari-logo-belirsiz", "Eksik cari nötr logo sınıfını kullanmalı");
 
 const guvenliLogo = context.cariLogosuHtml("<script> Firma");
 assert.doesNotMatch(guvenliLogo, /<script>/, "Cari adı HTML olarak çalıştırılmamalı");
 assert.match(guvenliLogo, /&lt;script&gt; Firma/, "Cari adı güvenli biçimde gösterilmeli");
-assert.match(index, /\.cari-logo-7/, "Sekiz sabit logo rengi tanımlanmalı");
+assert.match(guvenliLogo, /data-logo-kimligi="[a-z0-9]+"/, "Her firma için sabit logo kimliği üretilmeli");
+assert.match(guvenliLogo, /--logo-zemin:hsl\(/, "Firma adına özel renkler logoya uygulanmalı");
+assert.doesNotMatch(index, /\.cari-logo-7/, "Sınırlı sabit renk paleti kullanılmamalı");
 assert.equal((index.match(/\$\{cariLogosuHtml\(/g) || []).length, 3, "Logolar ana liste, rapor ve cari hesaplarda kullanılmalı");
 
-console.log("Cari baş harf logosu ve sabit renk testleri başarılı.");
+console.log("Firmaya özel tek harfli logo testleri başarılı.");
