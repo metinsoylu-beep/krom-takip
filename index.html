@@ -215,7 +215,7 @@
 
     .filtre-panel {
       display: grid;
-      grid-template-columns: minmax(220px, 1.4fr) minmax(280px, 1.2fr) minmax(240px, 1.2fr) minmax(200px, 1fr) auto;
+      grid-template-columns: minmax(260px, 1fr) minmax(140px, .35fr) auto;
       align-items: end; gap: 8px; margin-bottom: 22px;
     }
     .arama-kutusu {
@@ -235,9 +235,7 @@
       border-radius: 7px; color: var(--metin); font-family: inherit; font-size: 13px; outline: none;
     }
     .filtre-alan select { width: 100%; padding: 0 12px; }
-    .filtre-secimler { display: grid; grid-template-columns: minmax(120px,.8fr) minmax(160px,1.2fr); gap: 10px; }
-    .ikili-input { display: flex; align-items: center; gap: 6px; color: #7e91a5; }
-    .ikili-input input { min-width: 0; width: 100%; padding: 0 10px; }
+    .filtre-secimler { min-width: 140px; }
     input:focus, select:focus, .arama-kutusu:focus-within {
       border-color: var(--altin); box-shadow: 0 0 0 2px #e6a91f1f;
     }
@@ -815,11 +813,11 @@
     footer { background: var(--zemin-derin); border-top-color: var(--cizgi-yumusak); }
 
     @media (max-width: 1320px) {
-      .filtre-panel { grid-template-columns: 2fr 1fr 1.5fr; }
-      .tutar-araligi { grid-column: span 2; }
-      .filtre-islemler { grid-column: 3; grid-row: 2; }
+      .filtre-panel { grid-template-columns: minmax(220px, 1fr) minmax(140px, .4fr) auto; }
     }
     @media (max-width: 1180px) {
+      .filtre-panel { grid-template-columns: minmax(220px, 1fr) minmax(140px, .45fr); }
+      .filtre-islemler { grid-column: 1 / -1; }
       .hizli-kartlar { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .cari-kart-formu { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
@@ -828,7 +826,7 @@
       .navbar-tarih, .baslik-kucuk { display: none; }
       .konteyner { width: calc(100vw - 24px); padding-top: 16px; }
       .filtre-panel { grid-template-columns: 1fr 1fr; }
-      .arama-kutusu, .filtre-secimler, .tarih-araligi, .tutar-araligi { grid-column: 1 / -1; }
+      .arama-kutusu, .filtre-secimler { grid-column: 1 / -1; }
       .filtre-islemler { grid-column: 1 / -1; grid-row: auto; display: grid; grid-template-columns: 1fr 1fr; }
       .filtre-islemler .btn-yeni-fatura { grid-column: 1 / -1; }
       .btn-cari-islem, .btn-yeni-fatura { width: 100%; min-width: 0; }
@@ -1355,32 +1353,6 @@
                 <option value="geciken">Vadesi Geçen</option>
                 <option value="yaklasan">Bu Hafta Vadeli</option>
               </select>
-            </div>
-            <div class="filtre-alan">
-              <label for="filtre-siralama">Sıralama</label>
-              <select id="filtre-siralama" onchange="filtreleriGuncelle()">
-                <option value="durum-vade">Durum + Yaklaşan Vade</option>
-                <option value="tarih-yeni">Fatura Tarihi (Yeni → Eski)</option>
-                <option value="tarih-eski">Fatura Tarihi (Eski → Yeni)</option>
-                <option value="tutar-buyuk">Tutar (Büyük → Küçük)</option>
-                <option value="cari-az">Cari (A → Z)</option>
-              </select>
-            </div>
-          </div>
-          <div class="filtre-alan tarih-araligi">
-            <label>Vade aralığı</label>
-            <div class="ikili-input">
-              <input id="filtre-vade-baslangic" type="date" aria-label="Vade başlangıç tarihi" onchange="filtreleriGuncelle()"/>
-              <span aria-hidden="true">–</span>
-              <input id="filtre-vade-bitis" type="date" aria-label="Vade bitiş tarihi" onchange="filtreleriGuncelle()"/>
-            </div>
-          </div>
-          <div class="filtre-alan tutar-araligi">
-            <label>Tutar</label>
-            <div class="ikili-input">
-              <input id="filtre-tutar-min" type="number" min="0" placeholder="Min. tutar" aria-label="Minimum tutar" oninput="filtreleriGuncelle()"/>
-              <span aria-hidden="true">–</span>
-              <input id="filtre-tutar-max" type="number" min="0" placeholder="Maks. tutar" aria-label="Maksimum tutar" oninput="filtreleriGuncelle()"/>
             </div>
           </div>
           <div class="filtre-islemler">
