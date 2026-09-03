@@ -958,6 +958,31 @@ function cekVadeTarihiHatasi(cek) {
   return "";
 }
 
+function cekBilgisiHatasi(cek) {
+  if (!cek || cek.durum === "İptal") return "";
+  const eksikler = [];
+  if (!String(cek.cekNo || "").trim()) eksikler.push("çek numarası");
+  if (!String(cek.banka || "").trim()) eksikler.push("banka");
+  return eksikler.length ? eksikler.join(" ve ") + " eksik." : "";
+}
+
+function yeniEksikCekBilgileriniBul(oncekiListe, yeniListe) {
+  const oncekiKimlikler = {};
+  (Array.isArray(oncekiListe) ? oncekiListe : []).forEach(function(cek) {
+    oncekiKimlikler[String(cek && cek.id || "")] = cek;
+  });
+  return (Array.isArray(yeniListe) ? yeniListe : []).map(function(cek) {
+    const kimlik = String(cek && cek.id || "");
+    const onceki = oncekiKimlikler[kimlik];
+    const bilgilerDegisti = !onceki ||
+      String(onceki.cekNo || "").trim() !== String(cek && cek.cekNo || "").trim() ||
+      String(onceki.banka || "").trim() !== String(cek && cek.banka || "").trim() ||
+      String(onceki.durum || "") !== String(cek && cek.durum || "");
+    const mesaj = bilgilerDegisti ? cekBilgisiHatasi(cek) : "";
+    return mesaj ? { id:kimlik, cari:String(cek && cek.cari || ""), mesaj:mesaj } : null;
+  }).filter(Boolean);
+}
+
 function yeniGecersizCekVadeleriniBul(oncekiListe, yeniListe) {
   const oncekiKimlikler = {};
   (Array.isArray(oncekiListe) ? oncekiListe : []).forEach(function(cek) {
@@ -1597,6 +1622,18 @@ function doPost(e) {
         revision: mevcutSurum,
         requestId: requestId,
         message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
+    const eksikCekBilgileri = gelenCekler !== null ? yeniEksikCekBilgileriniBul(oncekiDurum.cekler, cekler) : [];
+    if (eksikCekBilgileri.length) {
+      const sorun = eksikCekBilgileri[0];
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_CHECK_DETAILS",
+        revision:mevcutSurum,
+        requestId:requestId,
+        message:(sorun.cari ? sorun.cari + ": " : "") + sorun.mesaj
       });
     }
 

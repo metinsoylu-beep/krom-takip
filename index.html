@@ -1966,6 +1966,7 @@
                 <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-eksik-cek-kart"><span>EKSİK ÇEK BİLGİSİ</span><strong id="kontrol-eksik-cek">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-cek-no-kart"><span>AYNI ÇEK NO</span><strong id="kontrol-ayni-cek-no">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK TARİHLERİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
@@ -2350,6 +2351,11 @@
           } catch (_) {
             syncGoster("Benzer ödeme/çek nedeniyle bulut kaydı durduruldu", "#ef4444");
           }
+          return false;
+        }
+        if (e?.code === "INVALID_CHECK_DETAILS") {
+          syncGoster("Eksik çek bilgisi · Değişiklik kaydedilmedi", "#ef4444");
+          alert(e.message || "Aktif çeklerin çek numarası ve banka bilgisi zorunludur.");
           return false;
         }
         if (e?.code === "INVALID_CHECK_SETTLEMENT_DATE") {
@@ -3045,6 +3051,7 @@
       const hareketler = Array.isArray(hareketListesi) ? hareketListesi : cariHareketleriYukle();
       const cekler = Array.isArray(cekListesi) ? cekListesi : cekleriYukle();
       const gecersizAciklamalar = [];
+      const eksikCekBilgisiSorunlari = [];
       const cekTarihiSorunlari = [];
       const ayniCekNumarasiSorunlari = [];
       const yinelenenSatirlar = new Set();
@@ -3098,6 +3105,17 @@
 
       const bugun = new Date(referans);
       bugun.setHours(12, 0, 0, 0);
+      cekler.filter(cek => cek?.durum !== "İptal").forEach(cek => {
+        const eksikler = [];
+        if (!String(cek?.cekNo || "").trim()) eksikler.push("çek numarası");
+        if (!String(cek?.banka || "").trim()) eksikler.push("banka");
+        if (!eksikler.length) return;
+        const etiket = String(cek?.cari || "Cari belirtilmedi").slice(0,60);
+        eksikCekBilgisiSorunlari.push({
+          id:String(cek?.id || ""),
+          metin:`“${etiket}”: ${eksikler.join(" ve ")} eksik`
+        });
+      });
       cekler.filter(cek => cek?.durum === "Ödendi").forEach(cek => {
         const etiket = String(cek.cekNo || cek.cari || "Numarası belirtilmeyen çek").slice(0, 60);
         if (!tarihGecerliMi(cek.odemeTarihi)) {
@@ -3166,24 +3184,27 @@
         const etiket = ilk.cari ? `${ilk.cari.slice(0, 45)} · ${ilk.no.slice(0, 45)}` : ilk.no.slice(0, 60);
         mesajlar.push(`“${etiket}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
       });
+      eksikCekBilgisiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       ayniCekNumarasiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       cekTarihiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       if (!toplamlarDogru) {
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
       }
 
-      const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size +
+      const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size + eksikCekBilgisiSorunlari.length +
         ayniNumaraGruplari.length + ayniCekNumarasiSorunlari.length + cekTarihiSorunlari.length + (toplamlarDogru ? 0 : 1);
       return {
         kayitSayisi: gecerliKayitlar.length,
         gecersizSayisi: gecersizAciklamalar.length,
         yinelenenSayisi: yinelenenSatirlar.size,
         ayniNumaraSayisi: ayniNumaraGruplari.length,
+        eksikCekBilgisiSayisi: eksikCekBilgisiSorunlari.length,
+        eksikCekBilgisiSorunlari,
         ayniCekNumarasiSayisi: ayniCekNumarasiSorunlari.length,
         ayniCekNumarasiSorunlari,
         cekTarihiSorunuSayisi: cekTarihiSorunlari.length,
         cekTarihiSorunlari,
-        cekKayitSorunlari:[...ayniCekNumarasiSorunlari, ...cekTarihiSorunlari],
+        cekKayitSorunlari:[...eksikCekBilgisiSorunlari, ...ayniCekNumarasiSorunlari, ...cekTarihiSorunlari],
         toplamlarDogru,
         uyariSayisi,
         mesajlar
@@ -3218,6 +3239,7 @@
       veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-yinelenen-kart", "kontrol-yinelenen", rapor.yinelenenSayisi, rapor.yinelenenSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-no-kart", "kontrol-ayni-no", rapor.ayniNumaraSayisi, rapor.ayniNumaraSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-eksik-cek-kart", "kontrol-eksik-cek", rapor.eksikCekBilgisiSayisi, rapor.eksikCekBilgisiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-cek-no-kart", "kontrol-ayni-cek-no", rapor.ayniCekNumarasiSayisi, rapor.ayniCekNumarasiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-cek-tarihi-kart", "kontrol-cek-tarihi", rapor.cekTarihiSorunuSayisi, rapor.cekTarihiSorunuSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);

@@ -167,6 +167,8 @@ assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01",
 assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-03" }, "2026-09-03"), "");
 assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-09-01" }), "Çek vade tarihi veriliş tarihinden önce olamaz.");
 assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-10-01" }), "");
+assert.equal(context.cekBilgisiHatasi({ durum:"Verildi", cekNo:"", banka:"" }), "çek numarası ve banka eksik.");
+assert.equal(context.cekBilgisiHatasi({ durum:"İptal", cekNo:"", banka:"" }), "", "İptal edilmiş eski kayıtlar yeni işlemleri engellememeli");
 assert.equal(context.yeniAyniCekNumaralariniBul(
   [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }],
   [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }, { id:"yeni", cekNo:" 001 ", banka:"TEST BANK", durum:"Verildi" }]
@@ -368,6 +370,18 @@ const gecersizVadeReddedildi = post({
 });
 assert.equal(gecersizVadeReddedildi.code,"INVALID_CHECK_DUE_DATE","Çek vadesi veriliş tarihinden önce kaydedilmemeli");
 assert.equal(gecersizVadeReddedildi.revision,3,"Geçersiz çek vadesi veri sürümünü değiştirmemeli");
+const eksikBilgiliCek = { id:"c-invalid-details", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:90, cekNo:"", banka:"", durum:"Verildi" };
+const eksikBilgiReddedildi = post({
+  action:"save",
+  baseRevision:3,
+  requestId:"request-invalid-check-details",
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:[...eskiOnYuzOkumasi.cekler,eksikBilgiliCek],
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(eksikBilgiReddedildi.code,"INVALID_CHECK_DETAILS","Çek numarası veya bankası eksik aktif çek kaydedilmemeli");
+assert.equal(eksikBilgiReddedildi.revision,3,"Eksik çek bilgisi veri sürümünü değiştirmemeli");
 
 assert.match(index, /firebase-auth-compat/);
 assert.match(index, /cariHareketler/);

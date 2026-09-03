@@ -91,11 +91,13 @@ const cekTarihiRaporu = context.veriKontrolRaporuOlustur(
     { id:"cek-3", cari:"Firma C", cekNo:"CHK-3", banka:"Test Bank", tarih:"2026-08-15", vadeTarihi:"2026-09-15", tutar:300, durum:"Ödendi", odemeTarihi:"2026-09-04" },
     { id:"cek-4", cari:"Firma D", cekNo:"CHK-4", banka:"Test Bank", tarih:"2026-08-20", vadeTarihi:"2026-09-20", tutar:400, durum:"Ödendi", odemeTarihi:"2026-09-03" },
     { id:"cek-5", cari:"Firma E", cekNo:"CHK-5", banka:"Test Bank", tarih:"2026-09-02", vadeTarihi:"2026-09-01", tutar:500, durum:"Verildi", odemeTarihi:"" },
-    { id:"cek-6", cari:"Firma F", cekNo:" chk-4 ", banka:" test bank ", tarih:"2026-08-21", vadeTarihi:"2026-09-21", tutar:600, durum:"Verildi", odemeTarihi:"" }
+    { id:"cek-6", cari:"Firma F", cekNo:" chk-4 ", banka:" test bank ", tarih:"2026-08-21", vadeTarihi:"2026-09-21", tutar:600, durum:"Verildi", odemeTarihi:"" },
+    { id:"cek-7", cari:"Firma G", cekNo:"", banka:"", tarih:"2026-08-22", vadeTarihi:"2026-09-22", tutar:700, durum:"Verildi", odemeTarihi:"" }
   ],
   new Date(2026, 8, 3, 12, 0, 0, 0)
 );
 assert.equal(cekTarihiRaporu.cekTarihiSorunuSayisi, 4, "Ödeme ve vade tarihi sorunları raporlanmalı");
+assert.equal(cekTarihiRaporu.eksikCekBilgisiSayisi, 1, "Eksik çek numarası ve banka tek kayıt uyarısı olarak raporlanmalı");
 assert.equal(cekTarihiRaporu.ayniCekNumarasiSayisi, 1, "Aynı banka ve çek numarası raporlanmalı");
 assert.equal(cekTarihiRaporu.cekTarihiSorunlari[0].id, "cek-1", "Düzeltme bağlantısı için sorunlu çek kimliği korunmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-1.*ödeme tarihi eksik/, "Eksik ödeme tarihli çek açıklanmalı");
@@ -103,8 +105,10 @@ assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-2.*veriliş tarihinden ö
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-3.*bugünden ileri/, "Gelecek ödeme tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-5.*vade tarihi veriliş tarihinden önce/, "Erken vade tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-4.*Firma D.*Firma F/i, "Aynı çek numarasının bağlı olduğu cariler açıklanmalı");
+assert.match(cekTarihiRaporu.mesajlar.join("\n"), /Firma G.*çek numarası ve banka eksik/i, "Eksik çek bilgileri açıklanmalı");
 
 assert.match(index, /id="kontrol-cek-tarihi"/, "Çek tarihleri kontrol sayacı bulunmalı");
+assert.match(index, /id="kontrol-eksik-cek"/, "Eksik çek bilgisi kontrol sayacı bulunmalı");
 assert.match(index, /id="kontrol-ayni-cek-no"/, "Aynı çek numarası kontrol sayacı bulunmalı");
 assert.match(index, /className = "veri-kontrol-duzelt yalnizca-yonetici"/, "Çek tarihi uyarısında yönetici düzeltme düğmesi bulunmalı");
 assert.match(index, /function veriKontrolCekiniDuzelt\(kimlik\)/, "Düzeltme düğmesi ilgili çek formunu açmalı");
