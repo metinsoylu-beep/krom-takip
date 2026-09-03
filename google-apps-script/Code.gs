@@ -1012,6 +1012,44 @@ function cariHareketImzasi(kaynak, kayit) {
   ]).join("|");
 }
 
+function cekNumarasiAnahtari(cek) {
+  const metinAnahtari = function(deger) {
+    return String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+  };
+  const cekNo = metinAnahtari(cek && cek.cekNo);
+  const banka = metinAnahtari(cek && cek.banka);
+  return cekNo && banka ? banka + "|" + cekNo : "";
+}
+
+function yeniAyniCekNumaralariniBul(oncekiListe, yeniListe) {
+  const aktifMi = function(cek) { return cek && cek.durum !== "İptal"; };
+  const oncekiGruplar = {};
+  (Array.isArray(oncekiListe) ? oncekiListe : []).filter(aktifMi).forEach(function(cek) {
+    const anahtar = cekNumarasiAnahtari(cek);
+    if (!anahtar) return;
+    if (!oncekiGruplar[anahtar]) oncekiGruplar[anahtar] = {};
+    oncekiGruplar[anahtar][String(cek.id || "")] = true;
+  });
+  const yeniGruplar = {};
+  (Array.isArray(yeniListe) ? yeniListe : []).filter(aktifMi).forEach(function(cek) {
+    const anahtar = cekNumarasiAnahtari(cek);
+    if (!anahtar) return;
+    if (!yeniGruplar[anahtar]) yeniGruplar[anahtar] = [];
+    yeniGruplar[anahtar].push(cek);
+  });
+  const sorunlar = [];
+  Object.keys(yeniGruplar).forEach(function(anahtar) {
+    const grup = yeniGruplar[anahtar];
+    if (grup.length <= 1) return;
+    const oncekiKimlikler = oncekiGruplar[anahtar] || {};
+    grup.forEach(function(cek) {
+      const kimlik = String(cek.id || "");
+      if (!oncekiKimlikler[kimlik]) sorunlar.push(cek);
+    });
+  });
+  return sorunlar;
+}
+
 function yeniBenzerCariHareketleriniBul(kaynak, oncekiListe, yeniListe, izinVerilenKimlikler) {
   const izinliler = {};
   (Array.isArray(izinVerilenKimlikler) ? izinVerilenKimlikler : []).forEach(function(kimlik) {
@@ -1583,6 +1621,19 @@ function doPost(e) {
         revision:mevcutSurum,
         requestId:requestId,
         message:(sorun.cekNo ? sorun.cekNo + ": " : "") + sorun.mesaj
+      });
+    }
+
+    const ayniCekNumaralari = gelenCekler !== null ? yeniAyniCekNumaralariniBul(oncekiDurum.cekler, cekler) : [];
+    if (ayniCekNumaralari.length) {
+      const sorun = ayniCekNumaralari[0];
+      return jsonCevabi({
+        ok:false,
+        code:"DUPLICATE_CHECK_NUMBER",
+        revision:mevcutSurum,
+        requestId:requestId,
+        duplicateIds:ayniCekNumaralari.map(function(cek) { return String(cek.id || ""); }),
+        message:(sorun.banka ? sorun.banka + " · " : "") + (sorun.cekNo || "Çek") + ": aynı banka ve çek numarasıyla başka bir aktif kayıt var."
       });
     }
 

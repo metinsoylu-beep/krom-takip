@@ -58,6 +58,10 @@ assert.equal(context.benzerCariHareketiBul("hareket",iptalEdilenHareket,[iptalEd
 const ayniCek = { ...verildi[0], id:"c-2", cari:"FİRMA A", cekNo:" 001 ", banka:"test bank" };
 assert.equal(context.benzerCariHareketiBul("cek",ayniCek,[],verildi)?.id,"c-1","Aynı aktif çek tespit edilmeli");
 assert.equal(context.benzerCariHareketiBul("cek",ayniCek,[],[{ ...verildi[0], durum:"İptal" }]),null,"İptal edilmiş çek benzer kayıt uyarısı oluşturmamalı");
+const ayniNumaraliFarkliCek = { ...verildi[0], id:"c-3", cari:"Firma B", tarih:"2026-09-05", vadeTarihi:"2026-11-05", tutar:999, cekNo:" 001 ", banka:"TEST BANK" };
+assert.equal(context.ayniAktifCekNumarasiniBul(ayniNumaraliFarkliCek,verildi)?.id,"c-1","Aynı banka ve çek numarası farklı bilgilerle de tespit edilmeli");
+assert.equal(context.ayniAktifCekNumarasiniBul({ ...ayniNumaraliFarkliCek, banka:"Başka Bank" },verildi),null,"Farklı bankadaki aynı çek numarasına izin verilmeli");
+assert.equal(context.ayniAktifCekNumarasiniBul(ayniNumaraliFarkliCek,[{ ...verildi[0], durum:"İptal" }]),null,"İptal edilmiş çek numarayı kilitlememeli");
 
 const eskiFatura = [{ id:9, cari:"Eski Firma", no:"E-1", tarih:"2026-08-01", tutar:250, odemeTarihi:"2026-08-20", odemeler:[{ id:"odm-9", tarih:"2026-08-20", tutar:250, yontem:"Eski kayıt" }] }];
 assert.equal(context.eskiFaturaOdemeleriniAktar(eskiFatura), true, "Eski fatura ödemesi cari harekete aktarılmalı");
@@ -89,8 +93,11 @@ assert.match(index, /let cariHareketKayitKilidi = false;/, "Hızlı çift tıkla
 assert.match(index, /Aynı bilgilerle aktif bir ödeme kaydı zaten var/, "Benzer ödeme için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /Aynı bilgilerle aktif bir çek kaydı zaten var/, "Benzer çek için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /code === "DUPLICATE_MOVEMENT"/, "Sunucunun mükerrer kayıt reddi güvenli biçimde ele alınmalı");
+assert.match(index, /code === "DUPLICATE_CHECK_NUMBER"/, "Sunucunun aynı çek numarası reddi güvenli biçimde ele alınmalı");
 assert.match(code, /function yeniBenzerCariHareketleriniBul\(/, "Apps Script yeni benzer cari hareketlerini denetlemeli");
+assert.match(code, /function yeniAyniCekNumaralariniBul\(/, "Apps Script banka ve çek numarası benzersizliğini denetlemeli");
 assert.match(code, /code:"DUPLICATE_MOVEMENT"/, "Apps Script yeni mükerrer ödemeyi veya çeki reddetmeli");
+assert.match(code, /code:"DUPLICATE_CHECK_NUMBER"/, "Apps Script aynı banka ve çek numarasını reddetmeli");
 assert.match(index, /auditAction:mesaj \|\| "Cari hesap değiştirildi"/, "Cari hesap işlemi merkezi işlem geçmişinde adıyla saklanmalı");
 assert.doesNotMatch(index, /function cariHareketSil\(/, "Cari hareket fiziksel olarak silinmemeli");
 assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");

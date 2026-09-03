@@ -167,6 +167,10 @@ assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01",
 assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-03" }, "2026-09-03"), "");
 assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-09-01" }), "Çek vade tarihi veriliş tarihinden önce olamaz.");
 assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-10-01" }), "");
+assert.equal(context.yeniAyniCekNumaralariniBul(
+  [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }],
+  [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }, { id:"yeni", cekNo:" 001 ", banka:"TEST BANK", durum:"Verildi" }]
+)[0].id, "yeni", "Yeni aynı banka ve çek numarası tespit edilmeli");
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
@@ -322,6 +326,18 @@ const benzerOnaylandi = post({
 });
 assert.equal(benzerOnaylandi.ok,true,"Kullanıcının açıkça onayladığı benzer kayıt kaydedilebilmeli");
 assert.equal(benzerOnaylandi.revision,3);
+const ayniNumaraliFarkliCek = { id:"c-ayni-numara", cari:"Örnek Metal", tarih:"2026-09-05", vadeTarihi:"2026-11-05", tutar:999, cekNo:" chk-1 ", banka:"TEST BANK", durum:"Verildi" };
+const ayniCekNumarasiReddedildi = post({
+  action:"save",
+  baseRevision:3,
+  requestId:"request-duplicate-check-number",
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:[...eskiOnYuzOkumasi.cekler,ayniNumaraliFarkliCek],
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(ayniCekNumarasiReddedildi.code,"DUPLICATE_CHECK_NUMBER","Aynı banka ve çek numarası farklı cari ve tutarla kaydedilmemeli");
+assert.equal(ayniCekNumarasiReddedildi.revision,3,"Reddedilen çek numarası veri sürümünü değiştirmemeli");
 const ayniCek = { ...eskiOnYuzOkumasi.cekler[0], id:"c-benzer", kayitZamani:"2026-09-05T11:00:00.000Z" };
 assert.equal(
   context.yeniBenzerCariHareketleriniBul("cek",eskiOnYuzOkumasi.cekler,[...eskiOnYuzOkumasi.cekler,ayniCek],[])[0].id,

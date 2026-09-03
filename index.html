@@ -1966,6 +1966,7 @@
                 <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-ayni-cek-no-kart"><span>AYNI ÇEK NO</span><strong id="kontrol-ayni-cek-no">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK TARİHLERİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
               </div>
@@ -2329,6 +2330,17 @@
           }
           return false;
         }
+        if (e?.code === "DUPLICATE_CHECK_NUMBER") {
+          try {
+            bulutCakismasiniKaydet(durum, await bulutDurumunuGetir(), {
+              syncMesaji:"Aynı banka ve çek numarası bulutta zaten var · Yerel değişiklik yedeklendi",
+              uyariMesaji:(e.message || "Google Sheets'te aynı banka ve çek numarasıyla başka bir aktif kayıt var.") + " Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel kayıtları almak için Yenile düğmesini kullanın."
+            });
+          } catch (_) {
+            syncGoster("Aynı çek numarası nedeniyle bulut kaydı durduruldu", "#ef4444");
+          }
+          return false;
+        }
         if (e?.code === "DUPLICATE_MOVEMENT") {
           try {
             bulutCakismasiniKaydet(durum, await bulutDurumunuGetir(), {
@@ -2633,6 +2645,23 @@
         metinAnahtari(kayit?.yontem),
         metinAnahtari(kayit?.referans)
       ].join("|");
+    }
+
+    function cekNumarasiAnahtari(cek) {
+      const metinAnahtari = deger => String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g," ");
+      const cekNo = metinAnahtari(cek?.cekNo);
+      const banka = metinAnahtari(cek?.banka);
+      return cekNo && banka ? `${banka}|${cekNo}` : "";
+    }
+
+    function ayniAktifCekNumarasiniBul(yeniCek, cekler=[], haricId="") {
+      const hedef = cekNumarasiAnahtari(yeniCek);
+      if (!hedef) return null;
+      return (Array.isArray(cekler) ? cekler : []).find(cek =>
+        String(cek?.id || "") !== String(haricId || "") &&
+        cek?.durum !== "İptal" &&
+        cekNumarasiAnahtari(cek) === hedef
+      ) || null;
     }
 
     function benzerCariHareketiBul(kaynak, yeniKayit, hareketler=[], cekler=[], haricId="") {
@@ -3017,6 +3046,7 @@
       const cekler = Array.isArray(cekListesi) ? cekListesi : cekleriYukle();
       const gecersizAciklamalar = [];
       const cekTarihiSorunlari = [];
+      const ayniCekNumarasiSorunlari = [];
       const yinelenenSatirlar = new Set();
       const gorulenId = new Map();
       const gorulenImza = new Map();
@@ -3089,6 +3119,24 @@
           cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: vade tarihi veriliş tarihinden önce` });
         }
       });
+      const gorulenCekNumaralari = new Map();
+      cekler.filter(cek => cek?.durum !== "İptal").forEach(cek => {
+        const anahtar = cekNumarasiAnahtari(cek);
+        if (!anahtar) return;
+        const ilk = gorulenCekNumaralari.get(anahtar);
+        if (!ilk) {
+          gorulenCekNumaralari.set(anahtar, cek);
+          return;
+        }
+        const banka = String(cek.banka || ilk.banka || "Banka belirtilmedi").slice(0,45);
+        const cekNo = String(cek.cekNo || ilk.cekNo || "Numara belirtilmedi").slice(0,45);
+        const ilkCari = String(ilk.cari || "Cari belirtilmedi").slice(0,40);
+        const cari = String(cek.cari || "Cari belirtilmedi").slice(0,40);
+        ayniCekNumarasiSorunlari.push({
+          id:String(cek.id || ""),
+          metin:`“${banka} · ${cekNo}” çek numarası “${ilkCari}” ve “${cari}” hesaplarında kullanılıyor`
+        });
+      });
 
       let toplam = 0;
       gecerliKayitlar.forEach(inv => {
@@ -3118,20 +3166,24 @@
         const etiket = ilk.cari ? `${ilk.cari.slice(0, 45)} · ${ilk.no.slice(0, 45)}` : ilk.no.slice(0, 60);
         mesajlar.push(`“${etiket}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
       });
+      ayniCekNumarasiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       cekTarihiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       if (!toplamlarDogru) {
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
       }
 
       const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size +
-        ayniNumaraGruplari.length + cekTarihiSorunlari.length + (toplamlarDogru ? 0 : 1);
+        ayniNumaraGruplari.length + ayniCekNumarasiSorunlari.length + cekTarihiSorunlari.length + (toplamlarDogru ? 0 : 1);
       return {
         kayitSayisi: gecerliKayitlar.length,
         gecersizSayisi: gecersizAciklamalar.length,
         yinelenenSayisi: yinelenenSatirlar.size,
         ayniNumaraSayisi: ayniNumaraGruplari.length,
+        ayniCekNumarasiSayisi: ayniCekNumarasiSorunlari.length,
+        ayniCekNumarasiSorunlari,
         cekTarihiSorunuSayisi: cekTarihiSorunlari.length,
         cekTarihiSorunlari,
+        cekKayitSorunlari:[...ayniCekNumarasiSorunlari, ...cekTarihiSorunlari],
         toplamlarDogru,
         uyariSayisi,
         mesajlar
@@ -3166,12 +3218,13 @@
       veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-yinelenen-kart", "kontrol-yinelenen", rapor.yinelenenSayisi, rapor.yinelenenSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-no-kart", "kontrol-ayni-no", rapor.ayniNumaraSayisi, rapor.ayniNumaraSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-ayni-cek-no-kart", "kontrol-ayni-cek-no", rapor.ayniCekNumarasiSayisi, rapor.ayniCekNumarasiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-cek-tarihi-kart", "kontrol-cek-tarihi", rapor.cekTarihiSorunuSayisi, rapor.cekTarihiSorunuSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);
 
       const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
       sorunListesi.replaceChildren();
-      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, çek ödeme tarihleri, tutarlar ve özet toplamları tutarlı."];
+      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
       gosterilecekler.forEach(metin => {
         const satir = document.createElement("li");
         if (!uyariVar) satir.className = "basarili";
@@ -3181,7 +3234,7 @@
         const yazi = document.createElement("span");
         yazi.textContent = metin;
         satir.append(ikon, yazi);
-        const cekSorunu = rapor.cekTarihiSorunlari.find(sorun => `Kontrol gerekli: ${sorun.metin}` === metin);
+        const cekSorunu = rapor.cekKayitSorunlari.find(sorun => `Kontrol gerekli: ${sorun.metin}` === metin);
         if (cekSorunu && yoneticiMi()) {
           const duzelt = document.createElement("button");
           duzelt.type = "button";
@@ -3215,7 +3268,7 @@
 
     function veriKontrolCekiniDuzelt(kimlik) {
       if (!yoneticiGerekli()) return;
-      const cek = cekleriYukle().find(kayit => kayit.id === kimlik && kayit.durum === "Ödendi");
+      const cek = cekleriYukle().find(kayit => kayit.id === kimlik && kayit.durum !== "İptal");
       if (!cek) {
         syncGoster("Çek kaydı değişmiş veya artık bulunamıyor", "#f59e0b");
         veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
@@ -5334,6 +5387,11 @@
           }
           if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
           const turAdi = kaynak === "cek" ? "çek" : "ödeme";
+          const ayniNumaraliCek = kaynak === "cek" ? ayniAktifCekNumarasiniBul(guncellenen,mevcutCekler,kimlik) : null;
+          if (ayniNumaraliCek) {
+            mesaj.textContent = `Bu banka ve çek numarası ${ayniNumaraliCek.cari} hesabında zaten kayıtlı. Çek numarası değişikliğini kontrol edin.`;
+            return;
+          }
           const benzerKayit = benzerCariHareketiBul(kaynak,guncellenen,mevcutHareketler,mevcutCekler,kimlik);
           if (benzerKayit && !confirm(`Aynı bilgilerle aktif bir ${turAdi} kaydı zaten var. Bu değişiklik yine de kaydedilsin mi?`)) {
             mesaj.textContent = "Benzer kayıt nedeniyle değişiklik durduruldu; hiçbir veri değiştirilmedi.";
@@ -5377,6 +5435,11 @@
           const odemeTarihiHatasi = durum === "Ödendi" ? cekOdemeTarihiDogrulamaMesaji(tarih, odemeTarihi) : "";
           if (odemeTarihiHatasi) { mesaj.textContent = odemeTarihiHatasi; return; }
           const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, kayitZamani });
+          const ayniNumaraliCek = ayniAktifCekNumarasiniBul(yeniCek,mevcutCekler);
+          if (ayniNumaraliCek) {
+            mesaj.textContent = `Bu banka ve çek numarası ${ayniNumaraliCek.cari} hesabında zaten kayıtlı. Aynı çek ikinci kez kaydedilemez.`;
+            return;
+          }
           const benzerCek = benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler);
           if (benzerCek && !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
             mesaj.textContent = "Benzer çek kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
@@ -5464,6 +5527,13 @@
         : cariHareketleriYukle().find(hareket => hareket.id === kimlik);
       const geriAlinan = iptalEdilenCariKaydiniGeriAl(kaynak, mevcut);
       if (!geriAlinan) return;
+      if (kaynak === "cek") {
+        const ayniNumaraliCek = ayniAktifCekNumarasiniBul(geriAlinan, cekleriYukle(), kimlik);
+        if (ayniNumaraliCek) {
+          alert(`Bu banka ve çek numarası ${ayniNumaraliCek.cari} hesabında aktif durumda. İptal edilen çek yeniden etkinleştirilemez.`);
+          return;
+        }
+      }
       const tur = kaynak === "cek" ? "çek" : "ödeme";
       if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki iptal edilmiş ${tur} kaydı yeniden etkinleştirilsin mi? Kayıt tekrar cari bakiyeye dahil edilecektir.`)) return;
       const hareketler = kaynak === "hareket"
