@@ -456,6 +456,26 @@
     .toplu-sil-onay { border: 1px solid #ff6370; background: #c92c3a; color: #fff; }
     .toplu-sil-onay:hover { background: #e23847; }
 
+    .hareket-iptal-kart { max-width: 500px; border: 1px solid #f59e0b66; border-top: 3px solid #f59e0b; }
+    .hareket-iptal-kart .popup-baslik { color: #f6c95c; }
+    .hareket-iptal-ozet {
+      margin: 4px 0 14px; padding: 13px 14px; border: 1px solid var(--cizgi); border-radius: 8px;
+      background: #0b1b2d; color: #c6d1dc; font-size: 11px; line-height: 1.55;
+    }
+    .hareket-iptal-aciklama { margin-bottom: 16px; }
+    .hareket-iptal-aciklama label { display: block; margin-bottom: 6px; color: #aebcca; font-size: 10px; font-weight: 700; }
+    .hareket-iptal-aciklama textarea {
+      width: 100%; min-height: 82px; resize: vertical; padding: 10px 11px; border: 1px solid var(--cizgi);
+      border-radius: 7px; background: #0b1b2d; color: #eef4fa; font: 11px "Segoe UI",Arial,sans-serif; outline: none;
+    }
+    .hareket-iptal-aciklama textarea:focus { border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b1f; }
+    .hareket-iptal-mesaj { display: block; min-height: 17px; margin-top: 5px; color: #ff7a85; font-size: 9px; }
+    .hareket-iptal-butonlar { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+    .hareket-iptal-vazgec, .hareket-iptal-onay { min-height: 40px; border-radius: 7px; font: 700 11px "Segoe UI",Arial,sans-serif; cursor: pointer; }
+    .hareket-iptal-vazgec { border: 1px solid var(--cizgi); background: transparent; color: #aebcca; }
+    .hareket-iptal-onay { border: 1px solid #f59e0b; background: #b76d05; color: #fff; }
+    .hareket-iptal-onay:hover { background: #d98408; }
+
     .odeme-yonetim-overlay { align-items: flex-start; overflow-y: auto; padding: 18px; }
     .odeme-yonetim-kart {
       width: min(780px, 100%); max-width: 780px; margin: auto; padding: 0; overflow: hidden;
@@ -509,11 +529,12 @@
     .odeme-kaydi-tutar { color: #4ade80; font: 700 12px Georgia,serif; }
     .odeme-kaydi-yontem { color: #d4dee8; font-size: 10px; }
     .odeme-kaydi-detay { min-width: 0; overflow: hidden; color: #8294a7; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-    .odeme-kaydi-sil {
-      width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #ff3f4f55;
-      border-radius: 6px; background: #ff3f4f0d; color: #ff6b77; cursor: pointer;
+    .odeme-kaydi-iptal {
+      min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 0 8px; border: 1px solid #ff3f4f55; border-radius: 6px; background: #ff3f4f0d;
+      color: #ff6b77; font: 700 9px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
     }
-    .odeme-kaydi-sil:hover { background: #ff3f4f22; }
+    .odeme-kaydi-iptal:hover { background: #ff3f4f22; }
     .durum.kismi { color: #fbbf24; background: #f59e0b1a; border-color: #f59e0b33; }
     .odeme-ilerleme { display: block; margin-top: 4px; color: #8ea0b2; font-size: 9px; text-decoration: none !important; }
     .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
@@ -785,7 +806,9 @@
     .hareket-bakiye { color: #cbd5e1; font-size: 9px; font-weight: 700; text-align: right; }
     .hareket-bakiye.bakiye-borc { color: #ff7a85; }
     .hareket-bakiye.bakiye-alacak { color: #4ade80; }
-    .odeme-kaydi.iptal { opacity: .55; text-decoration: line-through; }
+    .odeme-kaydi.iptal { opacity: .7; border-color: #f59e0b55; background: #2b210f; }
+    .odeme-kaydi.iptal .hareket-tur, .odeme-kaydi.iptal .odeme-kaydi-yontem { text-decoration: line-through; }
+    .odeme-kaydi.iptal .odeme-kaydi-detay { color: #e1b45c; }
 
     .veri-kontrol-panel {
       margin: 0 0 13px; overflow: hidden; background: var(--panel-koyu);
@@ -1517,7 +1540,7 @@
           <div class="odeme-form-alan"><label for="cek-no">ÇEK NUMARASI</label><input id="cek-no" type="text" maxlength="120" placeholder="Çek no"/></div>
           <div class="odeme-form-alan"><label for="cek-banka">BANKA</label><input id="cek-banka" type="text" maxlength="120" placeholder="Banka adı"/></div>
           <div class="odeme-form-alan"><label for="cek-vade">ÇEK VADE TARİHİ</label><input id="cek-vade" type="date"/></div>
-          <div class="odeme-form-alan"><label for="cek-durum">ÇEK DURUMU</label><select id="cek-durum"><option>Verildi</option><option>Ödendi</option><option>İptal</option></select></div>
+          <div class="odeme-form-alan"><label for="cek-durum">ÇEK DURUMU</label><select id="cek-durum"><option>Verildi</option><option>Ödendi</option></select></div>
         </div>
         <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
         <div class="odeme-form-islem">
@@ -1528,6 +1551,31 @@
       <div class="odeme-gecmisi">
         <div class="odeme-gecmisi-baslik"><strong>Cari Hesap Ekstresi</strong><span id="odeme-gecmisi-sayisi">0 hareket</span></div>
         <div class="odeme-gecmisi-liste" id="odeme-gecmisi-liste"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CARİ HAREKET İPTALİ: KAYIT SİLİNMEZ, MUHASEBE ETKİSİ TERSLENİR -->
+  <div class="popup-overlay yalnizca-yonetici" id="cari-hareket-iptal-overlay">
+    <section class="popup-kutu hareket-iptal-kart" role="dialog" aria-modal="true" aria-labelledby="cari-hareket-iptal-baslik">
+      <div class="popup-header">
+        <div class="popup-ikon" style="color:#f59e0b"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></div>
+        <div>
+          <div class="popup-baslik" id="cari-hareket-iptal-baslik">Cari hareket iptal edilsin mi?</div>
+          <div class="popup-alt">Kayıt silinmez; bakiyeye etkisi kaldırılır ve işlem geçmişinde korunur.</div>
+        </div>
+      </div>
+      <input id="cari-hareket-iptal-kaynak" type="hidden"/>
+      <input id="cari-hareket-iptal-kimlik" type="hidden"/>
+      <div class="hareket-iptal-ozet" id="cari-hareket-iptal-ozet"></div>
+      <div class="hareket-iptal-aciklama">
+        <label for="cari-hareket-iptal-nedeni">İPTAL NEDENİ</label>
+        <textarea id="cari-hareket-iptal-nedeni" maxlength="300" placeholder="Örn. Mükerrer kayıt veya hatalı tutar"></textarea>
+        <span class="hareket-iptal-mesaj" id="cari-hareket-iptal-mesaj" role="status"></span>
+      </div>
+      <div class="hareket-iptal-butonlar">
+        <button class="hareket-iptal-vazgec" type="button" onclick="cariHareketIptaliniKapat()">Vazgeç</button>
+        <button class="hareket-iptal-onay" type="button" onclick="cariHareketIptaliniOnayla()"><i class="fa-solid fa-ban" aria-hidden="true"></i> İşlemi İptal Et</button>
       </div>
     </section>
   </div>
@@ -2332,6 +2380,7 @@
       const tarih = String(ham.tarih || ham.islemTarihi || "").split("T")[0];
       const tutar = tutarSayiyaCevir(ham.tutar);
       const cari = String(ham.cari || ham.firma || "").trim();
+      const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
       if (!cari || !tarihGecerliMi(tarih) || !(tutar > 0)) return null;
       return {
         id:String(ham.id || ham.hareketId || `chr-${tarih}-${sira+1}`).trim().slice(0,160),
@@ -2343,8 +2392,15 @@
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
         kaynakFaturaId:Number(ham.kaynakFaturaId) || null,
         gecisKaydi:ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
-        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80)
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
+        durum,
+        iptalZamani:durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0,80) : "",
+        iptalNedeni:durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0,300) : ""
       };
+    }
+
+    function cariHareketAktifMi(hareket) {
+      return hareket?.durum !== "İptal";
     }
 
     function cariHareketleriNormallestir(hamListe) {
@@ -2374,7 +2430,9 @@
         durum,
         referans:String(ham.referans || "").trim().slice(0,160),
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
-        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80)
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
+        iptalZamani:durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0,80) : "",
+        iptalNedeni:durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0,300) : ""
       };
     }
 
@@ -2546,7 +2604,7 @@
         acilisAlacak:tutarSayiyaCevir(kart.acilisAlacak)
       }));
       (faturalar || []).forEach(inv => { hesapGetir(inv.cari).faturaToplami += tutarSayiyaCevir(inv.tutar); });
-      (hareketler || []).forEach(hareket => { hesapGetir(hareket.cari).odemeToplami += tutarSayiyaCevir(hareket.tutar); });
+      (hareketler || []).filter(hareket => hareket?.durum !== "İptal").forEach(hareket => { hesapGetir(hareket.cari).odemeToplami += tutarSayiyaCevir(hareket.tutar); });
       (cekler || []).forEach(cek => {
         const hesap = hesapGetir(cek.cari);
         if (cek.durum !== "İptal") hesap.cekToplami += tutarSayiyaCevir(cek.tutar);
@@ -2808,7 +2866,7 @@
         const tutar = tutarSayiyaCevir(inv.tutar);
         toplam += tutar;
       });
-      const hareketToplami = cariHareketleriYukle().reduce((deger,hareket) => deger + tutarSayiyaCevir(hareket.tutar), 0);
+      const hareketToplami = cariHareketleriYukle().filter(hareket => hareket?.durum !== "İptal").reduce((deger,hareket) => deger + tutarSayiyaCevir(hareket.tutar), 0);
       const cekToplami = cekleriYukle().filter(cek => cek.durum !== "İptal").reduce((deger,cek) => deger + tutarSayiyaCevir(cek.tutar), 0);
       const alacakToplami = hareketToplami + cekToplami;
       const netBakiye = toplam - alacakToplami;
@@ -4400,7 +4458,7 @@
       const buAy = liste.filter(inv=>filtreyeUyar(inv,'bu-ay'));
       const yaklasan = liste.filter(inv=>filtreyeUyar(inv,'yaklasan'));
       const geciken = liste.filter(inv=>filtreyeUyar(inv,'geciken'));
-      const buAyOdemeler = cariHareketleriYukle().filter(hareket => !hareket.gecisKaydi && ayniAy(hareket.tarih));
+      const buAyOdemeler = cariHareketleriYukle().filter(hareket => hareket?.durum !== "İptal" && !hareket.gecisKaydi && ayniAy(hareket.tarih));
       const bekleyenCekler = cekleriYukle().filter(cek => cek.durum === "Verildi");
       const bugun = new Date();
       const { baslangic: haftaBaslangici, bitis: haftaBitisi } = haftaAraligi(bugun);
@@ -4545,14 +4603,24 @@
         id:`fatura-${inv.id}`, tarih:inv.tarih, tur:"Fatura", detay:`${inv.no} · Vade ${formatTarih(vadeTarihi(inv.tarih,inv.vadeGun))}`,
         borc:tutarSayiyaCevir(inv.tutar), alacak:0, silinebilir:false, kayitZamani:""
       }));
-      cariHareketleriYukle().filter(h => cariAdiAnahtari(h.cari) === anahtar).forEach(h => satirlar.push({
-        id:h.id, tarih:h.tarih, tur:h.yontem, detay:[h.referans ? `Ref: ${h.referans}` : "",h.aciklama].filter(Boolean).join(" · ") || "Cari ödeme",
-        borc:0, alacak:tutarSayiyaCevir(h.tutar), tutar:tutarSayiyaCevir(h.tutar), silinebilir:true, kaynak:"hareket", kayitZamani:h.kayitZamani
-      }));
-      cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => satirlar.push({
-        id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay:`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,
-        borc:0, alacak:cek.durum === "İptal" ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar), silinebilir:true, kaynak:"cek", durum:cek.durum, kayitZamani:cek.kayitZamani
-      }));
+      cariHareketleriYukle().filter(h => cariAdiAnahtari(h.cari) === anahtar).forEach(h => {
+        const iptalMi = !cariHareketAktifMi(h);
+        const detay = [h.referans ? `Ref: ${h.referans}` : "",h.aciklama,iptalMi ? `İptal nedeni: ${h.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
+        satirlar.push({
+          id:h.id, tarih:h.tarih, tur:iptalMi ? `${h.yontem} · İptal` : h.yontem, detay:detay || "Cari ödeme",
+          borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(h.tutar), tutar:tutarSayiyaCevir(h.tutar),
+          iptalEdilebilir:!iptalMi, kaynak:"hareket", durum:h.durum, iptalZamani:h.iptalZamani, iptalNedeni:h.iptalNedeni, kayitZamani:h.kayitZamani
+        });
+      });
+      cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => {
+        const iptalMi = cek.durum === "İptal";
+        const detay = [`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,iptalMi ? `İptal nedeni: ${cek.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
+        satirlar.push({
+          id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay,
+          borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar),
+          iptalEdilebilir:!iptalMi, kaynak:"cek", durum:cek.durum, iptalZamani:cek.iptalZamani, iptalNedeni:cek.iptalNedeni, kayitZamani:cek.kayitZamani
+        });
+      });
       let bakiye = 0;
       return satirlar.sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id)).map(satir => {
         bakiye += satir.borc - satir.alacak;
@@ -4672,14 +4740,14 @@
       document.getElementById("odeme-gecmisi-sayisi").textContent = `${ekstre.length} hareket`;
       document.getElementById("odeme-gecmisi-liste").innerHTML = ekstre.length
         ? ekstre.slice().reverse().map(satir => {
-            const cekDurumu = satir.kaynak === "cek" && yoneticiMi() ? `<select aria-label="Çek durumu" onchange="cekDurumunuDegistir('${htmlGuvenli(satir.id)}',this.value)"><option ${satir.durum==='Verildi'?'selected':''}>Verildi</option><option ${satir.durum==='Ödendi'?'selected':''}>Ödendi</option><option ${satir.durum==='İptal'?'selected':''}>İptal</option></select>` : "";
+            const cekDurumu = satir.kaynak === "cek" && satir.durum !== "İptal" && yoneticiMi() ? `<select aria-label="Çek durumu" onchange="cekDurumunuDegistir('${htmlGuvenli(satir.id)}',this.value)"><option ${satir.durum==='Verildi'?'selected':''}>Verildi</option><option ${satir.durum==='Ödendi'?'selected':''}>Ödendi</option></select>` : "";
             const satirBakiyesi = bakiyeBilgisi(satir.bakiye);
             return `<div class="odeme-kaydi ${satir.durum === 'İptal' ? 'iptal' : ''}">
               <span class="odeme-kaydi-tarih">${formatTarih(tarihOlusturYerel(satir.tarih))}</span>
               <strong class="hareket-tur ${satir.borc ? 'borc' : 'alacak'}">${satir.borc ? 'BORÇ' : 'ALACAK'} · ${formatPara(satir.borc || satir.tutar || satir.alacak)}</strong>
               <span class="odeme-kaydi-yontem">${htmlGuvenli(satir.tur)} ${cekDurumu}</span>
               <span class="odeme-kaydi-detay" title="${htmlGuvenli(satir.detay)}">${htmlGuvenli(satir.detay)}</span>
-              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.silinebilir && yoneticiMi() ? `<button class="odeme-kaydi-sil" type="button" onclick="cariHareketSil('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi sil" title="Cari hareketi sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>` : ""}</span>
+              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.iptalEdilebilir && yoneticiMi() ? `<button class="odeme-kaydi-iptal" type="button" onclick="cariHareketIptaliniAc('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi iptal et" title="Kaydı silmeden iptal et"><i class="fa-solid fa-ban" aria-hidden="true"></i> İptal</button>` : ""}</span>
             </div>`;
           }).join("")
         : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu cari hesapta henüz hareket yok.</div>';
@@ -4740,22 +4808,50 @@
       odemeYonetiminiGuncelle();
     }
 
-    function cariHareketSil(kaynak, kimlik) {
-      if (!yoneticiGerekli()) return;
+    function cariHareketIptaliniAc(kaynak, kimlik) {
+      if (!yoneticiGerekli() || !["hareket","cek"].includes(kaynak)) return;
       const hareket = kaynak === "cek" ? cekleriYukle().find(cek => cek.id === kimlik) : cariHareketleriYukle().find(item => item.id === kimlik);
-      if (!hareket || !confirm(`${formatPara(hareket.tutar)} tutarındaki cari hareket silinsin mi?`)) return;
-      cariVerileriniKaydet(
-        cariHareketleriYukle().filter(item => !(kaynak === "hareket" && item.id === kimlik)),
-        cekleriYukle().filter(item => !(kaynak === "cek" && item.id === kimlik)),
-        "Cari hareket silindi"
-      );
+      if (!hareket || (kaynak === "cek" ? hareket.durum === "İptal" : !cariHareketAktifMi(hareket))) return;
+      document.getElementById("cari-hareket-iptal-kaynak").value = kaynak;
+      document.getElementById("cari-hareket-iptal-kimlik").value = kimlik;
+      document.getElementById("cari-hareket-iptal-ozet").innerHTML = `<strong>${htmlGuvenli(hareket.cari)}</strong><br>${kaynak === "cek" ? "Çek" : "Ödeme"} · ${formatTarih(tarihOlusturYerel(hareket.tarih))} · <strong>${formatPara(hareket.tutar)}</strong>`;
+      document.getElementById("cari-hareket-iptal-nedeni").value = "";
+      document.getElementById("cari-hareket-iptal-mesaj").textContent = "";
+      document.getElementById("cari-hareket-iptal-overlay").classList.add("aktif");
+      setTimeout(() => document.getElementById("cari-hareket-iptal-nedeni")?.focus(), 0);
+    }
+
+    function cariHareketIptaliniKapat() {
+      document.getElementById("cari-hareket-iptal-overlay")?.classList.remove("aktif");
+    }
+
+    function cariHareketIptaliniOnayla() {
+      if (!yoneticiGerekli()) return;
+      const kaynak = document.getElementById("cari-hareket-iptal-kaynak")?.value;
+      const kimlik = document.getElementById("cari-hareket-iptal-kimlik")?.value;
+      const neden = document.getElementById("cari-hareket-iptal-nedeni")?.value.trim().slice(0,300) || "";
+      const mesaj = document.getElementById("cari-hareket-iptal-mesaj");
+      if (!neden) { mesaj.textContent = "İşlem geçmişi için iptal nedenini yazın."; return; }
+      const iptalZamani = new Date().toISOString();
+      const hareketler = cariHareketleriYukle().map(hareket => kaynak === "hareket" && hareket.id === kimlik
+        ? { ...hareket, durum:"İptal", iptalZamani, iptalNedeni:neden }
+        : hareket);
+      const cekler = cekleriYukle().map(cek => kaynak === "cek" && cek.id === kimlik
+        ? { ...cek, durum:"İptal", iptalZamani, iptalNedeni:neden }
+        : cek);
+      const bulundu = kaynak === "hareket"
+        ? hareketler.some(hareket => hareket.id === kimlik && hareket.durum === "İptal")
+        : cekler.some(cek => cek.id === kimlik && cek.durum === "İptal");
+      if (!bulundu) { mesaj.textContent = "İptal edilecek hareket bulunamadı."; return; }
+      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı iptal edildi" : "Ödeme kaydı iptal edildi");
+      cariHareketIptaliniKapat();
       odemeYonetiminiGuncelle();
     }
 
     function cekDurumunuDegistir(kimlik, durum) {
       if (!yoneticiGerekli()) return;
-      if (!["Verildi","Ödendi","İptal"].includes(durum)) return;
-      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik ? { ...cek, durum } : cek), "Çek durumu güncellendi");
+      if (!["Verildi","Ödendi"].includes(durum)) return;
+      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik && cek.durum !== "İptal" ? { ...cek, durum, iptalZamani:"", iptalNedeni:"" } : cek), "Çek durumu güncellendi");
       odemeYonetiminiGuncelle();
     }
 
@@ -4967,7 +5063,7 @@
       const faturaToplami=liste.reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
       const acilisBorc=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisBorc),0);
       const acilisAlacak=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisAlacak),0);
-      const odemeler=cariHareketleriYukle().reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
+      const odemeler=cariHareketleriYukle().filter(hareket=>hareket?.durum!=="İptal").reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
       const cekler=cekleriYukle().filter(cek=>cek.durum!=="İptal").reduce((deger,cek)=>deger+tutarSayiyaCevir(cek.tutar),0);
       const toplam=faturaToplami+acilisBorc;
       const toplamAlacak=odemeler+cekler+acilisAlacak;

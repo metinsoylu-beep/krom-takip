@@ -27,16 +27,21 @@ vm.runInContext(index.slice(baslangic, bitis), context);
 
 const faturalar = [{ id:1, cari:"Firma A", no:"A-1", tarih:"2026-09-01", vadeGun:30, tutar:100 }];
 const hareketler = [{ id:"h-1", cari:"Firma A", tarih:"2026-09-02", tutar:150, yontem:"Havale / EFT" }];
+const iptalEdilenHareket = { id:"h-2", cari:"Firma A", tarih:"2026-09-03", tutar:80, yontem:"Nakit", durum:"İptal", iptalZamani:"2026-09-04T10:00:00.000Z", iptalNedeni:"Mükerrer kayıt" };
 const verildi = [{ id:"c-1", cari:"Firma A", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:25, cekNo:"001", banka:"Test Bank", durum:"Verildi" }];
 
 let hesap = context.cariOzetleriniHesapla(faturalar, hareketler, [])[0];
 assert.equal(hesap.bakiye, -50, "Faturadan fazla ödeme alacak bakiyesi oluşturmalı");
 assert.deepEqual({ ...context.bakiyeBilgisi(hesap.bakiye) }, { etiket:"Alacak Bakiyesi", sinif:"bakiye-alacak", tutar:50 });
+hesap = context.cariOzetleriniHesapla(faturalar, [...hareketler,iptalEdilenHareket], [])[0];
+assert.equal(hesap.bakiye, -50, "İptal edilen ödeme bakiyeyi değiştirmemeli");
+assert.equal(context.cariHareketiniNormallestir(iptalEdilenHareket).iptalNedeni, "Mükerrer kayıt", "İptal nedeni korunmalı");
 
 hesap = context.cariOzetleriniHesapla(faturalar, [], verildi)[0];
 assert.equal(hesap.bakiye, 75, "Verilen çek cari borçtan bir kez düşmeli");
 assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"Ödendi" }])[0].bakiye, 75, "Çekin ödendi yapılması ikinci kez düşmemeli");
 assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"İptal" }])[0].bakiye, 100, "İptal edilen çek bakiyeyi etkilememeli");
+assert.equal(context.cekiNormallestir({ ...verildi[0], durum:"İptal", iptalNedeni:"Hatalı çek", iptalZamani:"2026-09-04T10:00:00.000Z" }).iptalNedeni, "Hatalı çek", "Çek iptal nedeni korunmalı");
 
 const eskiFatura = [{ id:9, cari:"Eski Firma", no:"E-1", tarih:"2026-08-01", tutar:250, odemeTarihi:"2026-08-20", odemeler:[{ id:"odm-9", tarih:"2026-08-20", tutar:250, yontem:"Eski kayıt" }] }];
 assert.equal(context.eskiFaturaOdemeleriniAktar(eskiFatura), true, "Eski fatura ödemesi cari harekete aktarılmalı");
@@ -49,6 +54,9 @@ assert.match(index, /id="cari-hesaplar-overlay"/, "Cari hesaplar ekranı bulunma
 assert.match(index, /id="odeme-tur"/, "Ödeme ve çek işlem türü seçilebilmeli");
 assert.match(index, /id="cek-no"/, "Çek numarası alanı bulunmalı");
 assert.match(index, /function cekDurumunuDegistir\(/, "Çek durumu güncellenebilmeli");
+assert.match(index, /id="cari-hareket-iptal-overlay"/, "Silme yerine nedenli iptal penceresi bulunmalı");
+assert.match(index, /function cariHareketIptaliniOnayla\(/, "Cari hareket iptali desteklenmeli");
+assert.doesNotMatch(index, /function cariHareketSil\(/, "Cari hareket fiziksel olarak silinmemeli");
 assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");
 assert.match(code, /const MOVEMENT_SHEET_NAME = "Cari Hareketler"/);
 assert.match(code, /const CHECK_SHEET_NAME = "Çekler"/);

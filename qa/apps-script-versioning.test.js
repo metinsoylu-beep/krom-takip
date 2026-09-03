@@ -168,9 +168,13 @@ const item1 = { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-09-01", vadeGun
 const item2 = { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-09-01", vadeGun:30, tutar:200 };
 const hareketler = [
   { id:"h-1", cari:"Örnek Metal", tarih:"2026-09-02", tutar:140, yontem:"Havale / EFT", referans:"REF-1" },
-  { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, yontem:"Nakit" }
+  { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, yontem:"Nakit" },
+  { id:"h-3", cari:"Başarı Çelik", tarih:"2026-09-04", tutar:25, yontem:"Nakit", durum:"İptal", iptalZamani:"2026-09-04T11:00:00.000Z", iptalNedeni:"Mükerrer kayıt" }
 ];
-const cekler = [{ id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", durum:"Verildi" }];
+const cekler = [
+  { id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", durum:"Verildi" },
+  { id:"c-2", cari:"Başarı Çelik", tarih:"2026-09-04", vadeTarihi:"2026-10-04", tutar:60, cekNo:"CHK-2", banka:"Test Bank", durum:"İptal", iptalZamani:"2026-09-04T12:00:00.000Z", iptalNedeni:"Hatalı çek" }
+];
 const cariler = [
   { id:"cari-1", cari:"Örnek Metal", vergiNo:"1234567890", acilisTarihi:"2026-01-01", acilisBorc:25, acilisAlacak:0 },
   { id:"cari-2", cari:"Başarı Çelik", vergiNo:"", acilisTarihi:"", acilisBorc:0, acilisAlacak:10 }
@@ -223,11 +227,15 @@ assert.equal(yetkiGecmisi.logs[0].islem, "Kullanıcı erişimi kaldırıldı");
 
 const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler, cariler });
 assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount, customerCount:saved.customerCount },
-  { ok:true, revision:1, count:2, movementCount:2, checkCount:1, customerCount:2 });
+  { ok:true, revision:1, count:2, movementCount:3, checkCount:2, customerCount:2 });
 assert.equal(movementValues[0][0], "Hareket ID");
-assert.equal(movementValues.length, 3);
+assert.equal(movementValues.length, 4);
+assert.equal(movementValues[3][10], "İptal", "İptal durumu Google Sheets'e yazılmalı");
+assert.equal(movementValues[3][12], "Mükerrer kayıt", "İptal nedeni Google Sheets'e yazılmalı");
 assert.equal(checkValues[0][0], "Çek ID");
-assert.equal(checkValues.length, 2);
+assert.equal(checkValues.length, 3);
+assert.equal(checkValues[2][12], "Hatalı çek", "Çek iptal nedeni Google Sheets'e yazılmalı");
+assert.equal(invoiceValues[1][1], "275 ₺", "İptal edilen ödeme ve çek toplam alacağa katılmamalı");
 assert.equal(customerValues[0][0], "Cari ID");
 assert.equal(customerValues.length, 3);
 assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi olarak korunmalı");
@@ -255,7 +263,11 @@ assert.equal(manuelYedekDetayi.backup.aciklama, "Manuel yedek · Ay sonu kapanı
 const kayitSonrasi = post({ action:"read" });
 assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");
 assert.equal(kayitSonrasi.cariHareketler[0].tutar, 140);
+assert.equal(kayitSonrasi.cariHareketler[2].durum, "İptal");
+assert.equal(kayitSonrasi.cariHareketler[2].iptalNedeni, "Mükerrer kayıt");
 assert.equal(kayitSonrasi.cekler[0].durum, "Verildi");
+assert.equal(kayitSonrasi.cekler[1].durum, "İptal");
+assert.equal(kayitSonrasi.cekler[1].iptalNedeni, "Hatalı çek");
 assert.equal(kayitSonrasi.cariler.find(cari => cari.cari === "Örnek Metal").acilisBorc, 25);
 assert.equal(invoiceValues[3][7], "Vade Durumu", "Fatura sayfasında ödeme durumu yerine vade durumu bulunmalı");
 
@@ -269,8 +281,8 @@ assert.equal(conflict.revision, 1);
 const eskiOnYuzSonucu = post({ action:"save", baseRevision:1, requestId:"request-3", items:[item1] });
 assert.equal(eskiOnYuzSonucu.revision, 2);
 const eskiOnYuzOkumasi = post({ action:"read" });
-assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 2, "Eski ön yüz cari hareket alanını göndermese de kayıtlar korunmalı");
-assert.equal(eskiOnYuzOkumasi.cekler.length, 1, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
+assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 3, "Eski ön yüz cari hareket alanını göndermese de kayıtlar korunmalı");
+assert.equal(eskiOnYuzOkumasi.cekler.length, 2, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
 assert.equal(eskiOnYuzOkumasi.cariler.length, 2, "Eski ön yüz cari kart alanını göndermese de kartlar korunmalı");
 
 assert.match(index, /firebase-auth-compat/);

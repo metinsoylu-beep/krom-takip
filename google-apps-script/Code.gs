@@ -51,7 +51,10 @@ const CARI_HAREKET_BASLIK = [
   "Açıklama",
   "Kaynak Fatura ID",
   "Geçiş Kaydı",
-  "Kayıt Zamanı"
+  "Kayıt Zamanı",
+  "Durum",
+  "İptal Zamanı",
+  "İptal Nedeni"
 ];
 const CEK_BASLIK = [
   "Çek ID",
@@ -64,7 +67,9 @@ const CEK_BASLIK = [
   "Durum",
   "Referans",
   "Açıklama",
-  "Kayıt Zamanı"
+  "Kayıt Zamanı",
+  "İptal Zamanı",
+  "İptal Nedeni"
 ];
 const CARI_BASLIK = [
   "Cari ID",
@@ -842,6 +847,7 @@ function cariHareketiniNormallestir(ham, sira) {
   const tarih = tarihMetni(ham.tarih || ham.islemTarihi);
   const tutar = tutarSayisi(ham.tutar);
   const cari = String(ham.cari || ham.firma || "").trim();
+  const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
   if (!cari || !tarih || !(tutar > 0)) return null;
   return {
     id: String(ham.id || ham.hareketId || ("chr-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
@@ -853,7 +859,10 @@ function cariHareketiniNormallestir(ham, sira) {
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
     kaynakFaturaId: Number(ham.kaynakFaturaId) || null,
     gecisKaydi: ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
-    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    durum: durum,
+    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : "",
+    iptalNedeni: durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0, 300) : ""
   };
 }
 
@@ -890,7 +899,9 @@ function cekiNormallestir(ham, sira) {
     durum: durum,
     referans: String(ham.referans || "").trim().slice(0, 160),
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
-    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80)
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : "",
+    iptalNedeni: durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0, 300) : ""
   };
 }
 
@@ -1028,7 +1039,10 @@ function cariHareketVerileriniOku() {
       aciklama: row[konum("Açıklama")],
       kaynakFaturaId: row[konum("Kaynak Fatura ID")],
       gecisKaydi: row[konum("Geçiş Kaydı")],
-      kayitZamani: row[konum("Kayıt Zamanı")]
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      durum: row[konum("Durum")],
+      iptalZamani: row[konum("İptal Zamanı")],
+      iptalNedeni: row[konum("İptal Nedeni")]
     };
   }));
 }
@@ -1053,7 +1067,9 @@ function cekVerileriniOku() {
       durum: row[konum("Durum")],
       referans: row[konum("Referans")],
       aciklama: row[konum("Açıklama")],
-      kayitZamani: row[konum("Kayıt Zamanı")]
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      iptalZamani: row[konum("İptal Zamanı")],
+      iptalNedeni: row[konum("İptal Nedeni")]
     };
   }));
 }
@@ -1446,7 +1462,8 @@ function doPost(e) {
     const faturaToplami = items.reduce(function(deger, item) { return deger + item.tutar; }, 0);
     const acilisBorcToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisBorc; }, 0);
     const acilisAlacakToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisAlacak; }, 0);
-    const odemeToplami = cariHareketler.reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
+    const odemeToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal"; })
+      .reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
     const cekToplami = cekler.filter(function(cek) { return cek.durum !== "İptal"; })
       .reduce(function(deger, cek) { return deger + cek.tutar; }, 0);
     const toplamBorc = faturaToplami + acilisBorcToplami;
@@ -1494,7 +1511,10 @@ function doPost(e) {
         hareket.aciklama,
         hareket.kaynakFaturaId || "",
         hareket.gecisKaydi ? "Evet" : "Hayır",
-        hareket.kayitZamani
+        hareket.kayitZamani,
+        hareket.durum,
+        hareket.iptalZamani,
+        hareket.iptalNedeni
       ]);
     });
     const cekSatirlari = [CEK_BASLIK];
@@ -1510,7 +1530,9 @@ function doPost(e) {
         cek.durum,
         cek.referans,
         cek.aciklama,
-        cek.kayitZamani
+        cek.kayitZamani,
+        cek.iptalZamani,
+        cek.iptalNedeni
       ]);
     });
     const cariSatirlari = [CARI_BASLIK];
