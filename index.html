@@ -589,11 +589,13 @@
     .cek-takip-kart { width: min(1180px,100%); max-width: 1180px; border-top-color: #a78bfa; }
     .cek-takip-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .cek-takip-ust-islemler { display: flex; align-items: center; gap: 8px; }
-    .cek-takip-csv {
+    .cek-takip-csv, .cek-takip-yeni {
       min-height: 34px; padding: 7px 11px; border: 1px solid #a78bfa66; border-radius: 7px;
       background: #a78bfa14; color: #d8ccff; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
     }
     .cek-takip-csv:hover { background: #a78bfa24; }
+    .cek-takip-yeni { border-color: #39c56b66; background: #39c56b14; color: #7aeba1; }
+    .cek-takip-yeni:hover { background: #39c56b24; }
     .cek-takip-filtreler {
       display: grid; grid-template-columns: minmax(240px,1fr) 190px; gap: 10px;
       padding: 13px 18px; background: #0a1a2b; border-bottom: 1px solid var(--cizgi-yumusak);
@@ -1140,7 +1142,7 @@
       .cek-takip-filtreler, .cek-takip-ozetler { grid-template-columns: 1fr; padding: 12px; }
       .cek-takip-ozetler { padding-bottom: 0; }
       .cek-takip-tablo-wrap { margin: 12px; }
-      .cek-takip-csv span { display: none; }
+      .cek-takip-csv span, .cek-takip-yeni span { display: none; }
       .cari-ekstre-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .cari-ekstre-toolbar { align-items: flex-start; flex-direction: column; }
       .cari-ekstre-toolbar-islem { width: 100%; }
@@ -1400,6 +1402,7 @@
           <p class="odeme-yonetim-alt">Verilen çekleri vade tarihine göre izleyin; ödenen ve iptal edilen kayıtları geçmişiyle koruyun.</p>
         </div>
         <div class="cek-takip-ust-islemler">
+          <button class="cek-takip-yeni yalnizca-yonetici" type="button" onclick="cekTakibindenYeniCek()" title="Yeni çek kaydı oluştur"><i class="fa-solid fa-plus" aria-hidden="true"></i> <span>Yeni Çek</span></button>
           <button class="cek-takip-csv yalnizca-yonetici" type="button" onclick="cekTakipCsvIndir()" title="Filtrelenen çekleri CSV olarak indir"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> <span>CSV İndir</span></button>
           <button class="modal-kapat" type="button" onclick="cekTakibiniKapat()" aria-label="Çek takip merkezini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
@@ -4764,6 +4767,12 @@
       document.getElementById("cek-takip-overlay")?.classList.remove("aktif");
     }
 
+    function cekTakibindenYeniCek() {
+      if (!yoneticiGerekli()) return;
+      cekTakibiniKapat();
+      odemeYonetiminiAc("", "cek");
+    }
+
     function cekTakibindenDuzenle(kimlik) {
       cekTakibiniKapat();
       cariHareketDuzenlemeyiBaslat("cek", kimlik);
@@ -4910,10 +4919,10 @@
       document.getElementById("odeme-cari").value = seciliCari;
     }
 
-    function odemeYonetiminiAc(cari="") {
+    function odemeYonetiminiAc(cari="", varsayilanTur="odeme") {
       duzenlenenCariHareket = null;
       cariListesiniDoldur(cari);
-      document.getElementById("odeme-tur").value = "odeme";
+      document.getElementById("odeme-tur").value = varsayilanTur === "cek" ? "cek" : "odeme";
       document.getElementById("odeme-tarih").value = bugununTarihi();
       document.getElementById("odeme-tutar").value = "";
       document.getElementById("odeme-yontem").value = "Havale / EFT";
@@ -4939,7 +4948,9 @@
       document.getElementById("odeme-duzenleme-vazgec").hidden = !duzenlemeMi;
       document.getElementById("odeme-yonetim-baslik").innerHTML = duzenlemeMi
         ? `<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> ${cekMi ? "Çek" : "Ödeme"} Kaydını Düzenle`
-        : '<i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Cari Ödeme / Çek Girişi';
+        : cekMi
+          ? '<i class="fa-solid fa-money-check" aria-hidden="true"></i> Yeni Çek Girişi'
+          : '<i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Cari Ödeme / Çek Girişi';
       document.getElementById("odeme-kaydet-btn").innerHTML = cekMi
         ? `<i class="fa-solid fa-${duzenlemeMi ? "floppy-disk" : "money-check"}" aria-hidden="true"></i> ${duzenlemeMi ? "Çek Değişikliklerini Kaydet" : "Çeki Kaydet"}`
         : `<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> ${duzenlemeMi ? "Ödeme Değişikliklerini Kaydet" : "Ödemeyi Kaydet"}`;

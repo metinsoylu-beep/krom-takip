@@ -102,6 +102,9 @@ assert.match(index, /onclick="cekTakibiniAc\(\)"/, "Bekleyen çek kartı takip m
 assert.match(index, /yoneticiMi\(\)[\s\S]*cek-takip-durum-sec/, "Durum değiştirme alanı yalnız yöneticiye sunulmalı");
 assert.match(index, /cariHareketIptaliniGeriAl\('cek'/, "İptal edilmiş çek geri alınabilmeli");
 assert.match(index, /class="cek-takip-csv yalnizca-yonetici"[\s\S]*onclick="cekTakipCsvIndir\(\)"/, "CSV indirme yalnız yöneticiye sunulmalı");
+assert.match(index, /class="cek-takip-yeni yalnizca-yonetici"[\s\S]*onclick="cekTakibindenYeniCek\(\)"/, "Yeni çek düğmesi yalnız yöneticiye sunulmalı");
+assert.match(index, /function cekTakibindenYeniCek\(\)[\s\S]*odemeYonetiminiAc\("", "cek"\)/, "Takip merkezinden açılan form çek türüyle başlamalı");
+assert.match(index, /function odemeYonetiminiAc\(cari="", varsayilanTur="odeme"\)/, "Genel ödeme düğmesinin varsayılan davranışı korunmalı");
 assert.match(index, /onclick="odemeKapat\(\);cekTakibiniAc\(\)"/, "Vade uyarısından Çek Takip Merkezi açılabilmeli");
 
 console.log("Çek Takip Merkezi hesaplama ve arayüz testleri başarılı.");
