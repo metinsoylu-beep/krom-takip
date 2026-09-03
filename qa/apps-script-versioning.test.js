@@ -161,6 +161,10 @@ assert.equal(
   "2026-10-02",
   "Apps Script çek ödeme tarihini normalleştirmeli"
 );
+assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"" }, "2026-09-03"), "Ödenmiş çekin ödeme tarihi eksik veya geçersiz.");
+assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-02", odemeTarihi:"2026-09-01" }, "2026-09-03"), "Çek ödeme tarihi veriliş tarihinden önce olamaz.");
+assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-04" }, "2026-09-03"), "Çek ödeme tarihi bugünden ileri olamaz.");
+assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-03" }, "2026-09-03"), "");
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
@@ -322,6 +326,18 @@ assert.equal(
   "c-benzer",
   "Sunucu yeni mükerrer çeki de tespit etmeli"
 );
+const gecersizOdenmisCek = { id:"c-invalid-date", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:90, cekNo:"CHK-DATE", banka:"Test Bank", durum:"Ödendi", odemeTarihi:"" };
+const gecersizTarihReddedildi = post({
+  action:"save",
+  baseRevision:3,
+  requestId:"request-invalid-check-date",
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:[...eskiOnYuzOkumasi.cekler,gecersizOdenmisCek],
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(gecersizTarihReddedildi.code,"INVALID_CHECK_SETTLEMENT_DATE","Yeni ödenmiş çek geçerli ödeme tarihi olmadan kaydedilmemeli");
+assert.equal(gecersizTarihReddedildi.revision,3,"Geçersiz çek tarihi veri sürümünü değiştirmemeli");
 
 assert.match(index, /firebase-auth-compat/);
 assert.match(index, /cariHareketler/);

@@ -927,6 +927,43 @@ function cekleriNormallestir(hamListe) {
   });
 }
 
+function isoTarihGecerliMi(deger) {
+  const metin = tarihMetni(deger);
+  const eslesme = /^(\d{4})-(\d{2})-(\d{2})$/.exec(metin);
+  if (!eslesme) return false;
+  const yil = Number(eslesme[1]);
+  const ay = Number(eslesme[2]);
+  const gun = Number(eslesme[3]);
+  const tarih = new Date(yil, ay - 1, gun, 12, 0, 0, 0);
+  return tarih.getFullYear() === yil && tarih.getMonth() === ay - 1 && tarih.getDate() === gun;
+}
+
+function cekOdemeTarihiHatasi(cek, bugunMetni) {
+  if (!cek || cek.durum !== "Ödendi") return "";
+  const odemeTarihi = tarihMetni(cek.odemeTarihi);
+  const verilisTarihi = tarihMetni(cek.tarih);
+  const bugun = tarihMetni(bugunMetni || new Date());
+  if (!isoTarihGecerliMi(odemeTarihi)) return "Ödenmiş çekin ödeme tarihi eksik veya geçersiz.";
+  if (isoTarihGecerliMi(verilisTarihi) && odemeTarihi < verilisTarihi) return "Çek ödeme tarihi veriliş tarihinden önce olamaz.";
+  if (odemeTarihi > bugun) return "Çek ödeme tarihi bugünden ileri olamaz.";
+  return "";
+}
+
+function yeniGecersizCekOdemeTarihleriniBul(oncekiListe, yeniListe, bugunMetni) {
+  const oncekiKimlikler = {};
+  (Array.isArray(oncekiListe) ? oncekiListe : []).forEach(function(cek) {
+    oncekiKimlikler[String(cek && cek.id || "")] = cek;
+  });
+  return (Array.isArray(yeniListe) ? yeniListe : []).map(function(cek) {
+    const onceki = oncekiKimlikler[String(cek && cek.id || "")];
+    const tarihDegisti = !onceki || onceki.durum !== cek.durum ||
+      tarihMetni(onceki.odemeTarihi) !== tarihMetni(cek.odemeTarihi) ||
+      tarihMetni(onceki.tarih) !== tarihMetni(cek.tarih);
+    const mesaj = tarihDegisti ? cekOdemeTarihiHatasi(cek, bugunMetni) : "";
+    return mesaj ? { id:String(cek.id || ""), cekNo:String(cek.cekNo || ""), mesaj:mesaj } : null;
+  }).filter(Boolean);
+}
+
 function cariHareketImzasi(kaynak, kayit) {
   const metinAnahtari = function(deger) {
     return String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
@@ -1496,6 +1533,18 @@ function doPost(e) {
         revision: mevcutSurum,
         requestId: requestId,
         message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
+    const gecersizCekOdemeTarihleri = yeniGecersizCekOdemeTarihleriniBul(oncekiDurum.cekler, cekler, new Date());
+    if (gecersizCekOdemeTarihleri.length) {
+      const sorun = gecersizCekOdemeTarihleri[0];
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_CHECK_SETTLEMENT_DATE",
+        revision:mevcutSurum,
+        requestId:requestId,
+        message:(sorun.cekNo ? sorun.cekNo + ": " : "") + sorun.mesaj
       });
     }
 

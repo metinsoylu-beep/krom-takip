@@ -1635,7 +1635,7 @@
       <div class="odeme-formu yalnizca-yonetici">
         <div class="odeme-form-alan genis"><label for="odeme-cari">CARİ / FİRMA</label><input id="odeme-cari" type="text" list="cari-kart-listesi" maxlength="120" placeholder="Kayıtlı cari seçin" oninput="odemeYonetiminiGuncelle()"/></div>
         <div class="odeme-form-alan"><label for="odeme-tur">İŞLEM TÜRÜ</label><select id="odeme-tur" onchange="odemeTuruDegisti()"><option value="odeme">Ödeme</option><option value="cek">Çek Verme</option></select></div>
-        <div class="odeme-form-alan"><label for="odeme-tarih">İŞLEM TARİHİ</label><input id="odeme-tarih" type="date"/></div>
+        <div class="odeme-form-alan"><label for="odeme-tarih">İŞLEM TARİHİ</label><input id="odeme-tarih" type="date" onchange="cekOdemeTarihiAlaniniGuncelle(false)"/></div>
         <div class="odeme-form-alan"><label for="odeme-tutar">TUTAR (₺)</label><input id="odeme-tutar" type="number" min="0.01" step="0.01" placeholder="0,00"/></div>
         <div class="odeme-form-alan" id="odeme-yontem-alani"><label for="odeme-yontem">ÖDEME YÖNTEMİ</label><select id="odeme-yontem"><option>Havale / EFT</option><option>Nakit</option><option>Kredi Kartı</option><option>Mahsup</option><option>Diğer</option></select></div>
         <div class="odeme-form-alan"><label for="odeme-referans">DEKONT / REFERANS NO</label><input id="odeme-referans" type="text" maxlength="160" placeholder="İsteğe bağlı"/></div>
@@ -2331,6 +2331,11 @@
           } catch (_) {
             syncGoster("Benzer ödeme/çek nedeniyle bulut kaydı durduruldu", "#ef4444");
           }
+          return false;
+        }
+        if (e?.code === "INVALID_CHECK_SETTLEMENT_DATE") {
+          syncGoster("Geçersiz çek ödeme tarihi · Değişiklik kaydedilmedi", "#ef4444");
+          alert(e.message || "Ödenmiş çekin ödeme tarihini kontrol edin.");
           return false;
         }
         syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
@@ -4996,9 +5001,21 @@
       const odendiMi = cekMi && document.getElementById("cek-durum")?.value === "Ödendi";
       const alan = document.getElementById("cek-odeme-tarihi-alani");
       const tarih = document.getElementById("cek-odeme-tarihi");
+      const islemTarihi = document.getElementById("odeme-tarih")?.value || "";
       if (alan) alan.hidden = !odendiMi;
       if (tarih && !odendiMi) tarih.value = "";
+      if (tarih) {
+        tarih.min = tarihGecerliMi(islemTarihi) ? islemTarihi : "";
+        tarih.max = bugununTarihi();
+      }
       if (tarih && odendiMi && kullaniciDegisikligi && !tarih.value) tarih.value = bugununTarihi();
+    }
+
+    function cekOdemeTarihiDogrulamaMesaji(verilisTarihi, odemeTarihi, bugun=bugununTarihi()) {
+      if (!tarihGecerliMi(odemeTarihi)) return "Ödenen çek için geçerli bir ödeme tarihi seçin.";
+      if (tarihGecerliMi(verilisTarihi) && odemeTarihi < verilisTarihi) return "Ödeme tarihi çekin veriliş tarihinden önce olamaz.";
+      if (odemeTarihi > bugun) return "Ödeme tarihi bugünden ileri olamaz.";
+      return "";
     }
 
     function cariHareketDuzenlemeyiIptalEt() {
@@ -5257,7 +5274,8 @@
             const durum = document.getElementById("cek-durum").value;
             const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
             if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-            if (durum === "Ödendi" && !tarihGecerliMi(odemeTarihi)) { mesaj.textContent = "Ödenen çek için geçerli bir ödeme tarihi seçin."; return; }
+            const odemeTarihiHatasi = durum === "Ödendi" ? cekOdemeTarihiDogrulamaMesaji(tarih, odemeTarihi) : "";
+            if (odemeTarihiHatasi) { mesaj.textContent = odemeTarihiHatasi; return; }
             guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
           } else {
             const yontem = document.getElementById("odeme-yontem").value.trim();
@@ -5303,7 +5321,8 @@
           const durum = document.getElementById("cek-durum").value;
           const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
           if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-          if (durum === "Ödendi" && !tarihGecerliMi(odemeTarihi)) { mesaj.textContent = "Ödenen çek için geçerli bir ödeme tarihi seçin."; return; }
+          const odemeTarihiHatasi = durum === "Ödendi" ? cekOdemeTarihiDogrulamaMesaji(tarih, odemeTarihi) : "";
+          if (odemeTarihiHatasi) { mesaj.textContent = odemeTarihiHatasi; return; }
           const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, kayitZamani });
           const benzerCek = benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler);
           if (benzerCek && !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
