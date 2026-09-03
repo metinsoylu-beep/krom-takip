@@ -83,17 +83,19 @@ const cekTarihiRaporu = context.veriKontrolRaporuOlustur(
     { id:"cek-1", cari:"Firma A", cekNo:"CHK-1", tarih:"2026-08-01", vadeTarihi:"2026-09-01", tutar:100, durum:"Ödendi", odemeTarihi:"" },
     { id:"cek-2", cari:"Firma B", cekNo:"CHK-2", tarih:"2026-08-10", vadeTarihi:"2026-09-10", tutar:200, durum:"Ödendi", odemeTarihi:"2026-08-09" },
     { id:"cek-3", cari:"Firma C", cekNo:"CHK-3", tarih:"2026-08-15", vadeTarihi:"2026-09-15", tutar:300, durum:"Ödendi", odemeTarihi:"2026-09-04" },
-    { id:"cek-4", cari:"Firma D", cekNo:"CHK-4", tarih:"2026-08-20", vadeTarihi:"2026-09-20", tutar:400, durum:"Ödendi", odemeTarihi:"2026-09-03" }
+    { id:"cek-4", cari:"Firma D", cekNo:"CHK-4", tarih:"2026-08-20", vadeTarihi:"2026-09-20", tutar:400, durum:"Ödendi", odemeTarihi:"2026-09-03" },
+    { id:"cek-5", cari:"Firma E", cekNo:"CHK-5", tarih:"2026-09-02", vadeTarihi:"2026-09-01", tutar:500, durum:"Verildi", odemeTarihi:"" }
   ],
   new Date(2026, 8, 3, 12, 0, 0, 0)
 );
-assert.equal(cekTarihiRaporu.cekTarihiSorunuSayisi, 3, "Eksik, erken ve gelecek çek ödeme tarihleri raporlanmalı");
+assert.equal(cekTarihiRaporu.cekTarihiSorunuSayisi, 4, "Ödeme ve vade tarihi sorunları raporlanmalı");
 assert.equal(cekTarihiRaporu.cekTarihiSorunlari[0].id, "cek-1", "Düzeltme bağlantısı için sorunlu çek kimliği korunmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-1.*ödeme tarihi eksik/, "Eksik ödeme tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-2.*veriliş tarihinden önce/, "Erken ödeme tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-3.*bugünden ileri/, "Gelecek ödeme tarihli çek açıklanmalı");
+assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-5.*vade tarihi veriliş tarihinden önce/, "Erken vade tarihli çek açıklanmalı");
 
-assert.match(index, /id="kontrol-cek-tarihi"/, "Çek ödeme tarihi kontrol sayacı bulunmalı");
+assert.match(index, /id="kontrol-cek-tarihi"/, "Çek tarihleri kontrol sayacı bulunmalı");
 assert.match(index, /className = "veri-kontrol-duzelt yalnizca-yonetici"/, "Çek tarihi uyarısında yönetici düzeltme düğmesi bulunmalı");
 assert.match(index, /function veriKontrolCekiniDuzelt\(kimlik\)/, "Düzeltme düğmesi ilgili çek formunu açmalı");
 assert.match(index, /cariHareketDuzenlemeyiBaslat\("cek", kimlik\)/, "Sorunlu çek doğrudan düzenlenebilmeli");

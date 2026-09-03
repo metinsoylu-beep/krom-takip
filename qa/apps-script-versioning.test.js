@@ -165,6 +165,8 @@ assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01",
 assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-02", odemeTarihi:"2026-09-01" }, "2026-09-03"), "Çek ödeme tarihi veriliş tarihinden önce olamaz.");
 assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-04" }, "2026-09-03"), "Çek ödeme tarihi bugünden ileri olamaz.");
 assert.equal(context.cekOdemeTarihiHatasi({ durum:"Ödendi", tarih:"2026-09-01", odemeTarihi:"2026-09-03" }, "2026-09-03"), "");
+assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-09-01" }), "Çek vade tarihi veriliş tarihinden önce olamaz.");
+assert.equal(context.cekVadeTarihiHatasi({ tarih:"2026-09-02", vadeTarihi:"2026-10-01" }), "");
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
@@ -338,6 +340,18 @@ const gecersizTarihReddedildi = post({
 });
 assert.equal(gecersizTarihReddedildi.code,"INVALID_CHECK_SETTLEMENT_DATE","Yeni ödenmiş çek geçerli ödeme tarihi olmadan kaydedilmemeli");
 assert.equal(gecersizTarihReddedildi.revision,3,"Geçersiz çek tarihi veri sürümünü değiştirmemeli");
+const gecersizVadeliCek = { id:"c-invalid-due", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-09-02", tutar:90, cekNo:"CHK-DUE", banka:"Test Bank", durum:"Verildi" };
+const gecersizVadeReddedildi = post({
+  action:"save",
+  baseRevision:3,
+  requestId:"request-invalid-check-due",
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:[...eskiOnYuzOkumasi.cekler,gecersizVadeliCek],
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(gecersizVadeReddedildi.code,"INVALID_CHECK_DUE_DATE","Çek vadesi veriliş tarihinden önce kaydedilmemeli");
+assert.equal(gecersizVadeReddedildi.revision,3,"Geçersiz çek vadesi veri sürümünü değiştirmemeli");
 
 assert.match(index, /firebase-auth-compat/);
 assert.match(index, /cariHareketler/);

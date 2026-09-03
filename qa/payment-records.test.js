@@ -73,6 +73,8 @@ assert.match(index, /id="cek-odeme-tarihi"/, "Ödenen çek için ödeme tarihi a
 assert.match(index, /function cekOdemeTarihiDogrulamaMesaji\(/, "Çek ödeme tarihi sınırları doğrulanmalı");
 assert.match(index, /Ödeme tarihi çekin veriliş tarihinden önce olamaz/, "Veriliş öncesi ödeme tarihi engellenmeli");
 assert.match(index, /Ödeme tarihi bugünden ileri olamaz/, "Gelecek ödeme tarihi engellenmeli");
+assert.match(index, /function cekVadeTarihiDogrulamaMesaji\(/, "Çek vade tarihi sınırları doğrulanmalı");
+assert.match(index, /Çek vade tarihi veriliş tarihinden önce olamaz/, "Veriliş öncesi çek vadesi engellenmeli");
 assert.match(index, /function cekDurumunuDegistir\(/, "Çek durumu güncellenebilmeli");
 assert.match(index, /id="cari-hareket-iptal-overlay"/, "Silme yerine nedenli iptal penceresi bulunmalı");
 assert.match(index, /function cariHareketIptaliniOnayla\(/, "Cari hareket iptali desteklenmeli");
@@ -99,5 +101,6 @@ assert.match(code, /checkSheet\.getRange/);
 assert.match(code, /"İptal Öncesi Durum"/, "Çeklerin iptal öncesi durumu Google Sheets'te saklanmalı");
 assert.match(code, /"Ödeme Tarihi"/, "Çek ödeme tarihi Google Sheets'te saklanmalı");
 assert.match(code, /code:"INVALID_CHECK_SETTLEMENT_DATE"/, "Geçersiz yeni çek ödeme tarihi sunucuda reddedilmeli");
+assert.match(code, /code:"INVALID_CHECK_DUE_DATE"/, "Geçersiz yeni çek vadesi sunucuda reddedilmeli");
 
 console.log("Cari ödeme, alacak bakiyesi ve çek hareketi testleri başarılı.");

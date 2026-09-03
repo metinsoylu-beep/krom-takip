@@ -1966,7 +1966,7 @@
                 <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
-                <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK ÖDEME TARİHİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK TARİHLERİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
               </div>
               <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
@@ -2343,6 +2343,11 @@
         if (e?.code === "INVALID_CHECK_SETTLEMENT_DATE") {
           syncGoster("Geçersiz çek ödeme tarihi · Değişiklik kaydedilmedi", "#ef4444");
           alert(e.message || "Ödenmiş çekin ödeme tarihini kontrol edin.");
+          return false;
+        }
+        if (e?.code === "INVALID_CHECK_DUE_DATE") {
+          syncGoster("Geçersiz çek vade tarihi · Değişiklik kaydedilmedi", "#ef4444");
+          alert(e.message || "Çekin veriliş ve vade tarihlerini kontrol edin.");
           return false;
         }
         syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
@@ -3075,6 +3080,13 @@
           cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: ödeme tarihi veriliş tarihinden önce` });
         } else if (odemeTarihi > bugun) {
           cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: ödeme tarihi bugünden ileri` });
+        }
+      });
+      cekler.filter(cek => cek?.durum !== "İptal").forEach(cek => {
+        if (!tarihGecerliMi(cek.tarih) || !tarihGecerliMi(cek.vadeTarihi)) return;
+        if (cek.vadeTarihi < cek.tarih) {
+          const etiket = String(cek.cekNo || cek.cari || "Numarası belirtilmeyen çek").slice(0, 60);
+          cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: vade tarihi veriliş tarihinden önce` });
         }
       });
 
@@ -5030,6 +5042,7 @@
       const odendiMi = cekMi && document.getElementById("cek-durum")?.value === "Ödendi";
       const alan = document.getElementById("cek-odeme-tarihi-alani");
       const tarih = document.getElementById("cek-odeme-tarihi");
+      const vadeTarihi = document.getElementById("cek-vade");
       const islemTarihi = document.getElementById("odeme-tarih")?.value || "";
       if (alan) alan.hidden = !odendiMi;
       if (tarih && !odendiMi) tarih.value = "";
@@ -5037,6 +5050,7 @@
         tarih.min = tarihGecerliMi(islemTarihi) ? islemTarihi : "";
         tarih.max = bugununTarihi();
       }
+      if (vadeTarihi) vadeTarihi.min = tarihGecerliMi(islemTarihi) ? islemTarihi : "";
       if (tarih && odendiMi && kullaniciDegisikligi && !tarih.value) tarih.value = bugununTarihi();
     }
 
@@ -5044,6 +5058,12 @@
       if (!tarihGecerliMi(odemeTarihi)) return "Ödenen çek için geçerli bir ödeme tarihi seçin.";
       if (tarihGecerliMi(verilisTarihi) && odemeTarihi < verilisTarihi) return "Ödeme tarihi çekin veriliş tarihinden önce olamaz.";
       if (odemeTarihi > bugun) return "Ödeme tarihi bugünden ileri olamaz.";
+      return "";
+    }
+
+    function cekVadeTarihiDogrulamaMesaji(verilisTarihi, vadeTarihi) {
+      if (!tarihGecerliMi(vadeTarihi)) return "Geçerli bir çek vade tarihi seçin.";
+      if (tarihGecerliMi(verilisTarihi) && vadeTarihi < verilisTarihi) return "Çek vade tarihi veriliş tarihinden önce olamaz.";
       return "";
     }
 
@@ -5302,7 +5322,9 @@
             const vadeTarihi = document.getElementById("cek-vade").value;
             const durum = document.getElementById("cek-durum").value;
             const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
-            if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
+            if (!cekNo || !banka) { mesaj.textContent = "Çek numarası ve banka zorunludur."; return; }
+            const vadeTarihiHatasi = cekVadeTarihiDogrulamaMesaji(tarih, vadeTarihi);
+            if (vadeTarihiHatasi) { mesaj.textContent = vadeTarihiHatasi; return; }
             const odemeTarihiHatasi = durum === "Ödendi" ? cekOdemeTarihiDogrulamaMesaji(tarih, odemeTarihi) : "";
             if (odemeTarihiHatasi) { mesaj.textContent = odemeTarihiHatasi; return; }
             guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
@@ -5349,7 +5371,9 @@
           const vadeTarihi = document.getElementById("cek-vade").value;
           const durum = document.getElementById("cek-durum").value;
           const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
-          if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
+          if (!cekNo || !banka) { mesaj.textContent = "Çek numarası ve banka zorunludur."; return; }
+          const vadeTarihiHatasi = cekVadeTarihiDogrulamaMesaji(tarih, vadeTarihi);
+          if (vadeTarihiHatasi) { mesaj.textContent = vadeTarihiHatasi; return; }
           const odemeTarihiHatasi = durum === "Ödendi" ? cekOdemeTarihiDogrulamaMesaji(tarih, odemeTarihi) : "";
           if (odemeTarihiHatasi) { mesaj.textContent = odemeTarihiHatasi; return; }
           const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, kayitZamani });

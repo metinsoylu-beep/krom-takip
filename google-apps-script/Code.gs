@@ -949,6 +949,31 @@ function cekOdemeTarihiHatasi(cek, bugunMetni) {
   return "";
 }
 
+function cekVadeTarihiHatasi(cek) {
+  const verilisTarihi = tarihMetni(cek && (cek.tarih || cek.verilisTarihi));
+  const vadeTarihi = tarihMetni(cek && (cek.vadeTarihi || cek.vade));
+  if (!isoTarihGecerliMi(verilisTarihi)) return "Çek veriliş tarihi eksik veya geçersiz.";
+  if (!isoTarihGecerliMi(vadeTarihi)) return "Çek vade tarihi eksik veya geçersiz.";
+  if (vadeTarihi < verilisTarihi) return "Çek vade tarihi veriliş tarihinden önce olamaz.";
+  return "";
+}
+
+function yeniGecersizCekVadeleriniBul(oncekiListe, yeniListe) {
+  const oncekiKimlikler = {};
+  (Array.isArray(oncekiListe) ? oncekiListe : []).forEach(function(cek) {
+    oncekiKimlikler[String(cek && cek.id || "")] = cek;
+  });
+  return (Array.isArray(yeniListe) ? yeniListe : []).map(function(cek) {
+    const kimlik = String(cek && (cek.id || cek.cekId) || "");
+    const onceki = oncekiKimlikler[kimlik];
+    const verilisTarihi = tarihMetni(cek && (cek.tarih || cek.verilisTarihi));
+    const vadeTarihi = tarihMetni(cek && (cek.vadeTarihi || cek.vade));
+    const tarihDegisti = !onceki || tarihMetni(onceki.tarih) !== verilisTarihi || tarihMetni(onceki.vadeTarihi) !== vadeTarihi;
+    const mesaj = tarihDegisti ? cekVadeTarihiHatasi(cek) : "";
+    return mesaj ? { id:kimlik, cekNo:String(cek && cek.cekNo || ""), mesaj:mesaj } : null;
+  }).filter(Boolean);
+}
+
 function yeniGecersizCekOdemeTarihleriniBul(oncekiListe, yeniListe, bugunMetni) {
   const oncekiKimlikler = {};
   (Array.isArray(oncekiListe) ? oncekiListe : []).forEach(function(cek) {
@@ -1500,8 +1525,9 @@ function doPost(e) {
     if (!gecisTamamlandi && !cariHareketler.length && eskiCariHareketler.length) {
       cariHareketler = eskiCariHareketler;
     }
-    const cekler = Object.prototype.hasOwnProperty.call(payload, "cekler")
-      ? cekleriNormallestir(payload.cekler)
+    const gelenCekler = Object.prototype.hasOwnProperty.call(payload, "cekler") ? payload.cekler : null;
+    const cekler = gelenCekler !== null
+      ? cekleriNormallestir(gelenCekler)
       : cekVerileriniOku();
     const mevcutCariler = cariKartVerileriniOku() || [];
     const cariler = cariKartlariniTamamla(
@@ -1533,6 +1559,18 @@ function doPost(e) {
         revision: mevcutSurum,
         requestId: requestId,
         message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
+    const gecersizCekVadeleri = gelenCekler !== null ? yeniGecersizCekVadeleriniBul(oncekiDurum.cekler, gelenCekler) : [];
+    if (gecersizCekVadeleri.length) {
+      const sorun = gecersizCekVadeleri[0];
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_CHECK_DUE_DATE",
+        revision:mevcutSurum,
+        requestId:requestId,
+        message:(sorun.cekNo ? sorun.cekNo + ": " : "") + sorun.mesaj
       });
     }
 
