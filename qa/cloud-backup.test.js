@@ -20,6 +20,10 @@ assert.match(index, /id="bulut-yedekleri-btn"[^>]*class="yalnizca-yonetici"/, "B
 assert.match(index, /id="bulut-yedekleri-overlay"/, "Bulut yedekleri paneli bulunmalı");
 assert.match(index, /action:"backups\.list", limit:20/, "Ön yüz son 20 merkezi yedeği istemeli");
 assert.match(index, /id="bulut-yedegi-olustur"/, "Bulut yedekleri panelinde manuel yedek düğmesi bulunmalı");
+assert.match(index, /id="bulut-yedek-adi"[^>]+maxlength="80"/, "Manuel kurtarma noktasına açıklayıcı ad verilebilmeli");
+assert.match(index, /action:"backups\.create", aciklama:yedekAdi/, "Yedek adı sunucuya gönderilmeli");
+assert.match(code, /const yedekAdi = String\(payload\.aciklama \|\| ""\).*slice\(0, 80\)/, "Sunucu yedek adını temizleyip sınırlamalı");
+assert.match(code, /"Manuel yedek · " \+ yedekAdi/, "Özel ad manuel yedek açıklamasında saklanmalı");
 assert.match(index, /id="bulut-yedek-arama"/, "Bulut yedeklerinde arama yapılabilmeli");
 assert.match(index, /id="bulut-yedek-tur"/, "Manuel ve otomatik yedekler filtrelenebilmeli");
 assert.match(index, /YEDEK İÇERİĞİ/, "Yedek kartı içerdiği kayıtların özetini göstermeli");

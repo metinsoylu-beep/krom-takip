@@ -1236,18 +1236,24 @@ function doPost(e) {
       }
       if (payload.action === "backups.create") {
         const mevcutDurum = faturaVerileriniOku();
+        const yedekAdi = String(payload.aciklama || "").replace(/\s+/g, " ").trim().slice(0, 80);
+        const yedekAciklamasi = yedekAdi
+          ? "Manuel yedek · " + yedekAdi
+          : "Yönetici tarafından manuel güvenlik yedeği";
         try {
           const yedekId = bulutYedegiKaydet(mevcutDurum, {
             kullanici:yetki.email,
             revision:mevcutDurum.revision,
-            aciklama:"Yönetici tarafından manuel güvenlik yedeği"
+            aciklama:yedekAciklamasi
           });
           try {
             islemGecmisiKaydet({
               kullanici:yetki.email,
               islem:"Manuel bulut yedeği oluşturuldu",
               varlik:"Muhasebe kayıtları",
-              aciklama:"Mevcut fatura, cari, ödeme ve çek verileri merkezi yedeğe alındı.",
+              aciklama:yedekAdi
+                ? "“" + yedekAdi + "” adlı kurtarma noktası oluşturuldu."
+                : "Mevcut fatura, cari, ödeme ve çek verileri merkezi yedeğe alındı.",
               revision:mevcutDurum.revision
             });
           } catch (logHatasi) {
