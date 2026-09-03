@@ -88,11 +88,15 @@ const cekTarihiRaporu = context.veriKontrolRaporuOlustur(
   new Date(2026, 8, 3, 12, 0, 0, 0)
 );
 assert.equal(cekTarihiRaporu.cekTarihiSorunuSayisi, 3, "Eksik, erken ve gelecek çek ödeme tarihleri raporlanmalı");
+assert.equal(cekTarihiRaporu.cekTarihiSorunlari[0].id, "cek-1", "Düzeltme bağlantısı için sorunlu çek kimliği korunmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-1.*ödeme tarihi eksik/, "Eksik ödeme tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-2.*veriliş tarihinden önce/, "Erken ödeme tarihli çek açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-3.*bugünden ileri/, "Gelecek ödeme tarihli çek açıklanmalı");
 
 assert.match(index, /id="kontrol-cek-tarihi"/, "Çek ödeme tarihi kontrol sayacı bulunmalı");
+assert.match(index, /className = "veri-kontrol-duzelt yalnizca-yonetici"/, "Çek tarihi uyarısında yönetici düzeltme düğmesi bulunmalı");
+assert.match(index, /function veriKontrolCekiniDuzelt\(kimlik\)/, "Düzeltme düğmesi ilgili çek formunu açmalı");
+assert.match(index, /cariHareketDuzenlemeyiBaslat\("cek", kimlik\)/, "Sorunlu çek doğrudan düzenlenebilmeli");
 assert.match(index, /Bu merkez yalnızca denetler; hiçbir kaydı otomatik değiştirmez\./);
 const listeKonumu = index.indexOf('id="liste"');
 const kontrolKonumu = index.indexOf('class="sayfa-sonu-kontroller"');

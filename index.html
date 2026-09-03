@@ -922,6 +922,13 @@
     .veri-kontrol-sorunlar li { display: flex; align-items: flex-start; gap: 7px; color: #b9c5d1; font-size: 10px; line-height: 1.4; }
     .veri-kontrol-sorunlar i { margin-top: 2px; color: #f59e0b; font-size: 9px; }
     .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
+    .veri-kontrol-sorunlar li > span { flex: 1; min-width: 0; }
+    .veri-kontrol-duzelt {
+      flex: 0 0 auto; min-height: 26px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px;
+      border: 1px solid #f3be3e66; border-radius: 6px; background: #f3be3e12; color: #f6c95c;
+      font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .veri-kontrol-duzelt:hover { background: #f3be3e24; }
     .veri-kontrol-not { margin-top: 8px; color: #718398; font-size: 9px; }
 
     .depolama-sagligi-panel { border-left-color: #2dd4bf; }
@@ -3004,7 +3011,7 @@
       const hareketler = Array.isArray(hareketListesi) ? hareketListesi : cariHareketleriYukle();
       const cekler = Array.isArray(cekListesi) ? cekListesi : cekleriYukle();
       const gecersizAciklamalar = [];
-      const cekTarihiAciklamalari = [];
+      const cekTarihiSorunlari = [];
       const yinelenenSatirlar = new Set();
       const gorulenId = new Map();
       const gorulenImza = new Map();
@@ -3059,15 +3066,15 @@
       cekler.filter(cek => cek?.durum === "Ödendi").forEach(cek => {
         const etiket = String(cek.cekNo || cek.cari || "Numarası belirtilmeyen çek").slice(0, 60);
         if (!tarihGecerliMi(cek.odemeTarihi)) {
-          cekTarihiAciklamalari.push(`“${etiket}”: ödenmiş çekin ödeme tarihi eksik`);
+          cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: ödenmiş çekin ödeme tarihi eksik` });
           return;
         }
         const odemeTarihi = tarihOlusturYerel(cek.odemeTarihi);
         const verilisTarihi = tarihGecerliMi(cek.tarih) ? tarihOlusturYerel(cek.tarih) : null;
         if (verilisTarihi && odemeTarihi < verilisTarihi) {
-          cekTarihiAciklamalari.push(`“${etiket}”: ödeme tarihi veriliş tarihinden önce`);
+          cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: ödeme tarihi veriliş tarihinden önce` });
         } else if (odemeTarihi > bugun) {
-          cekTarihiAciklamalari.push(`“${etiket}”: ödeme tarihi bugünden ileri`);
+          cekTarihiSorunlari.push({ id:String(cek.id || ""), metin:`“${etiket}”: ödeme tarihi bugünden ileri` });
         }
       });
 
@@ -3099,19 +3106,20 @@
         const etiket = ilk.cari ? `${ilk.cari.slice(0, 45)} · ${ilk.no.slice(0, 45)}` : ilk.no.slice(0, 60);
         mesajlar.push(`“${etiket}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
       });
-      cekTarihiAciklamalari.forEach(metin => mesajlar.push(`Kontrol gerekli: ${metin}`));
+      cekTarihiSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       if (!toplamlarDogru) {
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
       }
 
       const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size +
-        ayniNumaraGruplari.length + cekTarihiAciklamalari.length + (toplamlarDogru ? 0 : 1);
+        ayniNumaraGruplari.length + cekTarihiSorunlari.length + (toplamlarDogru ? 0 : 1);
       return {
         kayitSayisi: gecerliKayitlar.length,
         gecersizSayisi: gecersizAciklamalar.length,
         yinelenenSayisi: yinelenenSatirlar.size,
         ayniNumaraSayisi: ayniNumaraGruplari.length,
-        cekTarihiSorunuSayisi: cekTarihiAciklamalari.length,
+        cekTarihiSorunuSayisi: cekTarihiSorunlari.length,
+        cekTarihiSorunlari,
         toplamlarDogru,
         uyariSayisi,
         mesajlar
@@ -3161,6 +3169,16 @@
         const yazi = document.createElement("span");
         yazi.textContent = metin;
         satir.append(ikon, yazi);
+        const cekSorunu = rapor.cekTarihiSorunlari.find(sorun => `Kontrol gerekli: ${sorun.metin}` === metin);
+        if (cekSorunu && yoneticiMi()) {
+          const duzelt = document.createElement("button");
+          duzelt.type = "button";
+          duzelt.className = "veri-kontrol-duzelt yalnizca-yonetici";
+          duzelt.innerHTML = '<i class="fa-solid fa-pen" aria-hidden="true"></i> Düzelt';
+          duzelt.setAttribute("aria-label", `${cekSorunu.metin} kaydını düzelt`);
+          duzelt.addEventListener("click", () => veriKontrolCekiniDuzelt(cekSorunu.id));
+          satir.appendChild(duzelt);
+        }
         sorunListesi.appendChild(satir);
       });
       if (rapor.mesajlar.length > 8) {
@@ -3181,6 +3199,17 @@
       const acilacak = dugme.getAttribute("aria-expanded") !== "true";
       dugme.setAttribute("aria-expanded", String(acilacak));
       detay.hidden = !acilacak;
+    }
+
+    function veriKontrolCekiniDuzelt(kimlik) {
+      if (!yoneticiGerekli()) return;
+      const cek = cekleriYukle().find(kayit => kayit.id === kimlik && kayit.durum === "Ödendi");
+      if (!cek) {
+        syncGoster("Çek kaydı değişmiş veya artık bulunamıyor", "#f59e0b");
+        veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
+        return;
+      }
+      cariHareketDuzenlemeyiBaslat("cek", kimlik);
     }
 
     function depolamaSayisiniFormatla(deger) {
