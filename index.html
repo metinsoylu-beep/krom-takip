@@ -578,6 +578,12 @@
     .cari-hesap-tablo .bakiye-kapali { color: #94a3b8; font-weight: 750; }
     .cek-takip-kart { width: min(1180px,100%); max-width: 1180px; border-top-color: #a78bfa; }
     .cek-takip-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
+    .cek-takip-ust-islemler { display: flex; align-items: center; gap: 8px; }
+    .cek-takip-csv {
+      min-height: 34px; padding: 7px 11px; border: 1px solid #a78bfa66; border-radius: 7px;
+      background: #a78bfa14; color: #d8ccff; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .cek-takip-csv:hover { background: #a78bfa24; }
     .cek-takip-filtreler {
       display: grid; grid-template-columns: minmax(240px,1fr) 190px; gap: 10px;
       padding: 13px 18px; background: #0a1a2b; border-bottom: 1px solid var(--cizgi-yumusak);
@@ -1124,6 +1130,7 @@
       .cek-takip-filtreler, .cek-takip-ozetler { grid-template-columns: 1fr; padding: 12px; }
       .cek-takip-ozetler { padding-bottom: 0; }
       .cek-takip-tablo-wrap { margin: 12px; }
+      .cek-takip-csv span { display: none; }
       .cari-ekstre-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .cari-ekstre-toolbar { align-items: flex-start; flex-direction: column; }
       .cari-ekstre-toolbar-islem { width: 100%; }
@@ -1382,7 +1389,10 @@
           <h2 class="odeme-yonetim-baslik" id="cek-takip-baslik"><i class="fa-solid fa-money-check" aria-hidden="true"></i> Çek Takip Merkezi</h2>
           <p class="odeme-yonetim-alt">Verilen çekleri vade tarihine göre izleyin; ödenen ve iptal edilen kayıtları geçmişiyle koruyun.</p>
         </div>
-        <button class="modal-kapat" type="button" onclick="cekTakibiniKapat()" aria-label="Çek takip merkezini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <div class="cek-takip-ust-islemler">
+          <button class="cek-takip-csv yalnizca-yonetici" type="button" onclick="cekTakipCsvIndir()" title="Filtrelenen çekleri CSV olarak indir"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> <span>CSV İndir</span></button>
+          <button class="modal-kapat" type="button" onclick="cekTakibiniKapat()" aria-label="Çek takip merkezini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
       </div>
       <div class="cek-takip-filtreler">
         <input id="cek-takip-arama" type="search" placeholder="Cari, çek no veya banka ara" oninput="cekTakibiniGoster()" aria-label="Çeklerde ara"/>
@@ -4673,6 +4683,60 @@
       return true;
     }
 
+    function cekTakipListesiniHazirla(cekler, arama="", filtre="tumu", referans=new Date()) {
+      const durumSirasi = { gecikmis:0, bekliyor:1, odendi:2, iptal:3 };
+      return (Array.isArray(cekler) ? [...cekler] : [])
+        .filter(cek => cekTakipFiltresineUyar(cek, arama, filtre, referans))
+        .sort((a,b) => {
+          const aBilgi = cekTakipDurumBilgisi(a, referans);
+          const bBilgi = cekTakipDurumBilgisi(b, referans);
+          return durumSirasi[aBilgi.sinif] - durumSirasi[bBilgi.sinif]
+            || tarihOlusturYerel(a.vadeTarihi) - tarihOlusturYerel(b.vadeTarihi)
+            || String(a.cari || "").localeCompare(String(b.cari || ""), "tr", { sensitivity:"base" });
+        });
+    }
+
+    function cekTakipCsvIcerigiOlustur(liste, referans=new Date()) {
+      const basliklar = ["Cari/Firma","Çek No","Banka","Veriliş Tarihi","Vade Tarihi","Tutar (TL)","Kayıt Durumu","Vade Durumu","Referans","Açıklama"];
+      const satirlar = (Array.isArray(liste) ? liste : []).map(cek => {
+        const bilgi = cekTakipDurumBilgisi(cek, referans);
+        return [
+          cek.cari || "Belirtilmedi",
+          cek.cekNo || "",
+          cek.banka || "",
+          cek.tarih || "",
+          cek.vadeTarihi || "",
+          tutarSayiyaCevir(cek.tutar).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
+          cek.durum || "Verildi",
+          bilgi.etiket,
+          cek.referans || "",
+          cek.aciklama || ""
+        ].map(csvHucre).join(";");
+      });
+      return "\uFEFF" + [basliklar.map(csvHucre).join(";"), ...satirlar].join("\r\n");
+    }
+
+    function cekTakipCsvIndir() {
+      if (!yoneticiGerekli()) return;
+      const arama = document.getElementById("cek-takip-arama")?.value || "";
+      const filtre = document.getElementById("cek-takip-durum")?.value || "tumu";
+      const liste = cekTakipListesiniHazirla(cekleriYukle(), arama, filtre);
+      if (!liste.length) {
+        syncGoster("İndirilecek çek kaydı bulunamadı", "#f59e0b");
+        return;
+      }
+      const icerik = cekTakipCsvIcerigiOlustur(liste);
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-cek-raporu-${bugununTarihi()}.csv`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      setTimeout(() => URL.revokeObjectURL(adres), 1000);
+      syncGoster(`${liste.length} çek CSV raporuna aktarıldı`, "#4ade80");
+    }
+
     function cekTakibiniAc() {
       document.getElementById("cek-takip-overlay")?.classList.add("aktif");
       cekTakibiniGoster();
@@ -4698,16 +4762,7 @@
       document.getElementById("cek-takip-bu-ay").textContent = `${ozet.buAy.sayi} · ${formatPara(ozet.buAy.tutar)}`;
       const arama = document.getElementById("cek-takip-arama")?.value || "";
       const filtre = document.getElementById("cek-takip-durum")?.value || "tumu";
-      const durumSirasi = { gecikmis:0, bekliyor:1, odendi:2, iptal:3 };
-      const liste = tumCekler
-        .filter(cek => cekTakipFiltresineUyar(cek, arama, filtre))
-        .sort((a,b) => {
-          const aBilgi = cekTakipDurumBilgisi(a);
-          const bBilgi = cekTakipDurumBilgisi(b);
-          return durumSirasi[aBilgi.sinif] - durumSirasi[bBilgi.sinif]
-            || tarihOlusturYerel(a.vadeTarihi) - tarihOlusturYerel(b.vadeTarihi)
-            || String(a.cari || "").localeCompare(String(b.cari || ""), "tr", { sensitivity:"base" });
-        });
+      const liste = cekTakipListesiniHazirla(tumCekler, arama, filtre);
       if (!liste.length) {
         tablo.innerHTML = '<div class="cek-takip-bos"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i><br>Bu seçime uyan çek kaydı bulunamadı.</div>';
         return;

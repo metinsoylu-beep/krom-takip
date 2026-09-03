@@ -28,6 +28,11 @@ const context = {
   Math,
   tarihOlusturYerel,
   bugununTarihi,
+  csvHucre: deger => {
+    let metin = String(deger ?? "");
+    if (/^[=+\-@]/.test(metin)) metin = "'" + metin;
+    return `"${metin.replace(/"/g, '""')}"`;
+  },
   tutarSayiyaCevir: Number,
   cekleriYukle: () => []
 };
@@ -64,9 +69,29 @@ assert.equal(context.cekTakipFiltresineUyar(cekler[0], "krom", "gecikmis", refer
 assert.equal(context.cekTakipFiltresineUyar(cekler[3], "", "bekleyen", referans), false);
 assert.equal(context.cekTakipFiltresineUyar(cekler[4], "iptal", "iptal", referans), true);
 
+assert.deepEqual(
+  JSON.parse(JSON.stringify(context.cekTakipListesiniHazirla(cekler, "", "tumu", referans).map(cek => cek.id))),
+  ["1","2","3","6","4","5"],
+  "Çekler önce vade durumu, sonra yaklaşan vade tarihine göre sıralanmalı"
+);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(context.cekTakipListesiniHazirla(cekler, "bank", "bekleyen", referans).map(cek => cek.id))),
+  ["1","2","3","6"],
+  "CSV ve tablo aynı arama/durum filtrelerini kullanmalı"
+);
+
+const csv = context.cekTakipCsvIcerigiOlustur([
+  { ...cekler[0], referans:"=HYPERLINK(\"risk\")", aciklama:"Kontrol" }
+], referans);
+assert.ok(csv.startsWith("\uFEFF"), "CSV Excel uyumluluğu için BOM ile başlamalı");
+assert.match(csv, /"Cari\/Firma";"Çek No";"Banka"/, "CSV başlıkları bulunmalı");
+assert.match(csv, /"Vadesi 2 gün geçti"/, "CSV vade durumunu içermeli");
+assert.match(csv, /"'=HYPERLINK\(""risk""\)"/, "CSV formül enjeksiyonunu engellemeli");
+
 assert.match(index, /id="cek-takip-overlay"/, "Çek Takip Merkezi penceresi bulunmalı");
 assert.match(index, /onclick="cekTakibiniAc\(\)"/, "Bekleyen çek kartı takip merkezini açmalı");
 assert.match(index, /yoneticiMi\(\)[\s\S]*cek-takip-durum-sec/, "Durum değiştirme alanı yalnız yöneticiye sunulmalı");
 assert.match(index, /cariHareketIptaliniGeriAl\('cek'/, "İptal edilmiş çek geri alınabilmeli");
+assert.match(index, /class="cek-takip-csv yalnizca-yonetici"[\s\S]*onclick="cekTakipCsvIndir\(\)"/, "CSV indirme yalnız yöneticiye sunulmalı");
 
 console.log("Çek Takip Merkezi hesaplama ve arayüz testleri başarılı.");
