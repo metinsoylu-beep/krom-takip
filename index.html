@@ -728,6 +728,32 @@
     .json-yedek-iptal { color: #9fb0c1; background: transparent; border: 1px solid var(--cizgi); }
     .json-yedek-uygula { color: #071827; background: #5eead4; border: 1px solid #5eead4; }
     .json-yedek-uygula:disabled { opacity: .55; cursor: wait; }
+    .yedek-karsilastirma-overlay { z-index: 1050; }
+    .yedek-karsilastirma-kart { max-width: 720px; padding: 0; overflow: hidden; border: 1px solid #f3be3e66; border-top: 3px solid #f3be3e; background: #0b1d2f; }
+    .yedek-karsilastirma-ust { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 17px 18px; border-bottom: 1px solid var(--cizgi-yumusak); }
+    .yedek-karsilastirma-baslik { color: #eef4fa; font: 700 17px Georgia,serif; }
+    .yedek-karsilastirma-baslik i { margin-right: 7px; color: #f6c95c; }
+    .yedek-karsilastirma-alt { margin-top: 5px; color: #8fa2b7; font-size: 10px; line-height: 1.45; }
+    .yedek-fark-basliklari, .yedek-fark-satir {
+      display: grid; grid-template-columns: minmax(130px,1.3fr) repeat(5,minmax(64px,.65fr)); align-items: center; gap: 8px;
+    }
+    .yedek-fark-basliklari { padding: 10px 18px 7px; color: #718398; font-size: 8px; text-align: center; }
+    .yedek-fark-basliklari span:first-child { text-align: left; }
+    .yedek-fark-listesi { display: grid; gap: 7px; padding: 0 18px; }
+    .yedek-fark-satir { padding: 10px; background: #071827; border: 1px solid var(--cizgi-yumusak); border-radius: 7px; }
+    .yedek-fark-satir strong { color: #dce6ef; font-size: 10px; }
+    .yedek-fark-satir span { color: #9fb0c1; font-size: 10px; text-align: center; }
+    .yedek-fark-satir .eklenen { color: #4ade80; }
+    .yedek-fark-satir .guncellenen { color: #60a5fa; }
+    .yedek-fark-satir .kaldirilan { color: #ff7a85; }
+    .yedek-fark-uyari { margin: 13px 18px 0; padding: 10px 12px; border-radius: 7px; color: #b6c4d2; background: #f3be3e0d; border: 1px solid #f3be3e35; font-size: 9px; line-height: 1.5; }
+    .yedek-fark-uyari i { margin-right: 6px; color: #f6c95c; }
+    .yedek-karsilastirma-islemler { display: flex; justify-content: flex-end; gap: 9px; padding: 14px 18px 18px; }
+    .yedek-karsilastirma-iptal, .yedek-karsilastirma-onay {
+      min-height: 38px; padding: 8px 15px; border-radius: 7px; font: 700 11px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .yedek-karsilastirma-iptal { color: #aebcca; background: transparent; border: 1px solid var(--cizgi); }
+    .yedek-karsilastirma-onay { color: #fff; background: #c92c3a; border: 1px solid #ff6370; }
     .hareket-tur { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
     .hareket-tur.borc { color: #ff6b77; }
     .hareket-tur.alacak { color: #4ade80; }
@@ -1027,6 +1053,11 @@
       .json-yedek-rozet { grid-column: 2; justify-self: start; }
       .json-yedek-sayilar { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .json-yedek-islemler { display: grid; grid-template-columns: 1fr 1fr; }
+      .yedek-karsilastirma-overlay { padding: 0; }
+      .yedek-karsilastirma-kart { min-height: 100vh; max-width: none; border-radius: 0; }
+      .yedek-fark-basliklari, .yedek-fark-satir { grid-template-columns: minmax(92px,1.25fr) repeat(3,minmax(45px,.55fr)); }
+      .yedek-fark-basliklari span:nth-child(2), .yedek-fark-basliklari span:nth-child(3), .yedek-fark-satir span:nth-child(2), .yedek-fark-satir span:nth-child(3) { display: none; }
+      .yedek-karsilastirma-islemler { display: grid; grid-template-columns: 1fr 1.35fr; }
       .bulut-yedegi-satir { grid-template-columns: 1fr 1fr; }
       .bulut-yedegi-aciklama, .bulut-yedegi-icerik, .bulut-yedegi-islemler { grid-column: 1 / -1; }
       .bulut-yedegi-islemler { justify-content: stretch; }
@@ -1374,6 +1405,26 @@
       </section>
       <div class="bulut-yedekleri-liste" id="bulut-yedekleri-liste" aria-live="polite">
         <div class="islem-gecmisi-bos">Bulut yedekleri yükleniyor…</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- YEDEK GERİ YÜKLEME ETKİ ANALİZİ -->
+  <div class="popup-overlay yedek-karsilastirma-overlay yalnizca-yonetici" id="yedek-karsilastirma-overlay">
+    <section class="popup-kutu yedek-karsilastirma-kart" role="dialog" aria-modal="true" aria-labelledby="yedek-karsilastirma-baslik">
+      <div class="yedek-karsilastirma-ust">
+        <div>
+          <h2 class="yedek-karsilastirma-baslik" id="yedek-karsilastirma-baslik"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Geri Yükleme Etki Analizi</h2>
+          <p class="yedek-karsilastirma-alt" id="yedek-karsilastirma-alt">Mevcut kayıtlar seçilen yedekle karşılaştırılıyor.</p>
+        </div>
+        <button class="modal-kapat" type="button" onclick="yedekKarsilastirmasiniKapat(false)" aria-label="Karşılaştırmayı kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <div class="yedek-fark-basliklari" aria-hidden="true"><span>KAYIT TÜRÜ</span><span>MEVCUT</span><span>YEDEKTE</span><span>EKLENECEK</span><span>DEĞİŞECEK</span><span>KALDIRILACAK</span></div>
+      <div class="yedek-fark-listesi" id="yedek-fark-listesi"></div>
+      <p class="yedek-fark-uyari" id="yedek-fark-uyari"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Mevcut veriler önce yeni bir güvenlik yedeğine alınacaktır.</p>
+      <div class="yedek-karsilastirma-islemler">
+        <button class="yedek-karsilastirma-iptal" type="button" onclick="yedekKarsilastirmasiniKapat(false)">Vazgeç</button>
+        <button class="yedek-karsilastirma-onay" type="button" onclick="yedekKarsilastirmasiniKapat(true)"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Geri Yüklemeyi Başlat</button>
       </div>
     </section>
   </div>
@@ -1847,6 +1898,7 @@
     ];
     let sonBulutYedekleri = [];
     let seciliJsonYedegi = null;
+    let yedekKarsilastirmaCozucu = null;
     let aktifRaporListesi = [];
     let aktifCariEkstresi = null;
     const seciliFaturaKimlikleri = new Set();
@@ -3216,6 +3268,69 @@
       document.getElementById("json-yedek-onizleme").hidden = false;
     }
 
+    function yedekKayitAnahtari(kayit, sira) {
+      const id = String(kayit?.id ?? "").trim();
+      return id || `sira-${sira}`;
+    }
+
+    function yedekListeFarki(mevcutListe, yedekListe) {
+      const mevcut = new Map((Array.isArray(mevcutListe) ? mevcutListe : []).map((kayit,sira) => [yedekKayitAnahtari(kayit,sira), JSON.stringify(kayit)]));
+      const yedek = new Map((Array.isArray(yedekListe) ? yedekListe : []).map((kayit,sira) => [yedekKayitAnahtari(kayit,sira), JSON.stringify(kayit)]));
+      let eklenecek = 0;
+      let guncellenecek = 0;
+      let kaldirilacak = 0;
+      yedek.forEach((deger,id) => {
+        if (!mevcut.has(id)) eklenecek++;
+        else if (mevcut.get(id) !== deger) guncellenecek++;
+      });
+      mevcut.forEach((deger,id) => { if (!yedek.has(id)) kaldirilacak++; });
+      return { mevcut:mevcut.size, yedekte:yedek.size, eklenecek, guncellenecek, kaldirilacak };
+    }
+
+    function yedekFarklariniHesapla(mevcutDurum, yedekDurum) {
+      const mevcut = {
+        items:faturalariTekillestir(mevcutDurum?.items).liste,
+        cariHareketler:cariHareketleriNormallestir(mevcutDurum?.cariHareketler),
+        cekler:cekleriNormallestir(mevcutDurum?.cekler),
+        cariler:cariKartlariniNormallestir(mevcutDurum?.cariler)
+      };
+      const hedef = {
+        items:faturalariTekillestir(yedekDurum?.items).liste,
+        cariHareketler:cariHareketleriNormallestir(yedekDurum?.cariHareketler),
+        cekler:cekleriNormallestir(yedekDurum?.cekler),
+        cariler:cariKartlariniNormallestir(yedekDurum?.cariler)
+      };
+      return [
+        { ad:"Faturalar", ...yedekListeFarki(mevcut.items, hedef.items) },
+        { ad:"Cari kartlar", ...yedekListeFarki(mevcut.cariler, hedef.cariler) },
+        { ad:"Ödemeler", ...yedekListeFarki(mevcut.cariHareketler, hedef.cariHareketler) },
+        { ad:"Çekler", ...yedekListeFarki(mevcut.cekler, hedef.cekler) }
+      ];
+    }
+
+    function yedekGeriYuklemeOnayiAl(yedekDurum, kaynakMetni) {
+      if (yedekKarsilastirmaCozucu) yedekKarsilastirmaCozucu(false);
+      const farklar = yedekFarklariniHesapla(uygulamaDurumuOlustur(), yedekDurum);
+      const toplamDegisiklik = farklar.reduce((toplam,satir) => toplam + satir.eklenecek + satir.guncellenecek + satir.kaldirilacak,0);
+      const toplamKaldirilacak = farklar.reduce((toplam,satir) => toplam + satir.kaldirilacak,0);
+      document.getElementById("yedek-karsilastirma-alt").textContent = `${kaynakMetni} · Geri yükleme öncesi mevcut kayıtlarla karşılaştırıldı.`;
+      document.getElementById("yedek-fark-listesi").innerHTML = farklar.map(satir => `<div class="yedek-fark-satir">
+        <strong>${htmlGuvenli(satir.ad)}</strong><span>${satir.mevcut}</span><span>${satir.yedekte}</span><span class="eklenen">+${satir.eklenecek}</span><span class="guncellenen">${satir.guncellenecek}</span><span class="kaldirilan">−${satir.kaldirilacak}</span>
+      </div>`).join("");
+      document.getElementById("yedek-fark-uyari").innerHTML = toplamDegisiklik
+        ? `<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Toplam ${toplamDegisiklik} kayıt etkilenecek${toplamKaldirilacak ? `; ${toplamKaldirilacak} mevcut kayıt yedekte bulunmadığı için kaldırılacak` : ""}. Mevcut veriler önce yeni bir güvenlik yedeğine alınacaktır.`
+        : '<i class="fa-solid fa-circle-check" aria-hidden="true"></i>Seçilen yedek ile mevcut kayıtlar aynı. Geri yükleme veri değişikliği oluşturmayacak.';
+      document.getElementById("yedek-karsilastirma-overlay").classList.add("aktif");
+      return new Promise(coz => { yedekKarsilastirmaCozucu = coz; });
+    }
+
+    function yedekKarsilastirmasiniKapat(onaylandi=false) {
+      document.getElementById("yedek-karsilastirma-overlay")?.classList.remove("aktif");
+      const coz = yedekKarsilastirmaCozucu;
+      yedekKarsilastirmaCozucu = null;
+      if (coz) coz(Boolean(onaylandi));
+    }
+
     async function jsonYedekDosyasiSecildi(event) {
       if (!yoneticiGerekli()) return;
       const dosya = event?.target?.files?.[0];
@@ -3237,7 +3352,7 @@
       if (!yoneticiGerekli() || !seciliJsonYedegi) return;
       const yedek = seciliJsonYedegi;
       const dugme = document.getElementById("json-yedek-uygula");
-      if (!confirm(`${yedek.dosyaAdi} dosyasındaki ${yedek.sayilar.fatura} fatura, ${yedek.sayilar.cariKart} cari, ${yedek.sayilar.cariHareket} ödeme ve ${yedek.sayilar.cek} çek geri yüklensin mi?\n\nMevcut veriler önce yeni bir güvenlik yedeğine alınacaktır.`)) return;
+      if (!await yedekGeriYuklemeOnayiAl(yedek.durum, yedek.dosyaAdi)) return;
       if (dugme) dugme.disabled = true;
       const mevcutDurum = uygulamaDurumuOlustur();
       try {
@@ -3461,9 +3576,8 @@
           : await apiIstegi({ action:"backups.get", backupId:yedekId });
         const yedek = yanit?.backup;
         if (!yedek?.durum) throw new Error("Seçilen bulut yedeği okunamadı.");
-        const faturaSayisi = Array.isArray(yedek.durum.items) ? yedek.durum.items.length : 0;
         const tarih = bulutYedegiTarihiniFormatla(yedek.kayitZamani);
-        if (!confirm(`${tarih} tarihli, ${faturaSayisi} faturalı bulut yedeği geri yüklensin mi?\n\nMevcut veriler önce yeni bir güvenlik yedeğine alınacaktır.`)) return;
+        if (!await yedekGeriYuklemeOnayiAl(yedek.durum, `${tarih} tarihli bulut yedeği`)) return;
 
         const mevcutDurum = uygulamaDurumuOlustur();
         otomatikYedekOlustur(mevcutDurum.items, "Bulut yedeği geri yüklenmeden önce");

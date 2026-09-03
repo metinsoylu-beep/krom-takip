@@ -33,6 +33,10 @@ assert.match(index, /Yedek dosyasının kontrol kodu eşleşmiyor/, "Değiştiri
 assert.match(index, /12 \* 1024 \* 1024/, "Aşırı büyük yedek dosyaları işlenmemeli");
 assert.match(index, /auditAction:"JSON yedeği geri yüklendi"/, "Dosyadan geri yükleme işlem geçmişine yazılmalı");
 assert.match(index, /JSON yedeği geri yüklenemedi; mevcut veriler korundu/, "Bulut kaydı başarısızsa mevcut veriler korunmalı");
+assert.match(index, /id="yedek-karsilastirma-overlay"/, "Geri yükleme öncesi etki analizi gösterilmeli");
+assert.match(index, /function yedekFarklariniHesapla\(mevcutDurum, yedekDurum\)/, "Mevcut veriler yedekle karşılaştırılmalı");
+assert.match(index, /Toplam \$\{toplamDegisiklik\} kayıt etkilenecek/, "Kullanıcıya toplam etkilenecek kayıt sayısı açıklanmalı");
+assert.match(index, /await yedekGeriYuklemeOnayiAl\(yedek\.durum/, "Bulut ve dosya yedekleri etki analizi onayı olmadan uygulanmamalı");
 assert.match(index, /action:"backups\.get", backupId:yedekId/, "Geri yükleme öncesi seçilen yedek sunucudan alınmalı");
 assert.match(index, /Mevcut veriler önce yeni bir güvenlik yedeğine alınacaktır/, "Geri yükleme etkisi kullanıcıya açıkça bildirilmeli");
 assert.match(index, /auditAction:"Bulut yedeği geri yüklendi"/, "Geri yükleme işlem geçmişinde ayırt edilebilmeli");
