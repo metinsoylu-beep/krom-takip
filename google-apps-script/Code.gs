@@ -3,6 +3,8 @@ const PAYMENT_SHEET_NAME = "Ödemeler";
 const MOVEMENT_SHEET_NAME = "Cari Hareketler";
 const CHECK_SHEET_NAME = "Çekler";
 const CUSTOMER_SHEET_NAME = "Cariler";
+const AUDIT_SHEET_NAME = "İşlem Geçmişi";
+const AUDIT_MAX_RECORDS = 500;
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -68,10 +70,105 @@ const CARI_BASLIK = [
   "Kayıt Zamanı",
   "Güncelleme Zamanı"
 ];
+const AUDIT_BASLIK = [
+  "Kayıt Zamanı",
+  "Kullanıcı",
+  "İşlem",
+  "Varlık",
+  "Açıklama",
+  "İstek ID",
+  "Veri Sürümü"
+];
 
 function jsonCevabi(deger) {
   return ContentService.createTextOutput(JSON.stringify(deger))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function islemGecmisiKaydet(kayit) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(AUDIT_SHEET_NAME) || ss.insertSheet(AUDIT_SHEET_NAME);
+  if (sheet.getLastRow() === 0 || String(sheet.getRange(1, 1).getValue() || "").trim() !== AUDIT_BASLIK[0]) {
+    sheet.clearContents();
+    sheet.getRange(1, 1, 1, AUDIT_BASLIK.length).setValues([AUDIT_BASLIK]);
+    sheet.getRange(1, 1, 1, AUDIT_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+  }
+  sheet.appendRow([
+    String(kayit.kayitZamani || new Date().toISOString()),
+    String(kayit.kullanici || "").slice(0, 254),
+    String(kayit.islem || "Veri değişikliği").slice(0, 120),
+    String(kayit.varlik || "Genel").slice(0, 120),
+    String(kayit.aciklama || "").slice(0, 1000),
+    String(kayit.requestId || "").slice(0, 120),
+    Number(kayit.revision) || 0
+  ]);
+  const fazlaSatir = sheet.getLastRow() - (AUDIT_MAX_RECORDS + 1);
+  if (fazlaSatir > 0) sheet.deleteRows(2, fazlaSatir);
+}
+
+function islemGecmisiniOku(limit) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(AUDIT_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const data = sheet.getDataRange().getValues();
+  const basliklar = data[0].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  const guvenliLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 500);
+  return data.slice(1).reverse().slice(0, guvenliLimit).map(function(row) {
+    const zaman = row[konum("Kayıt Zamanı")];
+    return {
+      kayitZamani: zaman instanceof Date ? zaman.toISOString() : String(zaman || ""),
+      kullanici: String(row[konum("Kullanıcı")] || ""),
+      islem: String(row[konum("İşlem")] || ""),
+      varlik: String(row[konum("Varlık")] || ""),
+      aciklama: String(row[konum("Açıklama")] || ""),
+      requestId: String(row[konum("İstek ID")] || ""),
+      revision: Number(row[konum("Veri Sürümü")]) || 0
+    };
+  });
+}
+
+function listeDegisiklikSayilari(eskiListe, yeniListe) {
+  const eski = {};
+  const yeni = {};
+  (Array.isArray(eskiListe) ? eskiListe : []).forEach(function(kayit) {
+    eski[String(kayit && kayit.id || "")] = JSON.stringify(kayit || {});
+  });
+  (Array.isArray(yeniListe) ? yeniListe : []).forEach(function(kayit) {
+    yeni[String(kayit && kayit.id || "")] = JSON.stringify(kayit || {});
+  });
+  let eklenen = 0;
+  let guncellenen = 0;
+  let silinen = 0;
+  Object.keys(yeni).forEach(function(id) {
+    if (!Object.prototype.hasOwnProperty.call(eski, id)) eklenen++;
+    else if (eski[id] !== yeni[id]) guncellenen++;
+  });
+  Object.keys(eski).forEach(function(id) {
+    if (!Object.prototype.hasOwnProperty.call(yeni, id)) silinen++;
+  });
+  return { eklenen:eklenen, guncellenen:guncellenen, silinen:silinen };
+}
+
+function veriDegisiklikOzetiniOlustur(eskiDurum, yeniDurum) {
+  const gruplar = [
+    ["Fatura", eskiDurum.items, yeniDurum.items],
+    ["Cari hareket", eskiDurum.cariHareketler, yeniDurum.cariHareketler],
+    ["Çek", eskiDurum.cekler, yeniDurum.cekler],
+    ["Cari kart", eskiDurum.cariler, yeniDurum.cariler]
+  ];
+  const parcalar = [];
+  gruplar.forEach(function(grup) {
+    const sayilar = listeDegisiklikSayilari(grup[1], grup[2]);
+    const detay = [];
+    if (sayilar.eklenen) detay.push(sayilar.eklenen + " eklendi");
+    if (sayilar.guncellenen) detay.push(sayilar.guncellenen + " güncellendi");
+    if (sayilar.silinen) detay.push(sayilar.silinen + " silindi");
+    if (detay.length) parcalar.push(grup[0] + ": " + detay.join(", "));
+  });
+  return parcalar.join(" · ");
 }
 
 function bulutSurumuOku(properties) {
@@ -856,6 +953,14 @@ function doPost(e) {
     const yetki = firebaseKullanicisiniDogrula(payload.idToken);
     if (!yetki.ok) return jsonCevabi(yetki);
 
+    if (payload.action === "audit.list") {
+      if (yetki.role !== "admin") {
+        return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"İşlem geçmişini yalnızca yöneticiler görüntüleyebilir." });
+      }
+      kilit.waitLock(30000);
+      return jsonCevabi({ ok:true, logs:islemGecmisiniOku(payload.limit) });
+    }
+
     if (["users.list", "users.save", "users.delete"].indexOf(payload.action) >= 0) {
       if (yetki.role !== "admin") {
         return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Kullanıcı yetkilerini yalnızca yöneticiler değiştirebilir." });
@@ -867,9 +972,37 @@ function doPost(e) {
         return jsonCevabi(kullaniciVerisi);
       }
       if (payload.action === "users.save") {
-        return jsonCevabi(kullaniciYetkisiniKaydet(payload.email, payload.role, yetki.email));
+        const sonuc = kullaniciYetkisiniKaydet(payload.email, payload.role, yetki.email);
+        if (sonuc.ok) {
+          try {
+            islemGecmisiKaydet({
+              kullanici:yetki.email,
+              islem:"Kullanıcı yetkisi kaydedildi",
+              varlik:String(payload.email || "").trim().toLowerCase(),
+              aciklama:String(payload.role || "") === "admin" ? "Yönetici yetkisi verildi." : "Sadece görüntüleme yetkisi verildi.",
+              revision:bulutSurumuOku(PropertiesService.getScriptProperties())
+            });
+          } catch (logHatasi) {
+            console.error("İşlem geçmişi yazılamadı: " + logHatasi);
+          }
+        }
+        return jsonCevabi(sonuc);
       }
-      return jsonCevabi(kullaniciYetkisiniKaldir(payload.email, yetki.email));
+      const sonuc = kullaniciYetkisiniKaldir(payload.email, yetki.email);
+      if (sonuc.ok) {
+        try {
+          islemGecmisiKaydet({
+            kullanici:yetki.email,
+            islem:"Kullanıcı erişimi kaldırıldı",
+            varlik:String(payload.email || "").trim().toLowerCase(),
+            aciklama:"Kullanıcı erişim listesinden kaldırıldı.",
+            revision:bulutSurumuOku(PropertiesService.getScriptProperties())
+          });
+        } catch (logHatasi) {
+          console.error("İşlem geçmişi yazılamadı: " + logHatasi);
+        }
+      }
+      return jsonCevabi(sonuc);
     }
 
     if (payload.action === "read") {
@@ -900,6 +1033,7 @@ function doPost(e) {
       ? null
       : parseInt(baseRevisionHam, 10);
     kilit.waitLock(30000);
+    const oncekiDurum = faturaVerileriniOku();
 
     // Eski ön yüzlerle dağıtım geçişinde fatura ödeme geçmişini koru.
     const mevcutOdemeGruplari = odemeVerileriniOku();
@@ -1096,6 +1230,27 @@ function doPost(e) {
     yeniProperties[ESKI_ODEME_GECISI_ANAHTAR] = "1";
     if (requestId) yeniProperties[SON_ISTEK_ANAHTAR] = requestId;
     properties.setProperties(yeniProperties, false);
+
+    const degisiklikOzeti = veriDegisiklikOzetiniOlustur(oncekiDurum, {
+      items:items,
+      cariHareketler:cariHareketler,
+      cekler:cekler,
+      cariler:cariler
+    });
+    if (degisiklikOzeti) {
+      try {
+        islemGecmisiKaydet({
+          kullanici:yetki.email,
+          islem:"Veri değişikliği",
+          varlik:"Muhasebe kayıtları",
+          aciklama:degisiklikOzeti,
+          requestId:requestId,
+          revision:yeniSurum
+        });
+      } catch (logHatasi) {
+        console.error("İşlem geçmişi yazılamadı: " + logHatasi);
+      }
+    }
 
     return jsonCevabi({
       ok: true,

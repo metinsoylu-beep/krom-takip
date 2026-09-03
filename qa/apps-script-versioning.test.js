@@ -19,9 +19,11 @@ let paymentValues = [
 let movementValues = [];
 let checkValues = [];
 let customerValues = [];
+let auditValues = [];
 let movementExists = false;
 let checkExists = false;
 let customerExists = false;
+let auditExists = false;
 
 const propertyData = { VIEWER_EMAILS: "viewer@example.com" };
 const properties = {
@@ -31,6 +33,9 @@ const properties = {
 
 function range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCount) {
   return {
+    getValue() {
+      return degerleriGetir()[row - 1]?.[column - 1] ?? "";
+    },
     setValue(next) {
       const values = degerleriGetir();
       if (!values[row - 1]) values[row - 1] = [];
@@ -56,7 +61,10 @@ function range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCou
 function sheetOlustur(degerleriGetir, degerleriAyarla) {
   return {
     getDataRange() { return { getValues: () => degerleriGetir().map(row => row.slice()) }; },
+    getLastRow() { return degerleriGetir().length; },
     clearContents() { degerleriAyarla([]); return this; },
+    appendRow(row) { const values = degerleriGetir(); values.push(row.slice()); degerleriAyarla(values); return this; },
+    deleteRows(row, count) { const values = degerleriGetir(); values.splice(row - 1, count); degerleriAyarla(values); return this; },
     getRange(row, column, rowCount = 1, columnCount = 1) {
       return range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCount);
     }
@@ -68,6 +76,7 @@ const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues =
 const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; });
 const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; });
 const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; });
+const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; });
 
 let locked = false;
 const context = {
@@ -83,12 +92,14 @@ const context = {
       if (name === "Cari Hareketler") return movementExists ? movementSheet : null;
       if (name === "Çekler") return checkExists ? checkSheet : null;
       if (name === "Cariler") return customerExists ? customerSheet : null;
+      if (name === "İşlem Geçmişi") return auditExists ? auditSheet : null;
       return null;
     },
     insertSheet(name) {
       if (name === "Cari Hareketler") { movementExists = true; return movementSheet; }
       if (name === "Çekler") { checkExists = true; return checkSheet; }
       if (name === "Cariler") { customerExists = true; return customerSheet; }
+      if (name === "İşlem Geçmişi") { auditExists = true; return auditSheet; }
       return invoiceSheet;
     }
   }) },
@@ -152,6 +163,7 @@ assert.equal(firstRead.cariHareketler[0].id, "legacy-odm-eski");
 assert.equal(post({ action:"read" }, "viewer-token").role, "viewer");
 assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", items:[item1] }, "viewer-token").code, "FORBIDDEN");
 assert.equal(post({ action:"users.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici kullanıcı yönetimine erişememeli");
+assert.equal(post({ action:"audit.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici işlem geçmişini görüntüleyememeli");
 assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
 
 const ilkKullanicilar = post({ action:"users.list" });
@@ -173,6 +185,9 @@ assert.equal(post({ action:"users.delete", email:"admin@example.com" }).code, "O
 const kullaniciKaldirildi = post({ action:"users.delete", email:"yeni@example.com" });
 assert.equal(kullaniciKaldirildi.users.some(item => item.email === "yeni@example.com"), false);
 assert.doesNotMatch(propertyData.ADMIN_EMAILS, /yeni@example\.com/);
+const yetkiGecmisi = post({ action:"audit.list" });
+assert.equal(yetkiGecmisi.logs.length, 3, "Başarılı yetki ekleme, değiştirme ve kaldırma işlemleri kaydedilmeli");
+assert.equal(yetkiGecmisi.logs[0].islem, "Kullanıcı erişimi kaldırıldı");
 
 const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler, cariler });
 assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount, customerCount:saved.customerCount },
@@ -184,6 +199,9 @@ assert.equal(checkValues.length, 2);
 assert.equal(customerValues[0][0], "Cari ID");
 assert.equal(customerValues.length, 3);
 assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi olarak korunmalı");
+const veriGecmisi = post({ action:"audit.list" });
+assert.equal(veriGecmisi.logs[0].islem, "Veri değişikliği", "Muhasebe veri değişikliği işlem geçmişine yazılmalı");
+assert.match(veriGecmisi.logs[0].aciklama, /Fatura:/, "Değişiklik özeti etkilenen kayıt türünü açıklamalı");
 
 const kayitSonrasi = post({ action:"read" });
 assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");

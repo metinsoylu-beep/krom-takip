@@ -11,6 +11,10 @@ yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 
 Yeni manuel ödemeler faturadan bağımsız olarak `Cari Hareketler` sayfasına,
 verilen çekler `Çekler`, cari kart bilgileri ise `Cariler` sayfasına yazılır.
+Cari, fatura, ödeme/çek ve kullanıcı yetkisi değişiklikleri `İşlem Geçmişi`
+sayfasına kullanıcı, tarih, işlem özeti ve veri sürümüyle kaydedilir. Bu kayıtları
+uygulamadaki **İşlem Geçmişi** düğmesinden yalnızca yöneticiler görüntüleyebilir;
+sayfanın sınırsız büyümemesi için son 500 kayıt korunur.
 Cari kartta firma ve iletişim bilgileriyle birlikte devir borç veya devir alacak
 bakiyesi tutulabilir. Cari bakiye; devir borcu ve fatura toplamından devir
 alacağı, ödemeler ve iptal edilmemiş çekler düşülerek hesaplanır. Ödeme tutarı

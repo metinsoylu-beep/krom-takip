@@ -402,6 +402,12 @@
       color: #67cdfa; font-family: inherit; font-size: 11px; white-space: nowrap; cursor: pointer;
     }
     #csv-indir-btn:hover { background: #38bdf824; border-color: #38bdf888; }
+    #islem-gecmisi-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+      border: 1px solid #a78bfa55; border-radius: 6px; background: #a78bfa12;
+      color: #c4b5fd; font-family: inherit; font-size: 11px; white-space: nowrap; cursor: pointer;
+    }
+    #islem-gecmisi-btn:hover { background: #a78bfa24; border-color: #a78bfa88; }
     button:disabled { opacity: .55; cursor: wait; }
 
     .toplu-islem-panel {
@@ -624,6 +630,23 @@
     .kullanici-duzenle { border: 1px solid #38bdf855; color: #7dd3fc; }
     .kullanici-kaldir { border: 1px solid #ff3f4f55; color: #ff7a85; }
     .kullanici-kaldir:disabled { border-color: #64748b44; color: #64748b; cursor: not-allowed; }
+    .islem-gecmisi-kart { width: min(1040px,100%); max-width: 1040px; border-top-color: #a78bfa; }
+    .islem-gecmisi-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
+    .islem-gecmisi-yenile {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 7px 11px; border: 1px solid #a78bfa55; border-radius: 7px; background: #a78bfa12;
+      color: #c4b5fd; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .islem-gecmisi-yenile:hover { background: #a78bfa24; }
+    .islem-gecmisi-islemler { display: flex; align-items: center; gap: 8px; }
+    .islem-gecmisi-tablo-wrap { max-height: 62vh; overflow: auto; margin: 14px 18px 18px; border: 1px solid var(--cizgi); border-radius: 8px; }
+    .islem-gecmisi-tablo { min-width: 920px; font: 10px "Segoe UI",Arial,sans-serif; }
+    .islem-gecmisi-tablo th, .islem-gecmisi-tablo td { padding: 10px 12px; vertical-align: top; }
+    .islem-gecmisi-tablo td:nth-child(1), .islem-gecmisi-tablo td:nth-child(2) { color: #9fb0c1; white-space: nowrap; }
+    .islem-gecmisi-tablo td:nth-child(3) { color: #c4b5fd; font-weight: 750; }
+    .islem-gecmisi-tablo td:nth-child(4) { color: #f3be3e; }
+    .islem-gecmisi-aciklama { min-width: 290px; color: #d4dee8; line-height: 1.45; white-space: normal; }
+    .islem-gecmisi-bos { padding: 44px 20px; color: #718398; text-align: center; font-size: 11px; }
     .hareket-tur { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
     .hareket-tur.borc { color: #ff6b77; }
     .hareket-tur.alacak { color: #4ade80; }
@@ -877,6 +900,9 @@
       .kullanici-listesi { padding: 12px; }
       .kullanici-satiri { grid-template-columns: 36px minmax(0,1fr) auto; }
       .kullanici-satir-islemler { grid-column: 2 / -1; }
+      .islem-gecmisi-tablo-wrap { margin: 12px; }
+      .islem-gecmisi-islemler { align-items: stretch; flex-direction: column-reverse; }
+      .islem-gecmisi-yenile { width: 100%; }
       .rapor-overlay { padding: 0; }
       .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
@@ -1167,6 +1193,25 @@
       </form>
       <div class="kullanici-listesi" id="kullanici-listesi" aria-live="polite">
         <div class="odeme-gecmisi-bos">Kullanıcılar yükleniyor…</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MERKEZİ İŞLEM GEÇMİŞİ -->
+  <div class="popup-overlay odeme-yonetim-overlay yalnizca-yonetici" id="islem-gecmisi-overlay">
+    <section class="popup-kutu odeme-yonetim-kart islem-gecmisi-kart" role="dialog" aria-modal="true" aria-labelledby="islem-gecmisi-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="islem-gecmisi-baslik"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> İşlem Geçmişi</h2>
+          <p class="odeme-yonetim-alt">Kullanıcıların yaptığı son 100 veri ve yetki değişikliği.</p>
+        </div>
+        <div class="islem-gecmisi-islemler">
+          <button class="islem-gecmisi-yenile" id="islem-gecmisi-yenile" type="button" onclick="islemGecmisiniYukle()"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yenile</button>
+          <button class="modal-kapat" type="button" onclick="islemGecmisiniKapat()" aria-label="İşlem geçmişini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="islem-gecmisi-tablo-wrap" id="islem-gecmisi-tablo-wrap" aria-live="polite">
+        <div class="islem-gecmisi-bos">İşlem geçmişi yükleniyor…</div>
       </div>
     </section>
   </div>
@@ -1474,6 +1519,10 @@
             <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
             CSV İndir
           </button>
+          <button id="islem-gecmisi-btn" class="yalnizca-yonetici" type="button" onclick="islemGecmisiniAc()" title="Kullanıcıların yaptığı son değişiklikleri görüntüle">
+            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+            İşlem Geçmişi
+          </button>
           <button id="son-islem-geri-al" class="yalnizca-yonetici" type="button" onclick="sonIslemiGeriAl()" hidden>
             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
             Son İşlemi Geri Al
@@ -1575,6 +1624,9 @@
     let yerelYetkiliKullanicilar = [
       { email:"arlinoksmuhasebe@gmail.com", role:"admin", protected:true, current:true },
       { email:"izleyici@ornek.com", role:"viewer", protected:false, current:false }
+    ];
+    let yerelIslemGecmisi = [
+      { kayitZamani:new Date().toISOString(), kullanici:"arlinoksmuhasebe@gmail.com", islem:"Veri değişikliği", varlik:"Muhasebe kayıtları", aciklama:"Cari kart: 1 eklendi", revision:1 }
     ];
     let aktifRaporListesi = [];
     let aktifCariEkstresi = null;
@@ -2752,6 +2804,62 @@
       } catch (hata) {
         kullaniciYonetimMesaji(hata?.message || "Yetki kaldırılamadı.", true);
       }
+    }
+
+    function islemGecmisiTarihiniFormatla(deger) {
+      const tarih = new Date(deger);
+      return Number.isNaN(tarih.getTime())
+        ? String(deger || "—")
+        : tarih.toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function islemGecmisiniGoster(liste) {
+      const alan = document.getElementById("islem-gecmisi-tablo-wrap");
+      if (!alan) return;
+      const guvenliListe = Array.isArray(liste) ? liste : [];
+      if (!guvenliListe.length) {
+        alan.innerHTML = '<div class="islem-gecmisi-bos"><i class="fa-solid fa-clock" aria-hidden="true"></i><br>Henüz kaydedilmiş bir işlem bulunmuyor.</div>';
+        return;
+      }
+      alan.innerHTML = `<table class="islem-gecmisi-tablo">
+        <thead><tr><th>TARİH / SAAT</th><th>KULLANICI</th><th>İŞLEM</th><th>VARLIK</th><th>AÇIKLAMA</th><th>SÜRÜM</th></tr></thead>
+        <tbody>${guvenliListe.map(kayit => `<tr>
+          <td>${htmlGuvenli(islemGecmisiTarihiniFormatla(kayit.kayitZamani))}</td>
+          <td>${htmlGuvenli(kayit.kullanici || "—")}</td>
+          <td>${htmlGuvenli(kayit.islem || "Veri değişikliği")}</td>
+          <td>${htmlGuvenli(kayit.varlik || "Genel")}</td>
+          <td class="islem-gecmisi-aciklama">${htmlGuvenli(kayit.aciklama || "—")}</td>
+          <td>${htmlGuvenli(String(kayit.revision || "—"))}</td>
+        </tr>`).join("")}</tbody>
+      </table>`;
+    }
+
+    async function islemGecmisiniYukle() {
+      if (!yoneticiGerekli()) return;
+      const alan = document.getElementById("islem-gecmisi-tablo-wrap");
+      const dugme = document.getElementById("islem-gecmisi-yenile");
+      if (alan) alan.innerHTML = '<div class="islem-gecmisi-bos">İşlem geçmişi yükleniyor…</div>';
+      if (dugme) dugme.disabled = true;
+      try {
+        const liste = YEREL_GELISTIRME
+          ? yerelIslemGecmisi.slice()
+          : (await apiIstegi({ action:"audit.list", limit:100 })).logs;
+        islemGecmisiniGoster(liste);
+      } catch (hata) {
+        if (alan) alan.innerHTML = `<div class="islem-gecmisi-bos">${htmlGuvenli(hata?.message || "İşlem geçmişi yüklenemedi.")}</div>`;
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
+    }
+
+    async function islemGecmisiniAc() {
+      if (!yoneticiGerekli()) return;
+      document.getElementById("islem-gecmisi-overlay")?.classList.add("aktif");
+      await islemGecmisiniYukle();
+    }
+
+    function islemGecmisiniKapat() {
+      document.getElementById("islem-gecmisi-overlay")?.classList.remove("aktif");
     }
 
     function yedekleriYukle() {
@@ -4153,6 +4261,9 @@
       document.getElementById("kullanici-yonetim-overlay")?.addEventListener("click", e => {
         if (e.target.id === "kullanici-yonetim-overlay") kullaniciPaneliniKapat();
       });
+      document.getElementById("islem-gecmisi-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "islem-gecmisi-overlay") islemGecmisiniKapat();
+      });
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           yeniFaturaKapat();
@@ -4163,6 +4274,7 @@
           cariKartFormunuKapat();
           cariEkstreKapat();
           kullaniciPaneliniKapat();
+          islemGecmisiniKapat();
         }
       });
     }
