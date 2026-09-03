@@ -79,6 +79,9 @@ assert.match(index, /"Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi"/, "
 assert.match(index, /let cariHareketKayitKilidi = false;/, "Hızlı çift tıklama için cari hareket kayıt kilidi bulunmalı");
 assert.match(index, /Aynı bilgilerle aktif bir ödeme kaydı zaten var/, "Benzer ödeme için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /Aynı bilgilerle aktif bir çek kaydı zaten var/, "Benzer çek için açık kullanıcı uyarısı bulunmalı");
+assert.match(index, /code === "DUPLICATE_MOVEMENT"/, "Sunucunun mükerrer kayıt reddi güvenli biçimde ele alınmalı");
+assert.match(code, /function yeniBenzerCariHareketleriniBul\(/, "Apps Script yeni benzer cari hareketlerini denetlemeli");
+assert.match(code, /code:"DUPLICATE_MOVEMENT"/, "Apps Script yeni mükerrer ödemeyi veya çeki reddetmeli");
 assert.match(index, /auditAction:mesaj \|\| "Cari hesap değiştirildi"/, "Cari hesap işlemi merkezi işlem geçmişinde adıyla saklanmalı");
 assert.doesNotMatch(index, /function cariHareketSil\(/, "Cari hareket fiziksel olarak silinmemeli");
 assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");

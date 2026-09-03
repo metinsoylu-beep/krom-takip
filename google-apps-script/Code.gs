@@ -924,6 +924,63 @@ function cekleriNormallestir(hamListe) {
   });
 }
 
+function cariHareketImzasi(kaynak, kayit) {
+  const metinAnahtari = function(deger) {
+    return String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ");
+  };
+  const ortak = [
+    cariAdiAnahtari(kayit && kayit.cari),
+    tarihMetni(kayit && kayit.tarih),
+    tutarSayisi(kayit && kayit.tutar).toFixed(2)
+  ];
+  if (kaynak === "cek") {
+    return ortak.concat([
+      tarihMetni(kayit && kayit.vadeTarihi),
+      metinAnahtari(kayit && kayit.cekNo),
+      metinAnahtari(kayit && kayit.banka),
+      metinAnahtari(kayit && kayit.referans)
+    ]).join("|");
+  }
+  return ortak.concat([
+    metinAnahtari(kayit && kayit.yontem),
+    metinAnahtari(kayit && kayit.referans)
+  ]).join("|");
+}
+
+function yeniBenzerCariHareketleriniBul(kaynak, oncekiListe, yeniListe, izinVerilenKimlikler) {
+  const izinliler = {};
+  (Array.isArray(izinVerilenKimlikler) ? izinVerilenKimlikler : []).forEach(function(kimlik) {
+    izinliler[String(kimlik || "").trim()] = true;
+  });
+  const aktifMi = function(kayit) { return kayit && kayit.durum !== "İptal"; };
+  const oncekiGruplar = {};
+  (Array.isArray(oncekiListe) ? oncekiListe : []).filter(aktifMi).forEach(function(kayit) {
+    const imza = cariHareketImzasi(kaynak, kayit);
+    if (!oncekiGruplar[imza]) oncekiGruplar[imza] = {};
+    oncekiGruplar[imza][String(kayit.id || "")] = true;
+  });
+  const yeniGruplar = {};
+  (Array.isArray(yeniListe) ? yeniListe : []).filter(aktifMi).forEach(function(kayit) {
+    const imza = cariHareketImzasi(kaynak, kayit);
+    if (!yeniGruplar[imza]) yeniGruplar[imza] = [];
+    yeniGruplar[imza].push(kayit);
+  });
+  const engellenenler = [];
+  Object.keys(yeniGruplar).forEach(function(imza) {
+    const yeniGrup = yeniGruplar[imza];
+    const oncekiKimlikler = oncekiGruplar[imza] || {};
+    const oncekiSayi = Object.keys(oncekiKimlikler).length;
+    if (yeniGrup.length <= 1 || yeniGrup.length <= oncekiSayi) return;
+    yeniGrup.forEach(function(kayit) {
+      const kimlik = String(kayit.id || "");
+      if (!oncekiKimlikler[kimlik] && !izinliler[kimlik]) {
+        engellenenler.push({ kaynak:kaynak, id:kimlik, cari:kayit.cari, tarih:kayit.tarih, tutar:kayit.tutar });
+      }
+    });
+  });
+  return engellenenler;
+}
+
 function cariAdiAnahtari(cari) {
   return String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ";
 }
@@ -1435,6 +1492,38 @@ function doPost(e) {
         revision: mevcutSurum,
         requestId: requestId,
         message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
+    // Ön yüzdeki çift tıklama korumasına ek olarak sunucu da mevcut duruma
+    // göre yeni oluşmuş benzer ödeme ve çekleri denetler. Kullanıcı ekrandaki
+    // uyarıda bilinçli onay verdiyse yalnızca ilgili kayıt kimliği istisnadır.
+    const izinVerilenBenzerKayitlar = (Array.isArray(payload.allowDuplicateRecordIds)
+      ? payload.allowDuplicateRecordIds
+      : []).map(function(kimlik) { return String(kimlik || "").trim().slice(0, 160); }).filter(Boolean).slice(0, 20);
+    const benzerOdemeler = yeniBenzerCariHareketleriniBul(
+      "hareket",
+      oncekiDurum.cariHareketler,
+      cariHareketler,
+      izinVerilenBenzerKayitlar
+    );
+    const benzerCekler = yeniBenzerCariHareketleriniBul(
+      "cek",
+      oncekiDurum.cekler,
+      cekler,
+      izinVerilenBenzerKayitlar
+    );
+    if (benzerOdemeler.length || benzerCekler.length) {
+      return jsonCevabi({
+        ok:false,
+        code:"DUPLICATE_MOVEMENT",
+        revision:mevcutSurum,
+        requestId:requestId,
+        duplicateType:benzerOdemeler.length ? "payment" : "check",
+        duplicateIds:benzerOdemeler.concat(benzerCekler).map(function(kayit) { return kayit.id; }),
+        message:benzerOdemeler.length
+          ? "Google Sheets'te aynı bilgilerle aktif bir ödeme kaydı zaten var."
+          : "Google Sheets'te aynı bilgilerle aktif bir çek kaydı zaten var."
       });
     }
 

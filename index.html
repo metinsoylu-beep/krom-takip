@@ -2147,7 +2147,7 @@
       };
     }
 
-    function bulutCakismasiniKaydet(yerelDurum, uzakDurum) {
+    function bulutCakismasiniKaydet(yerelDurum, uzakDurum, secenekler={}) {
       localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify({
         kayitZamani: new Date().toISOString(),
         cihazSurumu: bulutSurumu,
@@ -2155,10 +2155,10 @@
         yerelDurum: Array.isArray(yerelDurum) ? uygulamaDurumuOlustur(yerelDurum) : yerelDurum,
         bulutDurum: uzakDurum
       }));
-      syncGoster("Başka cihazda değişiklik algılandı · Bu cihazdaki değişiklik yedeklendi", "#ef4444");
+      syncGoster(secenekler.syncMesaji || "Başka cihazda değişiklik algılandı · Bu cihazdaki değişiklik yedeklendi", "#ef4444");
       if (!bulutCakismaUyarildi) {
         bulutCakismaUyarildi = true;
-        alert("Başka bir cihazda daha yeni kayıt bulundu. Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel verileri almak için Yenile düğmesini kullanın.");
+        alert(secenekler.uyariMesaji || "Başka bir cihazda daha yeni kayıt bulundu. Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel verileri almak için Yenile düğmesini kullanın.");
       }
     }
 
@@ -2191,6 +2191,9 @@
             baseRevision,
             requestId,
             auditAction:String(secenekler.auditAction || "").slice(0,120),
+            allowDuplicateRecordIds:Array.isArray(secenekler.allowDuplicateRecordIds)
+              ? secenekler.allowDuplicateRecordIds.map(kimlik => String(kimlik || "").slice(0,160)).filter(Boolean).slice(0,20)
+              : [],
             items: faturalariTekillestir(durum.items).liste,
             cariHareketler:cariHareketleriNormallestir(durum.cariHareketler),
             cekler:cekleriNormallestir(durum.cekler),
@@ -2226,6 +2229,17 @@
           }
           return false;
         }
+        if (e?.code === "DUPLICATE_MOVEMENT") {
+          try {
+            bulutCakismasiniKaydet(durum, await bulutDurumunuGetir(), {
+              syncMesaji:"Benzer ödeme/çek bulutta zaten var · Yerel değişiklik yedeklendi",
+              uyariMesaji:(e.message || "Google Sheets'te benzer bir ödeme veya çek zaten var.") + " Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel kayıtları almak için Yenile düğmesini kullanın."
+            });
+          } catch (_) {
+            syncGoster("Benzer ödeme/çek nedeniyle bulut kaydı durduruldu", "#ef4444");
+          }
+          return false;
+        }
         syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
         return false;
       }
@@ -2238,7 +2252,10 @@
         while (bekleyenBulutKaydi) {
           const sonKayit = bekleyenBulutKaydi;
           bekleyenBulutKaydi = null;
-          await bulutKaydiniGonder(sonKayit.durum, { auditAction:sonKayit.auditAction });
+          await bulutKaydiniGonder(sonKayit.durum, {
+            auditAction:sonKayit.auditAction,
+            allowDuplicateRecordIds:sonKayit.allowDuplicateRecordIds
+          });
         }
       } finally {
         bulutKaydiCalisiyor = false;
@@ -2247,9 +2264,17 @@
 
     function buludaKaydet(liste=faturaYukle(), secenekler={}) {
       if (!yoneticiMi()) return;
+      const oncekiIzinler = Array.isArray(bekleyenBulutKaydi?.allowDuplicateRecordIds)
+        ? bekleyenBulutKaydi.allowDuplicateRecordIds
+        : [];
+      const yeniIzinler = Array.isArray(secenekler.allowDuplicateRecordIds)
+        ? secenekler.allowDuplicateRecordIds
+        : [];
       bekleyenBulutKaydi = {
         durum:uygulamaDurumuOlustur(liste),
-        auditAction:String(secenekler.auditAction || "").slice(0,120)
+        auditAction:String(secenekler.auditAction || "").slice(0,120),
+        allowDuplicateRecordIds:Array.from(new Set([...oncekiIzinler,...yeniIzinler]
+          .map(kimlik => String(kimlik || "").slice(0,160)).filter(Boolean))).slice(0,20)
       };
       clearTimeout(bulutKayitZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
@@ -4829,12 +4854,15 @@
         : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu cari hesapta henüz hareket yok.</div>';
     }
 
-    function cariVerileriniKaydet(hareketler, cekler, mesaj) {
+    function cariVerileriniKaydet(hareketler, cekler, mesaj, secenekler={}) {
       if (!yoneticiGerekli()) return false;
       otomatikYedekOlustur(faturaYukle(), mesaj || "Cari hesap değiştirildi");
       localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(hareketler)));
       localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(cekler)));
-      buludaKaydet(faturaYukle(), { auditAction:mesaj || "Cari hesap değiştirildi" });
+      buludaKaydet(faturaYukle(), {
+        auditAction:mesaj || "Cari hesap değiştirildi",
+        allowDuplicateRecordIds:secenekler.allowDuplicateRecordIds
+      });
       listeyiGoster();
       rozetGuncelle();
       ozetGuncelle();
@@ -4918,8 +4946,8 @@
           }
           if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
           const turAdi = kaynak === "cek" ? "çek" : "ödeme";
-          if (benzerCariHareketiBul(kaynak,guncellenen,mevcutHareketler,mevcutCekler,kimlik) &&
-              !confirm(`Aynı bilgilerle aktif bir ${turAdi} kaydı zaten var. Bu değişiklik yine de kaydedilsin mi?`)) {
+          const benzerKayit = benzerCariHareketiBul(kaynak,guncellenen,mevcutHareketler,mevcutCekler,kimlik);
+          if (benzerKayit && !confirm(`Aynı bilgilerle aktif bir ${turAdi} kaydı zaten var. Bu değişiklik yine de kaydedilsin mi?`)) {
             mesaj.textContent = "Benzer kayıt nedeniyle değişiklik durduruldu; hiçbir veri değiştirilmedi.";
             return;
           }
@@ -4934,7 +4962,12 @@
           const cekler = kaynak === "cek"
             ? mevcutCekler.map(cek => cek.id === kimlik ? guncellenen : cek)
             : mevcutCekler;
-          cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi");
+          cariVerileriniKaydet(
+            hareketler,
+            cekler,
+            kaynak === "cek" ? "Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi",
+            { allowDuplicateRecordIds:benzerKayit ? [kimlik] : [] }
+          );
           odemeYonetiminiAc(cari);
           const basariMesaji = document.getElementById("odeme-form-mesaj");
           basariMesaji.style.color = "#4ade80";
@@ -4951,21 +4984,31 @@
           const durum = document.getElementById("cek-durum").value;
           if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
           const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, kayitZamani });
-          if (benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler) &&
-              !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
+          const benzerCek = benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler);
+          if (benzerCek && !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
             mesaj.textContent = "Benzer çek kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
             return;
           }
-          cariVerileriniKaydet(mevcutHareketler, [...mevcutCekler,yeniCek], `${cari} hesabına çek kaydedildi`);
+          cariVerileriniKaydet(
+            mevcutHareketler,
+            [...mevcutCekler,yeniCek],
+            `${cari} hesabına çek kaydedildi`,
+            { allowDuplicateRecordIds:benzerCek ? [yeniCek.id] : [] }
+          );
         } else {
           const yontem = document.getElementById("odeme-yontem").value.trim();
           const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, yontem, referans, aciklama, kayitZamani });
-          if (benzerCariHareketiBul("hareket",yeniHareket,mevcutHareketler,mevcutCekler) &&
-              !confirm("Aynı bilgilerle aktif bir ödeme kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
+          const benzerOdeme = benzerCariHareketiBul("hareket",yeniHareket,mevcutHareketler,mevcutCekler);
+          if (benzerOdeme && !confirm("Aynı bilgilerle aktif bir ödeme kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
             mesaj.textContent = "Benzer ödeme kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
             return;
           }
-          cariVerileriniKaydet([...mevcutHareketler,yeniHareket], mevcutCekler, `${cari} hesabına ödeme kaydedildi`);
+          cariVerileriniKaydet(
+            [...mevcutHareketler,yeniHareket],
+            mevcutCekler,
+            `${cari} hesabına ödeme kaydedildi`,
+            { allowDuplicateRecordIds:benzerOdeme ? [yeniHareket.id] : [] }
+          );
         }
         mesaj.style.color = "#4ade80";
         mesaj.textContent = `${formatPara(tutar)} cari hesaba alacak kaydedildi.`;

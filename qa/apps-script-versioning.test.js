@@ -285,12 +285,44 @@ assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 3, "Eski ön yüz cari hare
 assert.equal(eskiOnYuzOkumasi.cekler.length, 2, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
 assert.equal(eskiOnYuzOkumasi.cariler.length, 2, "Eski ön yüz cari kart alanını göndermese de kartlar korunmalı");
 
+const yeniBenzerOdeme = { ...eskiOnYuzOkumasi.cariHareketler[0], id:"h-benzer", kayitZamani:"2026-09-05T10:00:00.000Z" };
+const benzerReddedildi = post({
+  action:"save",
+  baseRevision:2,
+  requestId:"request-duplicate-blocked",
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:eskiOnYuzOkumasi.cekler,
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(benzerReddedildi.code,"DUPLICATE_MOVEMENT","Sunucu yeni mükerrer ödemeyi reddetmeli");
+assert.equal(benzerReddedildi.revision,2,"Reddedilen mükerrer kayıt veri sürümünü değiştirmemeli");
+const benzerOnaylandi = post({
+  action:"save",
+  baseRevision:2,
+  requestId:"request-duplicate-approved",
+  allowDuplicateRecordIds:["h-benzer"],
+  items:eskiOnYuzOkumasi.items,
+  cariHareketler:[...eskiOnYuzOkumasi.cariHareketler,yeniBenzerOdeme],
+  cekler:eskiOnYuzOkumasi.cekler,
+  cariler:eskiOnYuzOkumasi.cariler
+});
+assert.equal(benzerOnaylandi.ok,true,"Kullanıcının açıkça onayladığı benzer kayıt kaydedilebilmeli");
+assert.equal(benzerOnaylandi.revision,3);
+const ayniCek = { ...eskiOnYuzOkumasi.cekler[0], id:"c-benzer", kayitZamani:"2026-09-05T11:00:00.000Z" };
+assert.equal(
+  context.yeniBenzerCariHareketleriniBul("cek",eskiOnYuzOkumasi.cekler,[...eskiOnYuzOkumasi.cekler,ayniCek],[])[0].id,
+  "c-benzer",
+  "Sunucu yeni mükerrer çeki de tespit etmeli"
+);
+
 assert.match(index, /firebase-auth-compat/);
 assert.match(index, /cariHareketler/);
 assert.match(index, /cekler/);
 assert.match(index, /baseRevision/);
 assert.match(index, /requestId/);
 assert.match(index, /BULUT_CAKISMA_ANAHTAR/);
+assert.match(index, /allowDuplicateRecordIds/, "Benzer kayıt için kullanıcı onayı sunucuya taşınmalı");
 assert.match(index, /action:"users\.save"/);
 assert.match(index, /action:"users\.delete"/);
 
