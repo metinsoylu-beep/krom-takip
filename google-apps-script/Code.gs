@@ -8,6 +8,11 @@ const AUDIT_MAX_RECORDS = 500;
 const CLOUD_BACKUP_SHEET_NAME = "Bulut Yedekleri";
 const CLOUD_BACKUP_MAX_RECORDS = 20;
 const CLOUD_BACKUP_CHUNK_SIZE = 40000;
+const CLOUD_BACKUP_CRITICAL_RECORDS = 5;
+const SPREADSHEET_CELL_LIMIT = 10000000;
+const STORAGE_WARNING_PERCENT = 70;
+const STORAGE_CRITICAL_PERCENT = 85;
+const STORAGE_EMERGENCY_PERCENT = 95;
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -91,6 +96,86 @@ const CLOUD_BACKUP_BASLIK = [
   "Parça Sayısı"
 ];
 
+function sayfaHucreBilgisi(sheet) {
+  const maksimumSatir = Math.max(Number(sheet.getMaxRows()) || 0, 1);
+  const maksimumSutun = Math.max(Number(sheet.getMaxColumns()) || 0, 1);
+  const sonSatir = Math.max(Number(sheet.getLastRow()) || 0, 0);
+  const sonSutun = Math.max(Number(sheet.getLastColumn()) || 0, 0);
+  return {
+    ad: String(sheet.getName() || ""),
+    ayrilmisHucre: maksimumSatir * maksimumSutun,
+    kullanilanHucre: sonSatir && sonSutun ? sonSatir * sonSutun : 0,
+    sonSatir: sonSatir,
+    sonSutun: sonSutun
+  };
+}
+
+function depolamaSeviyesi(yuzde) {
+  if (yuzde >= STORAGE_EMERGENCY_PERCENT) return "emergency";
+  if (yuzde >= STORAGE_CRITICAL_PERCENT) return "critical";
+  if (yuzde >= STORAGE_WARNING_PERCENT) return "warning";
+  return "healthy";
+}
+
+function depolamaDurumunuHesapla(ss) {
+  const sayfalar = ss.getSheets().map(sayfaHucreBilgisi);
+  const ayrilmisHucre = sayfalar.reduce(function(toplam, sayfa) { return toplam + sayfa.ayrilmisHucre; }, 0);
+  const kullanilanHucre = sayfalar.reduce(function(toplam, sayfa) { return toplam + sayfa.kullanilanHucre; }, 0);
+  const kullanimYuzdesi = Math.min(100, (ayrilmisHucre / SPREADSHEET_CELL_LIMIT) * 100);
+  const yedekSayfasi = ss.getSheetByName(CLOUD_BACKUP_SHEET_NAME);
+  const yedekSayisi = yedekSayfasi ? Math.max(yedekSayfasi.getLastRow() - 1, 0) : 0;
+  let yedekKarakteri = 0;
+  let sonYedekZamani = "";
+  if (yedekSayfasi && yedekSayisi > 0) {
+    const degerler = yedekSayfasi.getDataRange().getValues().slice(1);
+    degerler.forEach(function(satir) {
+      satir.slice(CLOUD_BACKUP_BASLIK.length).forEach(function(parca) {
+        yedekKarakteri += String(parca || "").length;
+      });
+    });
+    const sonZaman = degerler[degerler.length - 1] && degerler[degerler.length - 1][1];
+    sonYedekZamani = sonZaman instanceof Date ? sonZaman.toISOString() : String(sonZaman || "");
+  }
+  return {
+    seviye: depolamaSeviyesi(kullanimYuzdesi),
+    hucreSiniri: SPREADSHEET_CELL_LIMIT,
+    ayrilmisHucre: ayrilmisHucre,
+    kullanilanHucre: kullanilanHucre,
+    bosHucre: Math.max(SPREADSHEET_CELL_LIMIT - ayrilmisHucre, 0),
+    kullanimYuzdesi: Math.round(kullanimYuzdesi * 100) / 100,
+    uyariYuzdesi: STORAGE_WARNING_PERCENT,
+    kritikYuzdesi: STORAGE_CRITICAL_PERCENT,
+    acilYuzdesi: STORAGE_EMERGENCY_PERCENT,
+    yedekSayisi: yedekSayisi,
+    yedekSiniri: CLOUD_BACKUP_MAX_RECORDS,
+    yedekKarakteri: yedekKarakteri,
+    yaklasikYedekBayti: yedekKarakteri * 2,
+    sonYedekZamani: sonYedekZamani,
+    sayfalar: sayfalar
+  };
+}
+
+function bulutYedekSayfasiniSikistir(sheet) {
+  if (!sheet) return;
+  const gerekliSatir = Math.max(sheet.getLastRow() + 1, 2);
+  const gerekliSutun = Math.max(sheet.getLastColumn(), CLOUD_BACKUP_BASLIK.length);
+  if (sheet.getMaxRows() > gerekliSatir) {
+    sheet.deleteRows(gerekliSatir + 1, sheet.getMaxRows() - gerekliSatir);
+  }
+  if (sheet.getMaxColumns() > gerekliSutun) {
+    sheet.deleteColumns(gerekliSutun + 1, sheet.getMaxColumns() - gerekliSutun);
+  }
+}
+
+function bulutYedekleriniSinirla(sheet, hedefKayitSayisi) {
+  if (!sheet) return 0;
+  const hedef = Math.max(parseInt(hedefKayitSayisi, 10) || 1, 1);
+  const fazlaSatir = sheet.getLastRow() - (hedef + 1);
+  if (fazlaSatir > 0) sheet.deleteRows(2, fazlaSatir);
+  bulutYedekSayfasiniSikistir(sheet);
+  return Math.max(sheet.getLastRow() - 1, 0);
+}
+
 function jsonCevabi(deger) {
   return ContentService.createTextOutput(JSON.stringify(deger))
     .setMimeType(ContentService.MimeType.JSON);
@@ -157,7 +242,19 @@ function bulutYedegiKaydet(durum, kayit) {
   if (!parcalar.length) parcalar.push("{}");
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CLOUD_BACKUP_SHEET_NAME) || ss.insertSheet(CLOUD_BACKUP_SHEET_NAME);
+  let depolamaDurumu = depolamaDurumunuHesapla(ss);
+  let sheet = ss.getSheetByName(CLOUD_BACKUP_SHEET_NAME);
+  if (sheet && depolamaDurumu.kullanimYuzdesi >= STORAGE_CRITICAL_PERCENT) {
+    bulutYedekleriniSinirla(sheet, CLOUD_BACKUP_CRITICAL_RECORDS);
+    depolamaDurumu = depolamaDurumunuHesapla(ss);
+  }
+  if (depolamaDurumu.kullanimYuzdesi >= STORAGE_EMERGENCY_PERCENT) {
+    const depolamaHatasi = new Error("Google Sheets depolama alanı kritik seviyede.");
+    depolamaHatasi.code = "STORAGE_CRITICAL";
+    throw depolamaHatasi;
+  }
+
+  sheet = sheet || ss.insertSheet(CLOUD_BACKUP_SHEET_NAME);
   if (sheet.getLastRow() === 0 || String(sheet.getRange(1, 1).getValue() || "").trim() !== CLOUD_BACKUP_BASLIK[0]) {
     sheet.clearContents();
     sheet.getRange(1, 1, 1, CLOUD_BACKUP_BASLIK.length).setValues([CLOUD_BACKUP_BASLIK]);
@@ -165,6 +262,11 @@ function bulutYedegiKaydet(durum, kayit) {
       .setBackground("#1e3a5f")
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
+  }
+
+  const gerekliSutun = CLOUD_BACKUP_BASLIK.length + parcalar.length;
+  if (sheet.getMaxColumns() < gerekliSutun) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), gerekliSutun - sheet.getMaxColumns());
   }
 
   const yedekId = "yedek-" + Date.now() + "-" + Utilities.getUuid().slice(0, 8);
@@ -177,8 +279,17 @@ function bulutYedegiKaydet(durum, kayit) {
     parcalar.length
   ].concat(parcalar));
 
-  const fazlaSatir = sheet.getLastRow() - (CLOUD_BACKUP_MAX_RECORDS + 1);
-  if (fazlaSatir > 0) sheet.deleteRows(2, fazlaSatir);
+  bulutYedekleriniSinirla(sheet, CLOUD_BACKUP_MAX_RECORDS);
+  depolamaDurumu = depolamaDurumunuHesapla(ss);
+  if (depolamaDurumu.kullanimYuzdesi >= STORAGE_CRITICAL_PERCENT) {
+    bulutYedekleriniSinirla(sheet, CLOUD_BACKUP_CRITICAL_RECORDS);
+    depolamaDurumu = depolamaDurumunuHesapla(ss);
+  }
+  if (depolamaDurumu.kullanimYuzdesi >= STORAGE_EMERGENCY_PERCENT) {
+    const depolamaHatasi = new Error("Google Sheets depolama alanı kritik seviyede.");
+    depolamaHatasi.code = "STORAGE_CRITICAL";
+    throw depolamaHatasi;
+  }
   return yedekId;
 }
 
@@ -1056,6 +1167,14 @@ function doPost(e) {
       return jsonCevabi({ ok:true, logs:islemGecmisiniOku(payload.limit) });
     }
 
+    if (payload.action === "storage.status") {
+      if (yetki.role !== "admin") {
+        return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Depolama sağlığını yalnızca yöneticiler görüntüleyebilir." });
+      }
+      kilit.waitLock(30000);
+      return jsonCevabi({ ok:true, storage:depolamaDurumunuHesapla(SpreadsheetApp.getActiveSpreadsheet()) });
+    }
+
     if (["backups.list", "backups.get"].indexOf(payload.action) >= 0) {
       if (yetki.role !== "admin") {
         return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Bulut yedeklerini yalnızca yöneticiler görüntüleyebilir." });
@@ -1215,10 +1334,13 @@ function doPost(e) {
       });
     } catch (yedekHatasi) {
       console.error("Bulut yedeği oluşturulamadı: " + yedekHatasi);
+      const depolamaKritik = yedekHatasi && yedekHatasi.code === "STORAGE_CRITICAL";
       return jsonCevabi({
         ok:false,
-        code:"BACKUP_FAILED",
-        message:"Güvenlik yedeği oluşturulamadığı için değişiklik kaydedilmedi."
+        code:depolamaKritik ? "STORAGE_CRITICAL" : "BACKUP_FAILED",
+        message:depolamaKritik
+          ? "Google Sheets alanı kritik seviyede olduğu için değişiklik kaydedilmedi. Eski yedekleri dışa aktarıp depolama alanı açın."
+          : "Güvenlik yedeği oluşturulamadığı için değişiklik kaydedilmedi."
       });
     }
 

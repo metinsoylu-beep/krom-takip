@@ -727,6 +727,40 @@
     .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
     .veri-kontrol-not { margin-top: 8px; color: #718398; font-size: 9px; }
 
+    .depolama-sagligi-panel { border-left-color: #2dd4bf; }
+    .depolama-sagligi-panel .veri-kontrol-ikon {
+      color: #5eead4; background: #2dd4bf18; border-color: #2dd4bf38;
+    }
+    .depolama-sagligi-panel .veri-kontrol-rozet {
+      color: #5eead4; background: #2dd4bf12; border-color: #2dd4bf3d;
+    }
+    .depolama-sagligi-panel.kritik {
+      border-left-color: #ef4444; background: #251016;
+    }
+    .depolama-sagligi-panel.kritik .veri-kontrol-ikon,
+    .depolama-sagligi-panel.kritik .veri-kontrol-rozet {
+      color: #ff7a85; background: #ef444418; border-color: #ef44444d;
+    }
+    .depolama-cubuk {
+      height: 7px; margin: 10px 0 7px; overflow: hidden; border-radius: 999px;
+      background: #06111f; border: 1px solid var(--cizgi-yumusak);
+    }
+    .depolama-cubuk-dolgu {
+      width: 0; height: 100%; border-radius: inherit; background: #2dd4bf;
+      transition: width .35s ease, background .2s;
+    }
+    .depolama-sagligi-panel.uyari .depolama-cubuk-dolgu { background: #f59e0b; }
+    .depolama-sagligi-panel.kritik .depolama-cubuk-dolgu { background: #ef4444; }
+    .depolama-alt-satir { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+    .depolama-yenile {
+      min-height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px;
+      border: 1px solid #2dd4bf55; border-radius: 6px; background: #2dd4bf10;
+      color: #5eead4; font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .depolama-yenile:disabled { opacity: .55; cursor: wait; }
+    .depolama-kaynak { color: #718398; font-size: 9px; line-height: 1.4; }
+    .depolama-kaynak a { color: #7dd3fc; text-decoration: none; }
+
     #rapor-ac-btn {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
       border: 1px solid #c9a84c55; border-radius: 6px; background: #c9a84c12;
@@ -884,6 +918,7 @@
       .veri-kontrol-ok { grid-column: 3; grid-row: 1 / span 2; }
       .veri-kontrol-detay { padding-left: 13px; }
       .veri-kontrol-sayaclar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .depolama-alt-satir { align-items: flex-start; flex-direction: column; }
       .toplu-islem-panel { align-items: stretch; flex-wrap: wrap; padding: 10px; }
       .toplu-islem-bilgi { width: 100%; min-width: 0; }
       .toplu-islem-btn { flex: 1 1 calc(50% - 6px); }
@@ -1528,6 +1563,35 @@
           </div>
         </section>
 
+        <!-- DEPOLAMA SAĞLIĞI -->
+        <section class="veri-kontrol-panel depolama-sagligi-panel yalnizca-yonetici" id="depolama-sagligi-panel" aria-labelledby="depolama-sagligi-baslik">
+          <button class="veri-kontrol-ust" id="depolama-sagligi-dugme" type="button" aria-expanded="false" aria-controls="depolama-sagligi-detay" onclick="depolamaSagligiDetayiniDegistir()">
+            <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-database"></i></span>
+            <span>
+              <span class="veri-kontrol-baslik" id="depolama-sagligi-baslik">Depolama Sağlığı</span>
+              <span class="veri-kontrol-durum" id="depolama-sagligi-durum" role="status">Google Sheets alanı ölçülüyor…</span>
+            </span>
+            <span class="veri-kontrol-rozet" id="depolama-sagligi-rozet">ÖLÇÜLÜYOR</span>
+            <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
+          </button>
+          <div class="veri-kontrol-detay" id="depolama-sagligi-detay" hidden>
+            <div class="veri-kontrol-sayaclar">
+              <div class="veri-kontrol-sayac"><span>AYRILMIŞ HÜCRE</span><strong id="depolama-ayrilmis">—</strong></div>
+              <div class="veri-kontrol-sayac"><span>DOLU HÜCRE TAHMİNİ</span><strong id="depolama-kullanilan">—</strong></div>
+              <div class="veri-kontrol-sayac"><span>MERKEZİ YEDEK</span><strong id="depolama-yedek-sayisi">—</strong></div>
+              <div class="veri-kontrol-sayac"><span>YEDEK BOYUTU</span><strong id="depolama-yedek-boyutu">—</strong></div>
+            </div>
+            <div class="depolama-cubuk" role="progressbar" aria-label="Google Sheets hücre kullanımı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="depolama-cubuk">
+              <div class="depolama-cubuk-dolgu" id="depolama-cubuk-dolgu"></div>
+            </div>
+            <div class="depolama-alt-satir">
+              <p class="depolama-kaynak" id="depolama-sagligi-notu">%70 uyarı, %85 kritik, %95 koruma eşiği. Kritik seviyede eski yedekler otomatik azaltılır.</p>
+              <button class="depolama-yenile" id="depolama-sagligi-yenile" type="button" onclick="depolamaSagligiYenile(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yeniden Ölç</button>
+            </div>
+            <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Google hesabının Drive, Gmail ve Fotoğraflar ile ortak alanı ayrıdır. <a href="https://one.google.com/storage" target="_blank" rel="noopener">Google depolama alanını aç</a></p>
+          </div>
+        </section>
+
         <!-- LİSTE -->
         <section class="toplu-islem-panel yalnizca-yonetici" id="toplu-islem-panel" aria-label="Toplu fatura işlemleri" aria-live="polite" hidden>
           <div class="toplu-islem-bilgi">
@@ -1874,12 +1938,21 @@
           bulutCakismaUyarildi = false;
           kaydedildi = true;
         });
-        if (kaydedildi) syncGoster("Google Sheets'e kaydedildi", "#4ade80");
+        if (kaydedildi) {
+          syncGoster("Google Sheets'e kaydedildi", "#4ade80");
+          depolamaSagligiYenile(false);
+        }
         return kaydedildi;
       } catch(e) {
         if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED", "FORBIDDEN"].includes(e?.code)) {
           sonGirisHatasi = e.message;
           await firebaseAuth?.signOut();
+          return false;
+        }
+        if (e?.code === "STORAGE_CRITICAL") {
+          syncGoster("Google Sheets alanı kritik · Değişiklik kaydedilmedi", "#ef4444");
+          depolamaSagligiYenile(false);
+          alert(e.message || "Google Sheets alanı kritik seviyede. Muhasebe verileri korunarak yeni kayıt durduruldu.");
           return false;
         }
         if (e?.response?.conflict) {
@@ -2635,6 +2708,97 @@
     function veriKontrolDetayiniDegistir() {
       const dugme = document.getElementById("veri-kontrol-dugme");
       const detay = document.getElementById("veri-kontrol-detay");
+      const acilacak = dugme.getAttribute("aria-expanded") !== "true";
+      dugme.setAttribute("aria-expanded", String(acilacak));
+      detay.hidden = !acilacak;
+    }
+
+    function depolamaSayisiniFormatla(deger) {
+      const sayi = Number(deger);
+      return Number.isFinite(sayi) ? Math.max(0, Math.round(sayi)).toLocaleString("tr-TR") : "—";
+    }
+
+    function depolamaBoyutunuFormatla(bayt) {
+      let deger = Math.max(Number(bayt) || 0, 0);
+      const birimler = ["B", "KB", "MB", "GB"];
+      let sira = 0;
+      while (deger >= 1024 && sira < birimler.length - 1) {
+        deger /= 1024;
+        sira += 1;
+      }
+      const basamak = deger >= 100 || sira === 0 ? 0 : deger >= 10 ? 1 : 2;
+      return `${deger.toLocaleString("tr-TR", { maximumFractionDigits:basamak })} ${birimler[sira]}`;
+    }
+
+    function depolamaSagliginiGoster(storage) {
+      if (!storage || typeof storage !== "object") throw new Error("Depolama bilgisi okunamadı.");
+      const panel = document.getElementById("depolama-sagligi-panel");
+      const seviye = ["healthy", "warning", "critical", "emergency"].includes(storage.seviye)
+        ? storage.seviye
+        : "healthy";
+      const yuzde = Math.min(Math.max(Number(storage.kullanimYuzdesi) || 0, 0), 100);
+      const uyari = seviye === "warning";
+      const kritik = seviye === "critical" || seviye === "emergency";
+      panel.classList.toggle("uyari", uyari);
+      panel.classList.toggle("kritik", kritik);
+      panel.querySelector(".veri-kontrol-ikon i").className = kritik
+        ? "fa-solid fa-triangle-exclamation"
+        : uyari ? "fa-solid fa-hard-drive" : "fa-solid fa-database";
+
+      const durumMetinleri = {
+        healthy:`Google Sheets hücre kapasitesinin %${yuzde.toLocaleString("tr-TR", { maximumFractionDigits:2 })} kadarı ayrılmış durumda`,
+        warning:`Depolama %${yuzde.toLocaleString("tr-TR", { maximumFractionDigits:2 })} · Büyümeyi kontrol edin`,
+        critical:`Depolama %${yuzde.toLocaleString("tr-TR", { maximumFractionDigits:2 })} · Eski yedekler 5 kayda indirilecek`,
+        emergency:`Depolama %${yuzde.toLocaleString("tr-TR", { maximumFractionDigits:2 })} · Yeni değişiklikler koruma altında durdurulur`
+      };
+      document.getElementById("depolama-sagligi-durum").textContent = durumMetinleri[seviye];
+      document.getElementById("depolama-sagligi-rozet").textContent = {
+        healthy:"SAĞLIKLI", warning:"DİKKAT", critical:"KRİTİK", emergency:"KORUMA AKTİF"
+      }[seviye];
+      document.getElementById("depolama-ayrilmis").textContent = `${depolamaSayisiniFormatla(storage.ayrilmisHucre)} / ${depolamaSayisiniFormatla(storage.hucreSiniri)}`;
+      document.getElementById("depolama-kullanilan").textContent = depolamaSayisiniFormatla(storage.kullanilanHucre);
+      document.getElementById("depolama-yedek-sayisi").textContent = `${depolamaSayisiniFormatla(storage.yedekSayisi)} / ${depolamaSayisiniFormatla(storage.yedekSiniri)}`;
+      document.getElementById("depolama-yedek-boyutu").textContent = depolamaBoyutunuFormatla(storage.yaklasikYedekBayti);
+      const cubuk = document.getElementById("depolama-cubuk");
+      cubuk.setAttribute("aria-valuenow", String(Math.round(yuzde)));
+      document.getElementById("depolama-cubuk-dolgu").style.width = `${yuzde}%`;
+      document.getElementById("depolama-sagligi-notu").textContent = seviye === "healthy"
+        ? `%70 uyarı, %85 kritik, %95 koruma eşiği · ${depolamaSayisiniFormatla(storage.bosHucre)} hücre ayrılabilir durumda.`
+        : seviye === "warning"
+          ? "Alan büyümeye devam ederse eski yedekleri dışa aktarmaya hazırlanın."
+          : seviye === "critical"
+            ? "Yeni yedek öncesinde en eski merkezi yedekler silinerek son 5 kayıt korunur."
+            : "Muhasebe verileri silinmez; güvenli yedek oluşturulamıyorsa yeni kayıt engellenir.";
+    }
+
+    async function depolamaSagligiYenile(sesli=false) {
+      if (!yoneticiMi()) return;
+      const dugme = document.getElementById("depolama-sagligi-yenile");
+      if (dugme) dugme.disabled = true;
+      if (sesli) syncGoster("Google Sheets depolama alanı ölçülüyor…", "#5eead4");
+      try {
+        const storage = YEREL_GELISTIRME
+          ? {
+              seviye:"healthy", hucreSiniri:10000000, ayrilmisHucre:48200, kullanilanHucre:2650,
+              bosHucre:9951800, kullanimYuzdesi:.48, yedekSayisi:1, yedekSiniri:20, yaklasikYedekBayti:184000
+            }
+          : (await apiIstegi({ action:"storage.status" })).storage;
+        depolamaSagliginiGoster(storage);
+        if (sesli) syncGoster("Depolama sağlığı güncellendi", "#4ade80");
+      } catch (hata) {
+        const panel = document.getElementById("depolama-sagligi-panel");
+        panel.classList.add("uyari");
+        document.getElementById("depolama-sagligi-durum").textContent = hata?.message || "Depolama bilgisi alınamadı.";
+        document.getElementById("depolama-sagligi-rozet").textContent = "KONTROL EDİLEMEDİ";
+        if (sesli) syncGoster("Depolama bilgisi alınamadı", "#f59e0b");
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
+    }
+
+    function depolamaSagligiDetayiniDegistir() {
+      const dugme = document.getElementById("depolama-sagligi-dugme");
+      const detay = document.getElementById("depolama-sagligi-detay");
       const acilacak = dugme.getAttribute("aria-expanded") !== "true";
       dugme.setAttribute("aria-expanded", String(acilacak));
       detay.hidden = !acilacak;
@@ -4392,10 +4556,12 @@
       yedekDugmesiniGuncelle();
       if (yoneticiMi()) bildirimKontrol();
       await buludanYukle(ilkUzakDurum);
+      if (yoneticiMi()) depolamaSagligiYenile(false);
       kurlariYukle();
       setTimeout(karsılamaGoster, 500);
       setInterval(()=>{ rozetGuncelle(); ozetGuncelle(); }, 60000);
       setInterval(kurlariYukle, 30 * 60 * 1000);
+      setInterval(() => { if (yoneticiMi()) depolamaSagligiYenile(false); }, 30 * 60 * 1000);
       document.getElementById("yeni-fatura-overlay")?.addEventListener("click", e => {
         if (e.target.id === "yeni-fatura-overlay") yeniFaturaKapat();
       });

@@ -60,26 +60,37 @@ function range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCou
   };
 }
 
-function sheetOlustur(degerleriGetir, degerleriAyarla) {
+function sheetOlustur(degerleriGetir, degerleriAyarla, ad) {
   return {
+    getName() { return ad; },
     getDataRange() { return { getValues: () => degerleriGetir().map(row => row.slice()) }; },
     getLastRow() { return degerleriGetir().length; },
+    getLastColumn() { return degerleriGetir().reduce((enBuyuk, row) => Math.max(enBuyuk, row.length), 0); },
+    getMaxRows() { return Math.max(degerleriGetir().length, 2); },
+    getMaxColumns() { return Math.max(degerleriGetir().reduce((enBuyuk, row) => Math.max(enBuyuk, row.length), 0), 10); },
     clearContents() { degerleriAyarla([]); return this; },
     appendRow(row) { const values = degerleriGetir(); values.push(row.slice()); degerleriAyarla(values); return this; },
     deleteRows(row, count) { const values = degerleriGetir(); values.splice(row - 1, count); degerleriAyarla(values); return this; },
+    deleteColumns(column, count) {
+      const values = degerleriGetir();
+      values.forEach(row => row.splice(column - 1, count));
+      degerleriAyarla(values);
+      return this;
+    },
+    insertColumnsAfter() { return this; },
     getRange(row, column, rowCount = 1, columnCount = 1) {
       return range(degerleriGetir, degerleriAyarla, row, column, rowCount, columnCount);
     }
   };
 }
 
-const invoiceSheet = sheetOlustur(() => invoiceValues, next => { invoiceValues = next; });
-const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues = next; });
-const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; });
-const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; });
-const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; });
-const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; });
-const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; });
+const invoiceSheet = sheetOlustur(() => invoiceValues, next => { invoiceValues = next; }, "Faturalar");
+const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues = next; }, "Ödemeler");
+const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; }, "Cari Hareketler");
+const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; }, "Çekler");
+const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; }, "Cariler");
+const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; }, "İşlem Geçmişi");
+const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; }, "Bulut Yedekleri");
 
 let locked = false;
 const context = {
@@ -89,6 +100,14 @@ const context = {
     waitLock() { locked = true; }, hasLock() { return locked; }, releaseLock() { locked = false; }
   }) },
   SpreadsheetApp: { getActiveSpreadsheet: () => ({
+    getSheets() {
+      return [invoiceSheet, paymentSheet]
+        .concat(movementExists ? [movementSheet] : [])
+        .concat(checkExists ? [checkSheet] : [])
+        .concat(customerExists ? [customerSheet] : [])
+        .concat(auditExists ? [auditSheet] : [])
+        .concat(backupExists ? [backupSheet] : []);
+    },
     getSheetByName(name) {
       if (name === "Faturalar") return invoiceSheet;
       if (name === "Ödemeler") return paymentSheet;
@@ -170,7 +189,13 @@ assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", item
 assert.equal(post({ action:"users.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici kullanıcı yönetimine erişememeli");
 assert.equal(post({ action:"audit.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici işlem geçmişini görüntüleyememeli");
 assert.equal(post({ action:"backups.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici bulut yedeklerini görüntüleyememeli");
+assert.equal(post({ action:"storage.status" }, "viewer-token").code, "FORBIDDEN", "İzleyici depolama sağlığını görüntüleyememeli");
 assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
+
+const depolamaDurumu = post({ action:"storage.status" });
+assert.equal(depolamaDurumu.storage.hucreSiniri, 10000000);
+assert.equal(depolamaDurumu.storage.seviye, "healthy");
+assert.ok(depolamaDurumu.storage.ayrilmisHucre > 0);
 
 const ilkKullanicilar = post({ action:"users.list" });
 assert.equal(ilkKullanicilar.users.length, 2, "Proje sahibi ve izleyici listelenmeli");
