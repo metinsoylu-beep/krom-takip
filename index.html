@@ -664,12 +664,18 @@
     .bulut-yedegi-satir span { display: block; color: #718398; font-size: 8px; text-transform: uppercase; }
     .bulut-yedegi-satir strong { display: block; margin-top: 3px; color: #dce6ef; font-size: 10px; line-height: 1.35; }
     .bulut-yedegi-surum strong { color: #5eead4; }
-    .bulut-yedegi-geri {
+    .bulut-yedegi-islemler { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .bulut-yedegi-geri, .bulut-yedegi-indir, .bulut-yedegi-olustur {
       min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       padding: 7px 11px; border: 1px solid #2dd4bf66; border-radius: 7px; background: #2dd4bf12;
       color: #5eead4; font: 700 10px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
     }
-    .bulut-yedegi-geri:hover { background: #2dd4bf24; }
+    .bulut-yedegi-geri:hover, .bulut-yedegi-indir:hover, .bulut-yedegi-olustur:hover { background: #2dd4bf24; }
+    .bulut-yedegi-indir { color: #93c5fd; border-color: #60a5fa66; background: #60a5fa12; }
+    .bulut-yedegi-indir:hover { background: #60a5fa24; }
+    .bulut-yedegi-olustur { color: #071827; border-color: #5eead4; background: #5eead4; }
+    .bulut-yedegi-olustur:hover { background: #99f6e4; }
+    .bulut-yedegi-geri:disabled, .bulut-yedegi-indir:disabled, .bulut-yedegi-olustur:disabled { opacity: .55; cursor: wait; }
     .hareket-tur { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
     .hareket-tur.borc { color: #ff6b77; }
     .hareket-tur.alacak { color: #4ade80; }
@@ -963,7 +969,9 @@
       .islem-gecmisi-yenile { width: 100%; }
       .bulut-yedekleri-liste { padding: 12px; }
       .bulut-yedegi-satir { grid-template-columns: 1fr 1fr; }
-      .bulut-yedegi-aciklama, .bulut-yedegi-geri { grid-column: 1 / -1; }
+      .bulut-yedegi-aciklama, .bulut-yedegi-islemler { grid-column: 1 / -1; }
+      .bulut-yedegi-islemler { justify-content: stretch; }
+      .bulut-yedegi-islemler button { flex: 1; }
       .rapor-overlay { padding: 0; }
       .rapor-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .rapor-filtreler { grid-template-columns: 1fr 1fr; padding: 12px; }
@@ -1267,6 +1275,7 @@
           <p class="odeme-yonetim-alt">Her kayıt öncesi alınan son 20 merkezi güvenlik kopyası.</p>
         </div>
         <div class="islem-gecmisi-islemler">
+          <button class="bulut-yedegi-olustur" id="bulut-yedegi-olustur" type="button" onclick="bulutYedegiOlustur()"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Şimdi Yedekle</button>
           <button class="islem-gecmisi-yenile" id="bulut-yedekleri-yenile" type="button" onclick="bulutYedekleriniYukle()"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yenile</button>
           <button class="modal-kapat" type="button" onclick="bulutYedekleriniKapat()" aria-label="Bulut yedeklerini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
@@ -3043,8 +3052,85 @@
         <div><span>KULLANICI</span><strong>${htmlGuvenli(yedek.kullanici || "—")}</strong></div>
         <div class="bulut-yedegi-aciklama"><span>AÇIKLAMA</span><strong>${htmlGuvenli(yedek.aciklama || "Değişiklik öncesi otomatik yedek")}</strong></div>
         <div class="bulut-yedegi-surum"><span>SÜRÜM</span><strong>${htmlGuvenli(String(yedek.revision ?? "—"))}</strong></div>
-        <button class="bulut-yedegi-geri" type="button" data-backup-id="${htmlGuvenli(yedek.id)}" onclick="bulutYedeginiGeriYukle('${htmlGuvenli(yedek.id)}')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Geri Yükle</button>
+        <div class="bulut-yedegi-islemler">
+          <button class="bulut-yedegi-indir" type="button" data-backup-download-id="${htmlGuvenli(yedek.id)}" onclick="bulutYedeginiIndir('${htmlGuvenli(yedek.id)}')"><i class="fa-solid fa-download" aria-hidden="true"></i> JSON İndir</button>
+          <button class="bulut-yedegi-geri" type="button" data-backup-id="${htmlGuvenli(yedek.id)}" onclick="bulutYedeginiGeriYukle('${htmlGuvenli(yedek.id)}')"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Geri Yükle</button>
+        </div>
       </article>`).join("");
+    }
+
+    async function bulutYedegiOlustur() {
+      if (!yoneticiGerekli()) return;
+      const dugme = document.getElementById("bulut-yedegi-olustur");
+      if (dugme) dugme.disabled = true;
+      syncGoster("Merkezi güvenlik yedeği oluşturuluyor…", "#5eead4");
+      try {
+        let yanit;
+        if (YEREL_GELISTIRME) {
+          const yedek = {
+            id:`yedek-yerel-${Date.now()}`,
+            kayitZamani:new Date().toISOString(),
+            kullanici:oturumKullanici?.email || "yerel-test",
+            revision:bulutSurumu || 0,
+            aciklama:"Yönetici tarafından manuel güvenlik yedeği",
+            durum:uygulamaDurumuOlustur()
+          };
+          yerelBulutYedekleri.unshift(yedek);
+          yerelBulutYedekleri = yerelBulutYedekleri.slice(0, 20);
+          yanit = { ok:true, backupId:yedek.id, backups:yerelBulutYedekleri.slice() };
+        } else {
+          yanit = await apiIstegi({ action:"backups.create" });
+        }
+        bulutYedekleriniGoster(yanit.backups);
+        if (yanit.storage) depolamaSagliginiGoster(yanit.storage);
+        else await depolamaSagligiYenile();
+        syncGoster("Merkezi güvenlik yedeği oluşturuldu", "#4ade80");
+      } catch (hata) {
+        syncGoster(hata?.message || "Merkezi yedek oluşturulamadı", "#ef4444");
+        alert(hata?.message || "Merkezi yedek oluşturulamadı.");
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
+    }
+
+    async function bulutYedeginiIndir(yedekId) {
+      if (!yoneticiGerekli()) return;
+      const dugme = document.querySelector(`[data-backup-download-id="${CSS.escape(String(yedekId || ""))}"]`);
+      if (dugme) dugme.disabled = true;
+      try {
+        const yerelKayit = yerelBulutYedekleri.find(yedek => yedek.id === yedekId);
+        const yanit = YEREL_GELISTIRME
+          ? { backup:{ ...yerelKayit, durum:yerelKayit?.durum || uygulamaDurumuOlustur() } }
+          : await apiIstegi({ action:"backups.get", backupId:yedekId });
+        const yedek = yanit?.backup;
+        if (!yedek?.durum) throw new Error("İndirilecek bulut yedeği okunamadı.");
+        const tarih = new Date(yedek.kayitZamani);
+        const tarihMetni = Number.isNaN(tarih.getTime())
+          ? "tarihsiz"
+          : tarih.toISOString().replace(/[:.]/g, "-");
+        const icerik = JSON.stringify({
+          format:"arlinoks-merkezi-yedek-v1",
+          yedekId:yedek.id,
+          kayitZamani:yedek.kayitZamani,
+          kullanici:yedek.kullanici,
+          revision:yedek.revision,
+          aciklama:yedek.aciklama,
+          durum:yedek.durum
+        }, null, 2);
+        const adres = URL.createObjectURL(new Blob([icerik], { type:"application/json;charset=utf-8" }));
+        const baglanti = document.createElement("a");
+        baglanti.href = adres;
+        baglanti.download = `arlinoks-merkezi-yedek-${tarihMetni}.json`;
+        document.body.appendChild(baglanti);
+        baglanti.click();
+        baglanti.remove();
+        URL.revokeObjectURL(adres);
+        syncGoster("Merkezi yedek bilgisayara indirildi", "#60a5fa");
+      } catch (hata) {
+        alert(hata?.message || "Bulut yedeği indirilemedi.");
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
     }
 
     async function bulutYedekleriniYukle() {

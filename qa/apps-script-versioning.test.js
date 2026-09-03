@@ -189,6 +189,7 @@ assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", item
 assert.equal(post({ action:"users.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici kullanıcı yönetimine erişememeli");
 assert.equal(post({ action:"audit.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici işlem geçmişini görüntüleyememeli");
 assert.equal(post({ action:"backups.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici bulut yedeklerini görüntüleyememeli");
+assert.equal(post({ action:"backups.create" }, "viewer-token").code, "FORBIDDEN", "İzleyici manuel bulut yedeği oluşturamamalı");
 assert.equal(post({ action:"storage.status" }, "viewer-token").code, "FORBIDDEN", "İzleyici depolama sağlığını görüntüleyememeli");
 assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
 
@@ -239,6 +240,12 @@ assert.equal(yedekler.backups[0].revision, 0, "Yedek değişiklikten önceki ver
 const yedekDetayi = post({ action:"backups.get", backupId:yedekler.backups[0].id });
 assert.equal(yedekDetayi.backup.durum.items.length, 1, "Bulut yedeği önceki fatura durumunu geri verebilmeli");
 assert.equal(yedekDetayi.backup.durum.cariHareketler.length, 1, "Bulut yedeği önceki cari hareketleri içermeli");
+const manuelYedek = post({ action:"backups.create" });
+assert.equal(manuelYedek.ok, true, "Yönetici manuel merkezi yedek oluşturabilmeli");
+assert.equal(manuelYedek.backups.length, 2, "Manuel yedek mevcut otomatik yedekleri silmemeli");
+assert.equal(manuelYedek.storage.yedekSayisi, 2, "Depolama durumu yeni manuel yedeği hemen yansıtmalı");
+const manuelYedekDetayi = post({ action:"backups.get", backupId:manuelYedek.backupId });
+assert.equal(manuelYedekDetayi.backup.durum.items.length, 2, "Manuel yedek güncel muhasebe durumunu içermeli");
 
 const kayitSonrasi = post({ action:"read" });
 assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");

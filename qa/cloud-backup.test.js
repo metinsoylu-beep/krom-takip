@@ -8,6 +8,7 @@ assert.match(code, /const CLOUD_BACKUP_SHEET_NAME = "Bulut Yedekleri"/, "Merkezi
 assert.match(code, /const CLOUD_BACKUP_MAX_RECORDS = 20/, "Bulut yedekleri sınırsız büyümemeli");
 assert.match(code, /const CLOUD_BACKUP_CHUNK_SIZE = 40000/, "Büyük yedekler hücre sınırına karşı parçalara ayrılmalı");
 assert.match(code, /payload\.action === "backups\.list"/, "Bulut yedekleri listeleme API işlemi bulunmalı");
+assert.match(code, /"backups\.create"/, "Yönetici istediği anda manuel bulut yedeği oluşturabilmeli");
 assert.match(code, /bulutYedeginiOku\(payload\.backupId\)/, "Seçilen bulut yedeği güvenli kimlikle okunmalı");
 assert.match(code, /Güvenlik yedeği oluşturulamadığı için değişiklik kaydedilmedi/, "Yedeksiz toplu veri yazımı engellenmeli");
 assert.match(code, /bulutYedegiKaydet\(oncekiDurum/, "Ana tablolar değişmeden önce mevcut durum yedeklenmeli");
@@ -15,6 +16,10 @@ assert.match(code, /bulutYedegiKaydet\(oncekiDurum/, "Ana tablolar değişmeden 
 assert.match(index, /id="bulut-yedekleri-btn"[^>]*class="yalnizca-yonetici"/, "Bulut yedeği düğmesi yalnızca yöneticiye gösterilmeli");
 assert.match(index, /id="bulut-yedekleri-overlay"/, "Bulut yedekleri paneli bulunmalı");
 assert.match(index, /action:"backups\.list", limit:20/, "Ön yüz son 20 merkezi yedeği istemeli");
+assert.match(index, /id="bulut-yedegi-olustur"/, "Bulut yedekleri panelinde manuel yedek düğmesi bulunmalı");
+assert.match(index, /action:"backups\.create"/, "Manuel yedekleme sunucu API'sini kullanmalı");
+assert.match(index, /function bulutYedeginiIndir\(yedekId\)/, "Merkezi yedek JSON olarak indirilebilmeli");
+assert.match(index, /application\/json;charset=utf-8/, "İndirilen yedek taşınabilir JSON biçiminde olmalı");
 assert.match(index, /action:"backups\.get", backupId:yedekId/, "Geri yükleme öncesi seçilen yedek sunucudan alınmalı");
 assert.match(index, /Mevcut veriler önce yeni bir güvenlik yedeğine alınacaktır/, "Geri yükleme etkisi kullanıcıya açıkça bildirilmeli");
 assert.match(index, /auditAction:"Bulut yedeği geri yüklendi"/, "Geri yükleme işlem geçmişinde ayırt edilebilmeli");

@@ -1175,13 +1175,49 @@ function doPost(e) {
       return jsonCevabi({ ok:true, storage:depolamaDurumunuHesapla(SpreadsheetApp.getActiveSpreadsheet()) });
     }
 
-    if (["backups.list", "backups.get"].indexOf(payload.action) >= 0) {
+    if (["backups.list", "backups.get", "backups.create"].indexOf(payload.action) >= 0) {
       if (yetki.role !== "admin") {
         return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Bulut yedeklerini yalnızca yöneticiler görüntüleyebilir." });
       }
       kilit.waitLock(30000);
       if (payload.action === "backups.list") {
         return jsonCevabi({ ok:true, backups:bulutYedekleriniOku(payload.limit) });
+      }
+      if (payload.action === "backups.create") {
+        const mevcutDurum = faturaVerileriniOku();
+        try {
+          const yedekId = bulutYedegiKaydet(mevcutDurum, {
+            kullanici:yetki.email,
+            revision:mevcutDurum.revision,
+            aciklama:"Yönetici tarafından manuel güvenlik yedeği"
+          });
+          try {
+            islemGecmisiKaydet({
+              kullanici:yetki.email,
+              islem:"Manuel bulut yedeği oluşturuldu",
+              varlik:"Muhasebe kayıtları",
+              aciklama:"Mevcut fatura, cari, ödeme ve çek verileri merkezi yedeğe alındı.",
+              revision:mevcutDurum.revision
+            });
+          } catch (logHatasi) {
+            console.error("İşlem geçmişi yazılamadı: " + logHatasi);
+          }
+          return jsonCevabi({
+            ok:true,
+            backupId:yedekId,
+            backups:bulutYedekleriniOku(CLOUD_BACKUP_MAX_RECORDS),
+            storage:depolamaDurumunuHesapla(SpreadsheetApp.getActiveSpreadsheet())
+          });
+        } catch (yedekHatasi) {
+          const depolamaKritik = yedekHatasi && yedekHatasi.code === "STORAGE_CRITICAL";
+          return jsonCevabi({
+            ok:false,
+            code:depolamaKritik ? "STORAGE_CRITICAL" : "BACKUP_FAILED",
+            message:depolamaKritik
+              ? "Google Sheets alanı kritik seviyede olduğu için manuel yedek oluşturulamadı."
+              : "Manuel bulut yedeği oluşturulamadı."
+          });
+        }
       }
       const yedek = bulutYedeginiOku(payload.backupId);
       return yedek
