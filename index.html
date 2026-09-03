@@ -103,12 +103,22 @@
     .popup-alt { font-size: 13px; margin-top: 3px; color: #94a3b8; }
     .popup-kapat { background: linear-gradient(135deg,#c9a84c,#a07830); color: #0f172a; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; font-family: Georgia, serif; margin-top: 6px; }
     .popup-kapat:hover { opacity: 0.9; }
-    #odeme-popup { border: 2px solid #ef4444; }
+    #odeme-popup { max-height: 90vh; overflow-y: auto; border: 2px solid #ef4444; }
     #odeme-popup .popup-baslik { color: #ef4444; }
     .odeme-satir { background: #0f172a; border-left: 4px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     .odeme-satir .od-no { color: #f1f5f9; font-weight: bold; font-size: 14px; }
     .odeme-satir .od-tutar { color: #c9a84c; font-weight: bold; font-size: 15px; }
     .odeme-satir .od-gun { font-size: 12px; }
+    .vade-uyari-bolum + .vade-uyari-bolum { margin-top: 16px; padding-top: 14px; border-top: 1px solid #334155; }
+    .vade-uyari-bolum-baslik { margin: 0 0 8px; color: #cbd5e1; font-size: 11px; letter-spacing: .5px; }
+    .cek-uyari-satir { border-left-color: #a78bfa; }
+    .cek-uyari-satir .od-tutar { color: #c4b5fd; }
+    .cek-uyari-ac {
+      width: 100%; margin-top: 8px; padding: 9px 12px; border: 1px solid #a78bfa66; border-radius: 8px;
+      background: #a78bfa14; color: #d8ccff; font: 700 11px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .cek-uyari-ac:hover { background: #a78bfa24; }
+    .vade-uyari-devam { margin: 7px 0 0; color: #94a3b8; font-size: 10px; text-align: center; }
     #karsılama-popup { border: 2px solid #c9a84c; }
     #karsılama-popup .popup-baslik { color: #c9a84c; }
     #duzenle-popup { border: 2px solid #c9a84c55; }
@@ -1291,7 +1301,7 @@
         <div class="popup-ikon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
         <div>
           <div class="popup-baslik">Vade Uyarısı</div>
-          <div class="popup-alt">Cari borcu bulunan firmalara ait bugün vadeli veya vadesi geçmiş faturalar:</div>
+          <div class="popup-alt">Acil faturalar ve yaklaşan çek vadeleri tek ekranda gösterilir.</div>
         </div>
       </div>
       <div id="odeme-liste" style="margin-bottom:16px;"></div>
@@ -4696,6 +4706,13 @@
         });
     }
 
+    function cekVadeUyariListesi(cekler, referans=new Date(), gunSiniri=7) {
+      return (Array.isArray(cekler) ? cekler : [])
+        .filter(cek => cek?.durum === "Verildi" && cekTakipDurumBilgisi(cek, referans).gun <= gunSiniri)
+        .sort((a,b) => tarihOlusturYerel(a.vadeTarihi) - tarihOlusturYerel(b.vadeTarihi)
+          || String(a.cari || "").localeCompare(String(b.cari || ""), "tr", { sensitivity:"base" }));
+    }
+
     function cekTakipCsvIcerigiOlustur(liste, referans=new Date()) {
       const basliklar = ["Cari/Firma","Çek No","Banka","Veriliş Tarihi","Vade Tarihi","Tutar (TL)","Kayıt Durumu","Vade Durumu","Referans","Açıklama"];
       const satirlar = (Array.isArray(liste) ? liste : []).map(cek => {
@@ -4856,8 +4873,9 @@
           acilFirmalar.set(anahtar,kayit);
         });
       const acil = Array.from(acilFirmalar.values()).sort((a,b) => b.bakiye-a.bakiye);
-      if (!acil.length) return;
-      document.getElementById("odeme-liste").innerHTML = acil.map(kayit => {
+      const acilCekler = cekVadeUyariListesi(cekleriYukle());
+      if (!acil.length && !acilCekler.length) return;
+      const faturaHtml = acil.map(kayit => {
         const enEski = kayit.faturalar.slice().sort((a,b)=>vadeTarihi(a.tarih,a.vadeGun)-vadeTarihi(b.tarih,b.vadeGun))[0];
         const g = kalanGun(vadeTarihi(enEski.tarih, enEski.vadeGun));
         const gunMetin = g < 0
@@ -4868,6 +4886,19 @@
           <div class="od-tutar">${formatPara(kayit.bakiye)} borç</div>
         </div>`;
       }).join("");
+      const gorunenCekler = acilCekler.slice(0,5);
+      const cekHtml = gorunenCekler.map(cek => {
+        const bilgi = cekTakipDurumBilgisi(cek);
+        const vadeRengi = bilgi.gun < 0 ? "#ff6b77" : bilgi.gun === 0 ? "#fb923c" : "#f6c95c";
+        return `<div class="odeme-satir cek-uyari-satir">
+          <div><div class="od-no">${htmlGuvenli(cek.cari)}</div><span class="od-gun" style="color:${vadeRengi}"><i class="fa-solid fa-money-check" aria-hidden="true"></i> ${htmlGuvenli(cek.cekNo || "Çek no belirtilmedi")} · ${htmlGuvenli(bilgi.etiket)}</span></div>
+          <div class="od-tutar">${formatPara(cek.tutar)}</div>
+        </div>`;
+      }).join("");
+      const kalanCekMetni = acilCekler.length > gorunenCekler.length
+        ? `<p class="vade-uyari-devam">${acilCekler.length-gorunenCekler.length} çek daha takip merkezinde listeleniyor.</p>`
+        : "";
+      document.getElementById("odeme-liste").innerHTML = `${acil.length ? `<section class="vade-uyari-bolum"><h3 class="vade-uyari-bolum-baslik"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> FATURA UYARILARI</h3>${faturaHtml}</section>` : ""}${acilCekler.length ? `<section class="vade-uyari-bolum"><h3 class="vade-uyari-bolum-baslik"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> ÇEK VADELERİ · ${acilCekler.length} KAYIT</h3>${cekHtml}${kalanCekMetni}<button class="cek-uyari-ac" type="button" onclick="odemeKapat();cekTakibiniAc()"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Çek Takip Merkezi'ni Aç</button></section>` : ""}`;
       document.getElementById("odeme-overlay").classList.add("aktif");
       sesliBildirim('odeme');
     }

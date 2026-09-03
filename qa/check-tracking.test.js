@@ -79,6 +79,15 @@ assert.deepEqual(
   ["1","2","3","6"],
   "CSV ve tablo aynı arama/durum filtrelerini kullanmalı"
 );
+assert.deepEqual(
+  JSON.parse(JSON.stringify(context.cekVadeUyariListesi([
+    ...cekler,
+    { id:"7", cari:"Sınır Dahil", vadeTarihi:"2026-09-10", tutar:50, durum:"Verildi" },
+    { id:"8", cari:"Sınır Dışı", vadeTarihi:"2026-09-11", tutar:50, durum:"Verildi" }
+  ], referans).map(cek => cek.id))),
+  ["1","2","7"],
+  "Uyarı yalnız geciken ve yedi gün içinde vadeli aktif çekleri göstermeli"
+);
 
 const csv = context.cekTakipCsvIcerigiOlustur([
   { ...cekler[0], referans:"=HYPERLINK(\"risk\")", aciklama:"Kontrol" }
@@ -93,5 +102,6 @@ assert.match(index, /onclick="cekTakibiniAc\(\)"/, "Bekleyen çek kartı takip m
 assert.match(index, /yoneticiMi\(\)[\s\S]*cek-takip-durum-sec/, "Durum değiştirme alanı yalnız yöneticiye sunulmalı");
 assert.match(index, /cariHareketIptaliniGeriAl\('cek'/, "İptal edilmiş çek geri alınabilmeli");
 assert.match(index, /class="cek-takip-csv yalnizca-yonetici"[\s\S]*onclick="cekTakipCsvIndir\(\)"/, "CSV indirme yalnız yöneticiye sunulmalı");
+assert.match(index, /onclick="odemeKapat\(\);cekTakibiniAc\(\)"/, "Vade uyarısından Çek Takip Merkezi açılabilmeli");
 
 console.log("Çek Takip Merkezi hesaplama ve arayüz testleri başarılı.");
