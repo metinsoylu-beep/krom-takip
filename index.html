@@ -669,12 +669,29 @@
     .bulut-yedek-tur { padding: 8px 10px; }
     .bulut-yedek-ozet { color: #8fa2b7; font-size: 9px; text-align: right; white-space: nowrap; }
     .bulut-yedek-ozet strong { color: #5eead4; }
+    .bulut-kurtarma-durumu {
+      display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 11px;
+      margin: 12px 18px 0; padding: 11px 12px; border: 1px solid #4ade8040; border-radius: 8px;
+      background: linear-gradient(90deg,#4ade8012,#071827); border-left: 3px solid #4ade80;
+    }
+    .bulut-kurtarma-durumu.uyari { border-color: #f3be3e55; border-left-color: #f3be3e; background: linear-gradient(90deg,#f3be3e12,#071827); }
+    .bulut-kurtarma-durumu.riskli { border-color: #ff526055; border-left-color: #ff5260; background: linear-gradient(90deg,#ff526012,#071827); }
+    .bulut-kurtarma-ikon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: #4ade80; background: #4ade8018; border: 1px solid #4ade8038; }
+    .bulut-kurtarma-durumu.uyari .bulut-kurtarma-ikon { color: #f6c95c; background: #f3be3e18; border-color: #f3be3e38; }
+    .bulut-kurtarma-durumu.riskli .bulut-kurtarma-ikon { color: #ff7a85; background: #ff526018; border-color: #ff526038; }
+    .bulut-kurtarma-metin span, .bulut-kurtarma-metin small { display: block; color: #718398; font: 8px "Segoe UI",Arial,sans-serif; }
+    .bulut-kurtarma-metin strong { display: block; margin: 3px 0; color: #e3edf5; font: 750 11px "Segoe UI",Arial,sans-serif; }
+    .bulut-kurtarma-rozet { padding: 5px 8px; border-radius: 999px; color: #4ade80; background: #4ade8015; border: 1px solid #4ade8040; font: 800 8px "Segoe UI",Arial,sans-serif; white-space: nowrap; }
+    .bulut-kurtarma-durumu.uyari .bulut-kurtarma-rozet { color: #f6c95c; background: #f3be3e15; border-color: #f3be3e40; }
+    .bulut-kurtarma-durumu.riskli .bulut-kurtarma-rozet { color: #ff7a85; background: #ff526015; border-color: #ff526040; }
     .bulut-yedekleri-liste { display: grid; gap: 8px; max-height: 62vh; overflow: auto; padding: 14px 18px 18px; }
     .bulut-yedegi-satir {
       display: grid; grid-template-columns: minmax(158px,.85fr) minmax(190px,1.1fr) minmax(225px,1.3fr) minmax(112px,.65fr) auto;
       align-items: center; gap: 12px; padding: 12px; background: #0a1a2b;
       border: 1px solid var(--cizgi); border-left: 3px solid #2dd4bf; border-radius: 8px;
     }
+    .bulut-yedegi-satir.onerilen { border-color: #f3be3e66; border-left-color: #f3be3e; box-shadow: inset 0 0 0 1px #f3be3e12; }
+    .bulut-yedegi-oneri { display: inline-flex !important; width: fit-content; margin-bottom: 4px; padding: 3px 6px; border-radius: 999px; color: #f6c95c !important; background: #f3be3e15; border: 1px solid #f3be3e40; font-size: 7px !important; font-weight: 850; }
     .bulut-yedegi-satir span { display: block; color: #718398; font-size: 8px; text-transform: uppercase; }
     .bulut-yedegi-satir strong { display: block; margin-top: 3px; color: #dce6ef; font-size: 10px; line-height: 1.35; }
     .bulut-yedegi-meta small, .bulut-yedegi-icerik small { display: block; margin-top: 4px; color: #718398; font-size: 8px; }
@@ -1048,6 +1065,8 @@
       .bulut-yedekleri-liste { padding: 12px; }
       .bulut-yedekleri-filtreler { grid-template-columns: 1fr; padding: 12px; }
       .bulut-yedek-ozet { text-align: left; }
+      .bulut-kurtarma-durumu { margin: 12px 12px 0; grid-template-columns: 36px minmax(0,1fr); }
+      .bulut-kurtarma-rozet { grid-column: 2; justify-self: start; }
       .json-yedek-onizleme { margin: 12px 12px 0; }
       .json-yedek-ust { grid-template-columns: 34px minmax(0,1fr); }
       .json-yedek-rozet { grid-column: 2; justify-self: start; }
@@ -1385,6 +1404,15 @@
         </select>
         <div class="bulut-yedek-ozet" id="bulut-yedek-ozet">—</div>
       </div>
+      <section class="bulut-kurtarma-durumu" id="bulut-kurtarma-durumu" role="status" aria-live="polite">
+        <span class="bulut-kurtarma-ikon" id="bulut-kurtarma-ikon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+        <div class="bulut-kurtarma-metin">
+          <span>KURTARMA DURUMU</span>
+          <strong id="bulut-kurtarma-baslik">Yedekler inceleniyor…</strong>
+          <small id="bulut-kurtarma-detay">En güvenli geri yükleme noktası belirleniyor.</small>
+        </div>
+        <span class="bulut-kurtarma-rozet" id="bulut-kurtarma-rozet">KONTROL</span>
+      </section>
       <section class="json-yedek-onizleme" id="json-yedek-onizleme" aria-live="polite" hidden>
         <div class="json-yedek-ust">
           <span class="json-yedek-ikon"><i class="fa-solid fa-file-shield" aria-hidden="true"></i></span>
@@ -1899,6 +1927,7 @@
     let sonBulutYedekleri = [];
     let seciliJsonYedegi = null;
     let yedekKarsilastirmaCozucu = null;
+    let onerilenBulutYedegiId = "";
     let aktifRaporListesi = [];
     let aktifCariEkstresi = null;
     const seciliFaturaKimlikleri = new Set();
@@ -3185,6 +3214,55 @@
         : tarih.toLocaleString("tr-TR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" });
     }
 
+    function bulutYedegiYasBilgisi(yedek, simdi=new Date()) {
+      const zaman = new Date(yedek?.kayitZamani);
+      if (Number.isNaN(zaman.getTime())) return { gecerli:false, yasGun:Infinity, kisa:"Tarih bilinmiyor", seviye:"eski" };
+      const farkMs = Math.max(simdi.getTime() - zaman.getTime(), 0);
+      const dakika = Math.floor(farkMs / 60000);
+      const saat = Math.floor(dakika / 60);
+      const gun = Math.floor(saat / 24);
+      const kisa = dakika < 1 ? "Az önce" : dakika < 60 ? `${dakika} dk önce` : saat < 24 ? `${saat} sa önce` : `${gun} gün önce`;
+      return { gecerli:true, yasGun:farkMs / 86400000, kisa, seviye:farkMs <= 86400000 ? "guncel" : farkMs <= 604800000 ? "yakin" : "eski" };
+    }
+
+    function onerilenBulutYedeginiSec(liste) {
+      return (Array.isArray(liste) ? liste : [])
+        .filter(yedek => yedek?.saglam !== false && bulutYedegiYasBilgisi(yedek).gecerli)
+        .sort((a,b) => new Date(b.kayitZamani).getTime() - new Date(a.kayitZamani).getTime())[0] || null;
+    }
+
+    function bulutKurtarmaDurumunuGoster(liste) {
+      const alan = document.getElementById("bulut-kurtarma-durumu");
+      if (!alan) return;
+      const guvenliListe = Array.isArray(liste) ? liste : [];
+      const saglamSayisi = guvenliListe.filter(yedek => yedek?.saglam !== false).length;
+      const hataliSayisi = guvenliListe.length - saglamSayisi;
+      const onerilen = onerilenBulutYedeginiSec(guvenliListe);
+      onerilenBulutYedegiId = String(onerilen?.id || "");
+      const baslik = document.getElementById("bulut-kurtarma-baslik");
+      const detay = document.getElementById("bulut-kurtarma-detay");
+      const rozet = document.getElementById("bulut-kurtarma-rozet");
+      const ikon = document.getElementById("bulut-kurtarma-ikon");
+      alan.classList.remove("uyari", "riskli");
+
+      if (!onerilen) {
+        alan.classList.add("riskli");
+        baslik.textContent = guvenliListe.length ? "Okunabilir kurtarma noktası bulunamadı" : "Henüz kurtarma noktası yok";
+        detay.textContent = guvenliListe.length ? `${hataliSayisi} yedek bütünlük kontrolünü geçemedi.` : "İlk veri değişikliğinden önce otomatik yedek oluşturulacak.";
+        rozet.textContent = guvenliListe.length ? "RİSKLİ" : "YEDEK YOK";
+        ikon.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>';
+        return;
+      }
+
+      const yas = bulutYedegiYasBilgisi(onerilen);
+      const eski = yas.seviye === "eski";
+      if (eski) alan.classList.add("uyari");
+      baslik.textContent = eski ? "Kurtarma noktası eski" : "Kurtarmaya hazır";
+      detay.textContent = `Önerilen: ${bulutYedegiTarihiniFormatla(onerilen.kayitZamani)} · ${yas.kisa} · ${saglamSayisi} okunabilir${hataliSayisi ? ` · ${hataliSayisi} sorunlu` : ""}`;
+      rozet.textContent = eski ? "YEDEK ESKİ" : "HAZIR";
+      ikon.innerHTML = `<i class="fa-solid ${eski ? "fa-clock" : "fa-circle-check"}" aria-hidden="true"></i>`;
+    }
+
     function bulutYedegiBoyutunuFormatla(deger) {
       const bayt = Math.max(Number(deger) || 0, 0);
       if (bayt < 1024) return `${Math.round(bayt)} B`;
@@ -3395,8 +3473,13 @@
     function bulutYedekleriniGoster(liste, listeyiSakla=true) {
       const alan = document.getElementById("bulut-yedekleri-liste");
       if (!alan) return;
-      const guvenliListe = Array.isArray(liste) ? liste : [];
+      const guvenliListe = (Array.isArray(liste) ? liste.slice() : []).sort((a,b) => {
+        const bZamani = new Date(b?.kayitZamani).getTime();
+        const aZamani = new Date(a?.kayitZamani).getTime();
+        return (Number.isFinite(bZamani) ? bZamani : 0) - (Number.isFinite(aZamani) ? aZamani : 0);
+      });
       if (listeyiSakla) sonBulutYedekleri = guvenliListe.slice();
+      bulutKurtarmaDurumunuGoster(sonBulutYedekleri);
       const ozet = document.getElementById("bulut-yedek-ozet");
       if (ozet) ozet.innerHTML = `<strong>${guvenliListe.length}</strong> / ${sonBulutYedekleri.length} yedek gösteriliyor`;
       if (!guvenliListe.length) {
@@ -3408,8 +3491,10 @@
       alan.innerHTML = guvenliListe.map(yedek => {
         const sayilar = yedek.kayitSayilari || {};
         const saglam = yedek.saglam !== false;
-        return `<article class="bulut-yedegi-satir">
-        <div class="bulut-yedegi-meta"><span>TARİH / SAAT</span><strong>${htmlGuvenli(bulutYedegiTarihiniFormatla(yedek.kayitZamani))}</strong><small>${htmlGuvenli(yedek.kullanici || "—")}</small></div>
+        const onerilen = saglam && String(yedek.id || "") === onerilenBulutYedegiId;
+        const yas = bulutYedegiYasBilgisi(yedek);
+        return `<article class="bulut-yedegi-satir ${onerilen ? "onerilen" : ""}">
+        <div class="bulut-yedegi-meta">${onerilen ? '<span class="bulut-yedegi-oneri"><i class="fa-solid fa-star" aria-hidden="true"></i> ÖNERİLEN NOKTA</span>' : ""}<span>TARİH / SAAT</span><strong>${htmlGuvenli(bulutYedegiTarihiniFormatla(yedek.kayitZamani))}</strong><small>${htmlGuvenli(yas.kisa)} · ${htmlGuvenli(yedek.kullanici || "—")}</small></div>
         <div class="bulut-yedegi-aciklama"><span>AÇIKLAMA</span><strong>${htmlGuvenli(yedek.aciklama || "Değişiklik öncesi otomatik yedek")}</strong></div>
         <div class="bulut-yedegi-icerik"><span>YEDEK İÇERİĞİ</span><strong>${htmlGuvenli(`${Number(sayilar.fatura) || 0} fatura · ${Number(sayilar.cariKart) || 0} cari · ${Number(sayilar.cariHareket) || 0} ödeme · ${Number(sayilar.cek) || 0} çek`)}</strong><small>Sürüm ${htmlGuvenli(String(yedek.revision ?? "—"))} · ${htmlGuvenli(bulutYedegiBoyutunuFormatla(yedek.boyutBayt))}</small></div>
         <div class="bulut-yedegi-durum"><span>BÜTÜNLÜK</span><strong class="bulut-yedegi-durum-rozet ${saglam ? "" : "hatali"}"><i class="fa-solid ${saglam ? "fa-circle-check" : "fa-triangle-exclamation"}" aria-hidden="true"></i>${saglam ? "Okunabilir" : "Kontrol başarısız"}</strong><small class="bulut-yedegi-kod">${htmlGuvenli(yedek.kontrolKodu || "KOD YOK")}</small></div>
