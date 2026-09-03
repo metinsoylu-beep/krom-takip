@@ -4,7 +4,7 @@ const vm = require("node:vm");
 
 const index = fs.readFileSync("index.html", "utf8");
 const code = fs.readFileSync("google-apps-script/Code.gs", "utf8");
-const baslangic = index.indexOf("function cariAdiAnahtari");
+const baslangic = index.indexOf("function tutarSayiyaCevir");
 const bitis = index.indexOf("function odemeKaydiniNormallestir", baslangic);
 assert.ok(baslangic >= 0 && bitis > baslangic, "Cari hesap veri modeli işlevleri bulunamadı");
 
@@ -48,6 +48,14 @@ assert.equal(context.iptalEdilenCariKaydiniGeriAl("cek", iptalEdilenCek).durum, 
 assert.equal(context.iptalEdilenCariKaydiniGeriAl("hareket", iptalEdilenHareket).durum, "Aktif", "İptal edilen ödeme yeniden aktif olmalı");
 assert.equal(context.iptalEdilenCariKaydiniGeriAl("hareket", iptalEdilenHareket).iptalNedeni, "", "Geri alınan ödemenin iptal alanları temizlenmeli");
 
+const ayniOdeme = { id:"h-3", cari:" firma a ", tarih:"2026-09-02", tutar:"150,00", yontem:"havale / eft", referans:"" };
+assert.equal(context.benzerCariHareketiBul("hareket",ayniOdeme,hareketler,[])?.id,"h-1","Aynı aktif ödeme tespit edilmeli");
+assert.equal(context.benzerCariHareketiBul("hareket",{ ...ayniOdeme, referans:"REF-2" },hareketler,[]),null,"Farklı referanslı ödeme ayrı kabul edilmeli");
+assert.equal(context.benzerCariHareketiBul("hareket",iptalEdilenHareket,[iptalEdilenHareket],[]),null,"İptal edilmiş ödeme benzer kayıt uyarısı oluşturmamalı");
+const ayniCek = { ...verildi[0], id:"c-2", cari:"FİRMA A", cekNo:" 001 ", banka:"test bank" };
+assert.equal(context.benzerCariHareketiBul("cek",ayniCek,[],verildi)?.id,"c-1","Aynı aktif çek tespit edilmeli");
+assert.equal(context.benzerCariHareketiBul("cek",ayniCek,[],[{ ...verildi[0], durum:"İptal" }]),null,"İptal edilmiş çek benzer kayıt uyarısı oluşturmamalı");
+
 const eskiFatura = [{ id:9, cari:"Eski Firma", no:"E-1", tarih:"2026-08-01", tutar:250, odemeTarihi:"2026-08-20", odemeler:[{ id:"odm-9", tarih:"2026-08-20", tutar:250, yontem:"Eski kayıt" }] }];
 assert.equal(context.eskiFaturaOdemeleriniAktar(eskiFatura), true, "Eski fatura ödemesi cari harekete aktarılmalı");
 assert.equal(JSON.parse(depo.get("hareketler"))[0].id, "legacy-odm-9");
@@ -68,6 +76,9 @@ assert.match(index, /class="odeme-kaydi-duzenle"/, "Aktif cari harekette düzenl
 assert.match(index, /Kaydın türü değiştirilemez/, "Düzenleme sırasında ödeme ve çek türü korunmalı");
 assert.match(index, /Değişiklikten önce otomatik yedek alınacaktır/, "Finansal kayıt düzenlemesi açık onay ve yedek uyarısı içermeli");
 assert.match(index, /"Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi"/, "Düzenleme işlem geçmişinde ayırt edilebilmeli");
+assert.match(index, /let cariHareketKayitKilidi = false;/, "Hızlı çift tıklama için cari hareket kayıt kilidi bulunmalı");
+assert.match(index, /Aynı bilgilerle aktif bir ödeme kaydı zaten var/, "Benzer ödeme için açık kullanıcı uyarısı bulunmalı");
+assert.match(index, /Aynı bilgilerle aktif bir çek kaydı zaten var/, "Benzer çek için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /auditAction:mesaj \|\| "Cari hesap değiştirildi"/, "Cari hesap işlemi merkezi işlem geçmişinde adıyla saklanmalı");
 assert.doesNotMatch(index, /function cariHareketSil\(/, "Cari hareket fiziksel olarak silinmemeli");
 assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");

@@ -515,7 +515,7 @@
       color: #06140d; font: 750 11px "Segoe UI",Arial,sans-serif; cursor: pointer;
     }
     .odeme-kaydet-btn:hover { background: #4ade80; }
-    .odeme-kaydet-btn:disabled { cursor: not-allowed; }
+    .odeme-kaydet-btn:disabled { opacity: .58; cursor: not-allowed; }
     .odeme-gecmisi { padding: 14px 18px 18px; }
     .odeme-gecmisi-baslik { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; color: #dce6ef; font-size: 11px; }
     .odeme-gecmisi-baslik span { color: #8294a7; font-size: 9px; }
@@ -1977,6 +1977,7 @@
     let bulutKaydiCalisiyor = false;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
+    let cariHareketKayitKilidi = false;
     let duzenlenenCariHareket = null;
     const kayitliBulutSurumMetni = localStorage.getItem(BULUT_SURUM_ANAHTAR);
     const kayitliBulutSurumu = kayitliBulutSurumMetni === null
@@ -2473,6 +2474,38 @@
         return cekiNormallestir({ ...kayit, durum:oncekiDurum, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
       }
       return cariHareketiniNormallestir({ ...kayit, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
+    }
+
+    function cariHareketImzasi(kaynak, kayit) {
+      const metinAnahtari = deger => String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g," ");
+      const ortak = [
+        cariAdiAnahtari(kayit?.cari),
+        String(kayit?.tarih || "").split("T")[0],
+        tutarSayiyaCevir(kayit?.tutar).toFixed(2)
+      ];
+      if (kaynak === "cek") {
+        return [...ortak,
+          String(kayit?.vadeTarihi || "").split("T")[0],
+          metinAnahtari(kayit?.cekNo),
+          metinAnahtari(kayit?.banka),
+          metinAnahtari(kayit?.referans)
+        ].join("|");
+      }
+      return [...ortak,
+        metinAnahtari(kayit?.yontem),
+        metinAnahtari(kayit?.referans)
+      ].join("|");
+    }
+
+    function benzerCariHareketiBul(kaynak, yeniKayit, hareketler=[], cekler=[], haricId="") {
+      if (!yeniKayit || !["hareket","cek"].includes(kaynak)) return null;
+      const hedefImza = cariHareketImzasi(kaynak,yeniKayit);
+      const liste = kaynak === "cek" ? cekler : hareketler;
+      return (Array.isArray(liste) ? liste : []).find(kayit =>
+        String(kayit?.id || "") !== String(haricId || "") &&
+        (kaynak === "cek" ? kayit?.durum !== "İptal" : cariHareketAktifMi(kayit)) &&
+        cariHareketImzasi(kaynak,kayit) === hedefImza
+      ) || null;
     }
 
     function cariHareketleriYukle() {
@@ -4843,79 +4876,109 @@
 
     function cariHareketKaydet() {
       if (!yoneticiGerekli()) return;
-      let cari = document.getElementById("odeme-cari").value.trim();
-      const tur = document.getElementById("odeme-tur").value;
-      const tarih = document.getElementById("odeme-tarih").value;
-      const tutar = tutarSayiyaCevir(document.getElementById("odeme-tutar").value);
-      const referans = document.getElementById("odeme-referans").value.trim();
-      const aciklama = document.getElementById("odeme-aciklama").value.trim();
-      const mesaj = document.getElementById("odeme-form-mesaj");
-      mesaj.style.color = "#ff7a85";
-      if (!cari) { mesaj.textContent = "Cari/firma seçin."; return; }
-      if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir işlem tarihi seçin."; return; }
-      if (!(tutar > 0)) { mesaj.textContent = "Tutar sıfırdan büyük olmalıdır."; return; }
-      const kayitZamani = new Date().toISOString();
-      if (duzenlenenCariHareket) {
-        const { kaynak, kimlik } = duzenlenenCariHareket;
-        const mevcut = kaynak === "cek"
-          ? cekleriYukle().find(cek => cek.id === kimlik)
-          : cariHareketleriYukle().find(hareket => hareket.id === kimlik);
-        if (!mevcut || mevcut.durum === "İptal" || (kaynak === "cek") !== (tur === "cek")) {
-          mesaj.textContent = "Düzenlenecek aktif kayıt bulunamadı. Listeyi yenileyip tekrar deneyin.";
+      if (cariHareketKayitKilidi) return;
+      cariHareketKayitKilidi = true;
+      const kaydetDugmesi = document.getElementById("odeme-kaydet-btn");
+      if (kaydetDugmesi) kaydetDugmesi.disabled = true;
+      try {
+        let cari = document.getElementById("odeme-cari").value.trim();
+        const tur = document.getElementById("odeme-tur").value;
+        const tarih = document.getElementById("odeme-tarih").value;
+        const tutar = tutarSayiyaCevir(document.getElementById("odeme-tutar").value);
+        const referans = document.getElementById("odeme-referans").value.trim();
+        const aciklama = document.getElementById("odeme-aciklama").value.trim();
+        const mesaj = document.getElementById("odeme-form-mesaj");
+        mesaj.style.color = "#ff7a85";
+        if (!cari) { mesaj.textContent = "Cari/firma seçin."; return; }
+        if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir işlem tarihi seçin."; return; }
+        if (!(tutar > 0)) { mesaj.textContent = "Tutar sıfırdan büyük olmalıdır."; return; }
+        const kayitZamani = new Date().toISOString();
+        if (duzenlenenCariHareket) {
+          const { kaynak, kimlik } = duzenlenenCariHareket;
+          const mevcutHareketler = cariHareketleriYukle();
+          const mevcutCekler = cekleriYukle();
+          const mevcut = kaynak === "cek"
+            ? mevcutCekler.find(cek => cek.id === kimlik)
+            : mevcutHareketler.find(hareket => hareket.id === kimlik);
+          if (!mevcut || mevcut.durum === "İptal" || (kaynak === "cek") !== (tur === "cek")) {
+            mesaj.textContent = "Düzenlenecek aktif kayıt bulunamadı. Listeyi yenileyip tekrar deneyin.";
+            return;
+          }
+          let guncellenen;
+          if (kaynak === "cek") {
+            const cekNo = document.getElementById("cek-no").value.trim();
+            const banka = document.getElementById("cek-banka").value.trim();
+            const vadeTarihi = document.getElementById("cek-vade").value;
+            const durum = document.getElementById("cek-durum").value;
+            if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
+            guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
+          } else {
+            const yontem = document.getElementById("odeme-yontem").value.trim();
+            guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, yontem, referans, aciklama, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
+          }
+          if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
+          const turAdi = kaynak === "cek" ? "çek" : "ödeme";
+          if (benzerCariHareketiBul(kaynak,guncellenen,mevcutHareketler,mevcutCekler,kimlik) &&
+              !confirm(`Aynı bilgilerle aktif bir ${turAdi} kaydı zaten var. Bu değişiklik yine de kaydedilsin mi?`)) {
+            mesaj.textContent = "Benzer kayıt nedeniyle değişiklik durduruldu; hiçbir veri değiştirilmedi.";
+            return;
+          }
+          if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki ${turAdi} kaydı ${formatPara(guncellenen.tutar)} olarak güncellensin mi? Değişiklikten önce otomatik yedek alınacaktır.`)) return;
+          cari = cariKartiniGarantiEt(cari)?.cari || cari;
+          guncellenen = kaynak === "cek"
+            ? cekiNormallestir({ ...guncellenen, cari })
+            : cariHareketiniNormallestir({ ...guncellenen, cari });
+          const hareketler = kaynak === "hareket"
+            ? mevcutHareketler.map(hareket => hareket.id === kimlik ? guncellenen : hareket)
+            : mevcutHareketler;
+          const cekler = kaynak === "cek"
+            ? mevcutCekler.map(cek => cek.id === kimlik ? guncellenen : cek)
+            : mevcutCekler;
+          cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi");
+          odemeYonetiminiAc(cari);
+          const basariMesaji = document.getElementById("odeme-form-mesaj");
+          basariMesaji.style.color = "#4ade80";
+          basariMesaji.textContent = `${formatPara(tutar)} tutarındaki ${turAdi} kaydı güncellendi.`;
           return;
         }
-        let guncellenen;
-        if (kaynak === "cek") {
+        cari = cariKartiniGarantiEt(cari)?.cari || cari;
+        const mevcutHareketler = cariHareketleriYukle();
+        const mevcutCekler = cekleriYukle();
+        if (tur === "cek") {
           const cekNo = document.getElementById("cek-no").value.trim();
           const banka = document.getElementById("cek-banka").value.trim();
           const vadeTarihi = document.getElementById("cek-vade").value;
           const durum = document.getElementById("cek-durum").value;
           if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-          guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
+          const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, kayitZamani });
+          if (benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler) &&
+              !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
+            mesaj.textContent = "Benzer çek kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
+            return;
+          }
+          cariVerileriniKaydet(mevcutHareketler, [...mevcutCekler,yeniCek], `${cari} hesabına çek kaydedildi`);
         } else {
           const yontem = document.getElementById("odeme-yontem").value.trim();
-          guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, yontem, referans, aciklama, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
+          const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, yontem, referans, aciklama, kayitZamani });
+          if (benzerCariHareketiBul("hareket",yeniHareket,mevcutHareketler,mevcutCekler) &&
+              !confirm("Aynı bilgilerle aktif bir ödeme kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
+            mesaj.textContent = "Benzer ödeme kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
+            return;
+          }
+          cariVerileriniKaydet([...mevcutHareketler,yeniHareket], mevcutCekler, `${cari} hesabına ödeme kaydedildi`);
         }
-        if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
-        const turAdi = kaynak === "cek" ? "çek" : "ödeme";
-        if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki ${turAdi} kaydı ${formatPara(guncellenen.tutar)} olarak güncellensin mi? Değişiklikten önce otomatik yedek alınacaktır.`)) return;
-        cari = cariKartiniGarantiEt(cari)?.cari || cari;
-        guncellenen = kaynak === "cek"
-          ? cekiNormallestir({ ...guncellenen, cari })
-          : cariHareketiniNormallestir({ ...guncellenen, cari });
-        const hareketler = kaynak === "hareket"
-          ? cariHareketleriYukle().map(hareket => hareket.id === kimlik ? guncellenen : hareket)
-          : cariHareketleriYukle();
-        const cekler = kaynak === "cek"
-          ? cekleriYukle().map(cek => cek.id === kimlik ? guncellenen : cek)
-          : cekleriYukle();
-        cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi");
-        odemeYonetiminiAc(cari);
-        const basariMesaji = document.getElementById("odeme-form-mesaj");
-        basariMesaji.style.color = "#4ade80";
-        basariMesaji.textContent = `${formatPara(tutar)} tutarındaki ${turAdi} kaydı güncellendi.`;
-        return;
+        mesaj.style.color = "#4ade80";
+        mesaj.textContent = `${formatPara(tutar)} cari hesaba alacak kaydedildi.`;
+        document.getElementById("odeme-tutar").value = "";
+        document.getElementById("odeme-referans").value = "";
+        document.getElementById("odeme-aciklama").value = "";
+        odemeYonetiminiGuncelle();
+      } finally {
+        setTimeout(() => {
+          cariHareketKayitKilidi = false;
+          if (kaydetDugmesi) kaydetDugmesi.disabled = false;
+        }, 700);
       }
-      cari = cariKartiniGarantiEt(cari)?.cari || cari;
-      if (tur === "cek") {
-        const cekNo = document.getElementById("cek-no").value.trim();
-        const banka = document.getElementById("cek-banka").value.trim();
-        const vadeTarihi = document.getElementById("cek-vade").value;
-        const durum = document.getElementById("cek-durum").value;
-        if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-        const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, kayitZamani });
-        cariVerileriniKaydet(cariHareketleriYukle(), [...cekleriYukle(),yeniCek], `${cari} hesabına çek kaydedildi`);
-      } else {
-        const yontem = document.getElementById("odeme-yontem").value.trim();
-        const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, yontem, referans, aciklama, kayitZamani });
-        cariVerileriniKaydet([...cariHareketleriYukle(),yeniHareket], cekleriYukle(), `${cari} hesabına ödeme kaydedildi`);
-      }
-      mesaj.style.color = "#4ade80";
-      mesaj.textContent = `${formatPara(tutar)} cari hesaba alacak kaydedildi.`;
-      document.getElementById("odeme-tutar").value = "";
-      document.getElementById("odeme-referans").value = "";
-      document.getElementById("odeme-aciklama").value = "";
-      odemeYonetiminiGuncelle();
     }
 
     function cariHareketIptaliniAc(kaynak, kimlik) {
