@@ -529,12 +529,14 @@
     .odeme-kaydi-tutar { color: #4ade80; font: 700 12px Georgia,serif; }
     .odeme-kaydi-yontem { color: #d4dee8; font-size: 10px; }
     .odeme-kaydi-detay { min-width: 0; overflow: hidden; color: #8294a7; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-    .odeme-kaydi-iptal {
+    .odeme-kaydi-iptal, .odeme-kaydi-geri-al {
       min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
       padding: 0 8px; border: 1px solid #ff3f4f55; border-radius: 6px; background: #ff3f4f0d;
       color: #ff6b77; font: 700 9px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
     }
     .odeme-kaydi-iptal:hover { background: #ff3f4f22; }
+    .odeme-kaydi-geri-al { color: #68e394; border-color: #39c56b66; background: #39c56b10; }
+    .odeme-kaydi-geri-al:hover { background: #39c56b24; }
     .durum.kismi { color: #fbbf24; background: #f59e0b1a; border-color: #f59e0b33; }
     .odeme-ilerleme { display: block; margin-top: 4px; color: #8ea0b2; font-size: 9px; text-decoration: none !important; }
     .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
@@ -2220,18 +2222,21 @@
       bulutKaydiCalisiyor = true;
       try {
         while (bekleyenBulutKaydi) {
-          const sonListe = bekleyenBulutKaydi;
+          const sonKayit = bekleyenBulutKaydi;
           bekleyenBulutKaydi = null;
-          await bulutKaydiniGonder(sonListe);
+          await bulutKaydiniGonder(sonKayit.durum, { auditAction:sonKayit.auditAction });
         }
       } finally {
         bulutKaydiCalisiyor = false;
       }
     }
 
-    function buludaKaydet(liste=faturaYukle()) {
+    function buludaKaydet(liste=faturaYukle(), secenekler={}) {
       if (!yoneticiMi()) return;
-      bekleyenBulutKaydi = uygulamaDurumuOlustur(liste);
+      bekleyenBulutKaydi = {
+        durum:uygulamaDurumuOlustur(liste),
+        auditAction:String(secenekler.auditAction || "").slice(0,120)
+      };
       clearTimeout(bulutKayitZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
     }
@@ -2418,6 +2423,9 @@
       const tutar = tutarSayiyaCevir(ham.tutar);
       const cari = String(ham.cari || ham.firma || "").trim();
       const durum = ["Verildi","Ödendi","İptal"].includes(String(ham.durum)) ? String(ham.durum) : "Verildi";
+      const iptalOncesiDurum = durum === "İptal" && ["Verildi","Ödendi"].includes(String(ham.iptalOncesiDurum))
+        ? String(ham.iptalOncesiDurum)
+        : "";
       if (!cari || !tarihGecerliMi(tarih) || !tarihGecerliMi(vadeTarihi) || !(tutar > 0)) return null;
       return {
         id:String(ham.id || ham.cekId || `cek-${tarih}-${sira+1}`).trim().slice(0,160),
@@ -2432,7 +2440,8 @@
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
         kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
         iptalZamani:durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0,80) : "",
-        iptalNedeni:durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0,300) : ""
+        iptalNedeni:durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0,300) : "",
+        iptalOncesiDurum
       };
     }
 
@@ -2442,6 +2451,15 @@
         .map((ham,sira) => cekiNormallestir(ham,sira))
         .filter(cek => cek && !gorulen.has(cek.id) && gorulen.add(cek.id))
         .sort((a,b) => a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id));
+    }
+
+    function iptalEdilenCariKaydiniGeriAl(kaynak, kayit) {
+      if (!kayit || kayit.durum !== "İptal" || !["hareket","cek"].includes(kaynak)) return null;
+      if (kaynak === "cek") {
+        const oncekiDurum = ["Verildi","Ödendi"].includes(kayit.iptalOncesiDurum) ? kayit.iptalOncesiDurum : "Verildi";
+        return cekiNormallestir({ ...kayit, durum:oncekiDurum, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
+      }
+      return cariHareketiniNormallestir({ ...kayit, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
     }
 
     function cariHareketleriYukle() {
@@ -4609,16 +4627,16 @@
         satirlar.push({
           id:h.id, tarih:h.tarih, tur:iptalMi ? `${h.yontem} · İptal` : h.yontem, detay:detay || "Cari ödeme",
           borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(h.tutar), tutar:tutarSayiyaCevir(h.tutar),
-          iptalEdilebilir:!iptalMi, kaynak:"hareket", durum:h.durum, iptalZamani:h.iptalZamani, iptalNedeni:h.iptalNedeni, kayitZamani:h.kayitZamani
+          iptalEdilebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"hareket", durum:h.durum, iptalZamani:h.iptalZamani, iptalNedeni:h.iptalNedeni, kayitZamani:h.kayitZamani
         });
       });
       cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => {
         const iptalMi = cek.durum === "İptal";
-        const detay = [`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,iptalMi ? `İptal nedeni: ${cek.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
+        const detay = [`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,iptalMi && cek.iptalOncesiDurum ? `İptal öncesi: ${cek.iptalOncesiDurum}` : "",iptalMi ? `İptal nedeni: ${cek.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
         satirlar.push({
           id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay,
           borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar),
-          iptalEdilebilir:!iptalMi, kaynak:"cek", durum:cek.durum, iptalZamani:cek.iptalZamani, iptalNedeni:cek.iptalNedeni, kayitZamani:cek.kayitZamani
+          iptalEdilebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"cek", durum:cek.durum, iptalZamani:cek.iptalZamani, iptalNedeni:cek.iptalNedeni, iptalOncesiDurum:cek.iptalOncesiDurum, kayitZamani:cek.kayitZamani
         });
       });
       let bakiye = 0;
@@ -4747,7 +4765,7 @@
               <strong class="hareket-tur ${satir.borc ? 'borc' : 'alacak'}">${satir.borc ? 'BORÇ' : 'ALACAK'} · ${formatPara(satir.borc || satir.tutar || satir.alacak)}</strong>
               <span class="odeme-kaydi-yontem">${htmlGuvenli(satir.tur)} ${cekDurumu}</span>
               <span class="odeme-kaydi-detay" title="${htmlGuvenli(satir.detay)}">${htmlGuvenli(satir.detay)}</span>
-              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.iptalEdilebilir && yoneticiMi() ? `<button class="odeme-kaydi-iptal" type="button" onclick="cariHareketIptaliniAc('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi iptal et" title="Kaydı silmeden iptal et"><i class="fa-solid fa-ban" aria-hidden="true"></i> İptal</button>` : ""}</span>
+              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.iptalEdilebilir && yoneticiMi() ? `<button class="odeme-kaydi-iptal" type="button" onclick="cariHareketIptaliniAc('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi iptal et" title="Kaydı silmeden iptal et"><i class="fa-solid fa-ban" aria-hidden="true"></i> İptal</button>` : ""}${satir.geriAlinabilir && yoneticiMi() ? `<button class="odeme-kaydi-geri-al" type="button" onclick="cariHareketIptaliniGeriAl('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="İptal edilen cari hareketini geri al" title="Kaydı yeniden bakiyeye dahil et"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>` : ""}</span>
             </div>`;
           }).join("")
         : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu cari hesapta henüz hareket yok.</div>';
@@ -4758,7 +4776,7 @@
       otomatikYedekOlustur(faturaYukle(), mesaj || "Cari hesap değiştirildi");
       localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(hareketler)));
       localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(cekler)));
-      buludaKaydet();
+      buludaKaydet(faturaYukle(), { auditAction:mesaj || "Cari hesap değiştirildi" });
       listeyiGoster();
       rozetGuncelle();
       ozetGuncelle();
@@ -4837,7 +4855,7 @@
         ? { ...hareket, durum:"İptal", iptalZamani, iptalNedeni:neden }
         : hareket);
       const cekler = cekleriYukle().map(cek => kaynak === "cek" && cek.id === kimlik
-        ? { ...cek, durum:"İptal", iptalZamani, iptalNedeni:neden }
+        ? { ...cek, durum:"İptal", iptalZamani, iptalNedeni:neden, iptalOncesiDurum:["Verildi","Ödendi"].includes(cek.durum) ? cek.durum : "Verildi" }
         : cek);
       const bulundu = kaynak === "hareket"
         ? hareketler.some(hareket => hareket.id === kimlik && hareket.durum === "İptal")
@@ -4848,10 +4866,29 @@
       odemeYonetiminiGuncelle();
     }
 
+    function cariHareketIptaliniGeriAl(kaynak, kimlik) {
+      if (!yoneticiGerekli() || !["hareket","cek"].includes(kaynak)) return;
+      const mevcut = kaynak === "cek"
+        ? cekleriYukle().find(cek => cek.id === kimlik)
+        : cariHareketleriYukle().find(hareket => hareket.id === kimlik);
+      const geriAlinan = iptalEdilenCariKaydiniGeriAl(kaynak, mevcut);
+      if (!geriAlinan) return;
+      const tur = kaynak === "cek" ? "çek" : "ödeme";
+      if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki iptal edilmiş ${tur} kaydı yeniden etkinleştirilsin mi? Kayıt tekrar cari bakiyeye dahil edilecektir.`)) return;
+      const hareketler = kaynak === "hareket"
+        ? cariHareketleriYukle().map(hareket => hareket.id === kimlik ? geriAlinan : hareket)
+        : cariHareketleriYukle();
+      const cekler = kaynak === "cek"
+        ? cekleriYukle().map(cek => cek.id === kimlik ? geriAlinan : cek)
+        : cekleriYukle();
+      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek iptali geri alındı" : "Ödeme iptali geri alındı");
+      odemeYonetiminiGuncelle();
+    }
+
     function cekDurumunuDegistir(kimlik, durum) {
       if (!yoneticiGerekli()) return;
       if (!["Verildi","Ödendi"].includes(durum)) return;
-      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik && cek.durum !== "İptal" ? { ...cek, durum, iptalZamani:"", iptalNedeni:"" } : cek), "Çek durumu güncellendi");
+      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik && cek.durum !== "İptal" ? { ...cek, durum, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" } : cek), "Çek durumu güncellendi");
       odemeYonetiminiGuncelle();
     }
 

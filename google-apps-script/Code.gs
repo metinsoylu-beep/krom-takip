@@ -69,7 +69,8 @@ const CEK_BASLIK = [
   "Açıklama",
   "Kayıt Zamanı",
   "İptal Zamanı",
-  "İptal Nedeni"
+  "İptal Nedeni",
+  "İptal Öncesi Durum"
 ];
 const CARI_BASLIK = [
   "Cari ID",
@@ -887,6 +888,9 @@ function cekiNormallestir(ham, sira) {
   const tutar = tutarSayisi(ham.tutar);
   const cari = String(ham.cari || ham.firma || "").trim();
   const durum = ["Verildi", "Ödendi", "İptal"].indexOf(String(ham.durum)) >= 0 ? String(ham.durum) : "Verildi";
+  const iptalOncesiDurum = durum === "İptal" && ["Verildi", "Ödendi"].indexOf(String(ham.iptalOncesiDurum)) >= 0
+    ? String(ham.iptalOncesiDurum)
+    : "";
   if (!cari || !tarih || !cekVadeTarihi || !(tutar > 0)) return null;
   return {
     id: String(ham.id || ham.cekId || ("cek-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
@@ -901,7 +905,8 @@ function cekiNormallestir(ham, sira) {
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
     kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
     iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : "",
-    iptalNedeni: durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0, 300) : ""
+    iptalNedeni: durum === "İptal" ? String(ham.iptalNedeni || "").trim().slice(0, 300) : "",
+    iptalOncesiDurum: iptalOncesiDurum
   };
 }
 
@@ -1069,7 +1074,8 @@ function cekVerileriniOku() {
       aciklama: row[konum("Açıklama")],
       kayitZamani: row[konum("Kayıt Zamanı")],
       iptalZamani: row[konum("İptal Zamanı")],
-      iptalNedeni: row[konum("İptal Nedeni")]
+      iptalNedeni: row[konum("İptal Nedeni")],
+      iptalOncesiDurum: row[konum("İptal Öncesi Durum")]
     };
   }));
 }
@@ -1532,7 +1538,8 @@ function doPost(e) {
         cek.aciklama,
         cek.kayitZamani,
         cek.iptalZamani,
-        cek.iptalNedeni
+        cek.iptalNedeni,
+        cek.iptalOncesiDurum
       ]);
     });
     const cariSatirlari = [CARI_BASLIK];
