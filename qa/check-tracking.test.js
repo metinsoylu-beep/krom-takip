@@ -96,6 +96,7 @@ assert.ok(csv.startsWith("\uFEFF"), "CSV Excel uyumluluğu için BOM ile başlam
 assert.match(csv, /"Cari\/Firma";"Çek No";"Banka"/, "CSV başlıkları bulunmalı");
 assert.match(csv, /"Vadesi 2 gün geçti"/, "CSV vade durumunu içermeli");
 assert.match(csv, /"'=HYPERLINK\(""risk""\)"/, "CSV formül enjeksiyonunu engellemeli");
+assert.match(csv, /"Kayıt Durumu";"Ödeme Tarihi";"Vade Durumu"/, "CSV çek ödeme tarihini içermeli");
 
 assert.match(index, /id="cek-takip-overlay"/, "Çek Takip Merkezi penceresi bulunmalı");
 assert.match(index, /onclick="cekTakibiniAc\(\)"/, "Bekleyen çek kartı takip merkezini açmalı");
@@ -105,6 +106,8 @@ assert.match(index, /class="cek-takip-csv yalnizca-yonetici"[\s\S]*onclick="cekT
 assert.match(index, /class="cek-takip-yeni yalnizca-yonetici"[\s\S]*onclick="cekTakibindenYeniCek\(\)"/, "Yeni çek düğmesi yalnız yöneticiye sunulmalı");
 assert.match(index, /function cekTakibindenYeniCek\(\)[\s\S]*odemeYonetiminiAc\("", "cek"\)/, "Takip merkezinden açılan form çek türüyle başlamalı");
 assert.match(index, /function odemeYonetiminiAc\(cari="", varsayilanTur="odeme"\)/, "Genel ödeme düğmesinin varsayılan davranışı korunmalı");
+assert.match(index, /function cekOdemeTarihiAlaniniGuncelle\(/, "Çek ödeme tarihi alanı duruma göre yönetilmeli");
+assert.match(index, /Ödeme tarihi .* olarak kaydedilecektir/, "Hızlı durum değişikliğinde ödeme tarihi kullanıcıya açıklanmalı");
 assert.match(index, /onclick="odemeKapat\(\);cekTakibiniAc\(\)"/, "Vade uyarısından Çek Takip Merkezi açılabilmeli");
 
 console.log("Çek Takip Merkezi hesaplama ve arayüz testleri başarılı.");

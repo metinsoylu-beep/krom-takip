@@ -156,6 +156,12 @@ const context = {
 vm.createContext(context);
 vm.runInContext(code, context);
 
+assert.equal(
+  context.cekiNormallestir({ id:"odenen-cek", cari:"Örnek Metal", tarih:"2026-09-01", vadeTarihi:"2026-10-01", tutar:100, durum:"Ödendi", odemeTarihi:"2026-10-02" }).odemeTarihi,
+  "2026-10-02",
+  "Apps Script çek ödeme tarihini normalleştirmeli"
+);
+
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
 assert.deepEqual({ ok:cariHazirligi.ok, changed:cariHazirligi.changed, column:cariHazirligi.column }, { ok:true, changed:true, column:10 });
@@ -235,6 +241,7 @@ assert.equal(movementValues[3][12], "Mükerrer kayıt", "İptal nedeni Google Sh
 assert.equal(checkValues[0][0], "Çek ID");
 assert.equal(checkValues.length, 3);
 assert.equal(checkValues[2][12], "Hatalı çek", "Çek iptal nedeni Google Sheets'e yazılmalı");
+assert.equal(checkValues[0][14], "Ödeme Tarihi", "Çekler sayfasında ödeme tarihi sütunu bulunmalı");
 assert.equal(invoiceValues[1][1], "275 ₺", "İptal edilen ödeme ve çek toplam alacağa katılmamalı");
 assert.equal(customerValues[0][0], "Cari ID");
 assert.equal(customerValues.length, 3);

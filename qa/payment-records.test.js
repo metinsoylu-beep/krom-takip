@@ -41,10 +41,13 @@ hesap = context.cariOzetleriniHesapla(faturalar, [], verildi)[0];
 assert.equal(hesap.bakiye, 75, "Verilen çek cari borçtan bir kez düşmeli");
 assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"Ödendi" }])[0].bakiye, 75, "Çekin ödendi yapılması ikinci kez düşmemeli");
 assert.equal(context.cariOzetleriniHesapla(faturalar, [], [{ ...verildi[0], durum:"İptal" }])[0].bakiye, 100, "İptal edilen çek bakiyeyi etkilememeli");
+assert.equal(context.cekiNormallestir({ ...verildi[0], durum:"Ödendi", odemeTarihi:"2026-10-04" }).odemeTarihi, "2026-10-04", "Ödenen çekin ödeme tarihi korunmalı");
+assert.equal(context.cekiNormallestir({ ...verildi[0], odemeTarihi:"2026-10-04" }).odemeTarihi, "", "Bekleyen çekte geçersiz ödeme tarihi taşınmamalı");
 assert.equal(context.cekiNormallestir({ ...verildi[0], durum:"İptal", iptalNedeni:"Hatalı çek", iptalZamani:"2026-09-04T10:00:00.000Z" }).iptalNedeni, "Hatalı çek", "Çek iptal nedeni korunmalı");
-const iptalEdilenCek = context.cekiNormallestir({ ...verildi[0], durum:"İptal", iptalOncesiDurum:"Ödendi", iptalNedeni:"Yanlış işlem" });
+const iptalEdilenCek = context.cekiNormallestir({ ...verildi[0], durum:"İptal", iptalOncesiDurum:"Ödendi", odemeTarihi:"2026-10-04", iptalNedeni:"Yanlış işlem" });
 assert.equal(iptalEdilenCek.iptalOncesiDurum, "Ödendi", "Çek iptal edilmeden önceki durum korunmalı");
 assert.equal(context.iptalEdilenCariKaydiniGeriAl("cek", iptalEdilenCek).durum, "Ödendi", "İptal edilen çek önceki durumuna dönmeli");
+assert.equal(context.iptalEdilenCariKaydiniGeriAl("cek", iptalEdilenCek).odemeTarihi, "2026-10-04", "Ödenmiş çek geri alındığında ödeme tarihi korunmalı");
 assert.equal(context.iptalEdilenCariKaydiniGeriAl("hareket", iptalEdilenHareket).durum, "Aktif", "İptal edilen ödeme yeniden aktif olmalı");
 assert.equal(context.iptalEdilenCariKaydiniGeriAl("hareket", iptalEdilenHareket).iptalNedeni, "", "Geri alınan ödemenin iptal alanları temizlenmeli");
 
@@ -66,6 +69,7 @@ assert.deepEqual(JSON.parse(depo.get("hareketler")), [], "Silinen eski ödeme ye
 assert.match(index, /id="cari-hesaplar-overlay"/, "Cari hesaplar ekranı bulunmalı");
 assert.match(index, /id="odeme-tur"/, "Ödeme ve çek işlem türü seçilebilmeli");
 assert.match(index, /id="cek-no"/, "Çek numarası alanı bulunmalı");
+assert.match(index, /id="cek-odeme-tarihi"/, "Ödenen çek için ödeme tarihi alanı bulunmalı");
 assert.match(index, /function cekDurumunuDegistir\(/, "Çek durumu güncellenebilmeli");
 assert.match(index, /id="cari-hareket-iptal-overlay"/, "Silme yerine nedenli iptal penceresi bulunmalı");
 assert.match(index, /function cariHareketIptaliniOnayla\(/, "Cari hareket iptali desteklenmeli");
@@ -90,5 +94,6 @@ assert.match(code, /const CHECK_SHEET_NAME = "Çekler"/);
 assert.match(code, /movementSheet\.getRange/);
 assert.match(code, /checkSheet\.getRange/);
 assert.match(code, /"İptal Öncesi Durum"/, "Çeklerin iptal öncesi durumu Google Sheets'te saklanmalı");
+assert.match(code, /"Ödeme Tarihi"/, "Çek ödeme tarihi Google Sheets'te saklanmalı");
 
 console.log("Cari ödeme, alacak bakiyesi ve çek hareketi testleri başarılı.");

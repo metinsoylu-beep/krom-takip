@@ -623,6 +623,7 @@
     .cek-durum-rozet.gecikmis { color: #ff7a85; background: #ff3f4f16; border: 1px solid #ff3f4f44; }
     .cek-durum-rozet.odendi { color: #68e394; background: #39c56b16; border: 1px solid #39c56b44; }
     .cek-durum-rozet.iptal { color: #9aaabd; background: #64748b16; border: 1px solid #64748b44; }
+    .cek-odeme-tarihi { display: block; margin-top: 4px; color: #68e394; font-size: 8px; white-space: nowrap; }
     .cek-takip-durum-sec { min-width: 112px; height: 30px; padding: 0 8px; border: 1px solid #39c56b55; border-radius: 6px; background: #0b1b2d; color: #dce6ef; font: 9px "Segoe UI",Arial,sans-serif; }
     .cek-takip-islemler { display: flex; align-items: center; gap: 6px; }
     .cek-takip-islem { width: 30px; height: 30px; border: 1px solid #3d96f555; border-radius: 6px; background: #3d96f510; color: #60a5fa; cursor: pointer; }
@@ -1642,7 +1643,8 @@
           <div class="odeme-form-alan"><label for="cek-no">ÇEK NUMARASI</label><input id="cek-no" type="text" maxlength="120" placeholder="Çek no"/></div>
           <div class="odeme-form-alan"><label for="cek-banka">BANKA</label><input id="cek-banka" type="text" maxlength="120" placeholder="Banka adı"/></div>
           <div class="odeme-form-alan"><label for="cek-vade">ÇEK VADE TARİHİ</label><input id="cek-vade" type="date"/></div>
-          <div class="odeme-form-alan"><label for="cek-durum">ÇEK DURUMU</label><select id="cek-durum"><option>Verildi</option><option>Ödendi</option></select></div>
+          <div class="odeme-form-alan"><label for="cek-durum">ÇEK DURUMU</label><select id="cek-durum" onchange="cekOdemeTarihiAlaniniGuncelle(true)"><option>Verildi</option><option>Ödendi</option></select></div>
+          <div class="odeme-form-alan" id="cek-odeme-tarihi-alani" hidden><label for="cek-odeme-tarihi">ÖDEME TARİHİ</label><input id="cek-odeme-tarihi" type="date"/></div>
         </div>
         <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
         <div class="odeme-form-islem">
@@ -2552,9 +2554,11 @@
       const tutar = tutarSayiyaCevir(ham.tutar);
       const cari = String(ham.cari || ham.firma || "").trim();
       const durum = ["Verildi","Ödendi","İptal"].includes(String(ham.durum)) ? String(ham.durum) : "Verildi";
+      const odemeTarihiHam = String(ham.odemeTarihi || "").split("T")[0];
       const iptalOncesiDurum = durum === "İptal" && ["Verildi","Ödendi"].includes(String(ham.iptalOncesiDurum))
         ? String(ham.iptalOncesiDurum)
         : "";
+      const odemeTarihi = (durum === "Ödendi" || iptalOncesiDurum === "Ödendi") && tarihGecerliMi(odemeTarihiHam) ? odemeTarihiHam : "";
       if (!cari || !tarihGecerliMi(tarih) || !tarihGecerliMi(vadeTarihi) || !(tutar > 0)) return null;
       return {
         id:String(ham.id || ham.cekId || `cek-${tarih}-${sira+1}`).trim().slice(0,160),
@@ -2565,6 +2569,7 @@
         cekNo:String(ham.cekNo || "").trim().slice(0,120),
         banka:String(ham.banka || "").trim().slice(0,120),
         durum,
+        odemeTarihi,
         referans:String(ham.referans || "").trim().slice(0,160),
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
         kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
@@ -4717,7 +4722,7 @@
     }
 
     function cekTakipCsvIcerigiOlustur(liste, referans=new Date()) {
-      const basliklar = ["Cari/Firma","Çek No","Banka","Veriliş Tarihi","Vade Tarihi","Tutar (TL)","Kayıt Durumu","Vade Durumu","Referans","Açıklama"];
+      const basliklar = ["Cari/Firma","Çek No","Banka","Veriliş Tarihi","Vade Tarihi","Tutar (TL)","Kayıt Durumu","Ödeme Tarihi","Vade Durumu","Referans","Açıklama"];
       const satirlar = (Array.isArray(liste) ? liste : []).map(cek => {
         const bilgi = cekTakipDurumBilgisi(cek, referans);
         return [
@@ -4728,6 +4733,7 @@
           cek.vadeTarihi || "",
           tutarSayiyaCevir(cek.tutar).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2}),
           cek.durum || "Verildi",
+          cek.odemeTarihi || "",
           bilgi.etiket,
           cek.referans || "",
           cek.aciklama || ""
@@ -4798,6 +4804,9 @@
         <tbody>${liste.map(cek => {
           const bilgi = cekTakipDurumBilgisi(cek);
           const iptalMi = cek.durum === "İptal";
+          const odemeTarihiHtml = cek.durum === "Ödendi" || cek.odemeTarihi
+            ? `<span class="cek-odeme-tarihi"><i class="fa-solid fa-calendar-check" aria-hidden="true"></i> ${cek.odemeTarihi ? formatTarih(tarihOlusturYerel(cek.odemeTarihi)) : "Tarih belirtilmedi"}</span>`
+            : "";
           const durumAlani = !iptalMi && yoneticiMi()
             ? `<select class="cek-takip-durum-sec" aria-label="${htmlGuvenli(cek.cekNo)} çekinin durumu" onchange="cekDurumunuDegistir('${htmlGuvenli(cek.id)}',this.value)"><option ${cek.durum === "Verildi" ? "selected" : ""}>Verildi</option><option ${cek.durum === "Ödendi" ? "selected" : ""}>Ödendi</option></select>`
             : `<span class="cek-durum-rozet ${bilgi.sinif}"><i class="fa-solid fa-circle" aria-hidden="true"></i>${bilgi.etiket}</span>`;
@@ -4812,7 +4821,7 @@
             <td>${htmlGuvenli(cek.cekNo || "—")}</td>
             <td>${htmlGuvenli(cek.banka || "—")}</td>
             <td class="tutar-hucre">${formatPara(cek.tutar)}</td>
-            <td>${durumAlani}</td>
+            <td>${durumAlani}${odemeTarihiHtml}</td>
             <td><div class="cek-takip-islemler">${islemler}</div></td>
           </tr>`;
         }).join("")}</tbody>
@@ -4932,6 +4941,7 @@
       document.getElementById("cek-banka").value = "";
       document.getElementById("cek-vade").value = bugununTarihi();
       document.getElementById("cek-durum").value = "Verildi";
+      document.getElementById("cek-odeme-tarihi").value = "";
       document.getElementById("odeme-form-mesaj").textContent = "";
       odemeTuruDegisti();
       odemeYonetiminiGuncelle();
@@ -4954,6 +4964,17 @@
       document.getElementById("odeme-kaydet-btn").innerHTML = cekMi
         ? `<i class="fa-solid fa-${duzenlemeMi ? "floppy-disk" : "money-check"}" aria-hidden="true"></i> ${duzenlemeMi ? "Çek Değişikliklerini Kaydet" : "Çeki Kaydet"}`
         : `<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> ${duzenlemeMi ? "Ödeme Değişikliklerini Kaydet" : "Ödemeyi Kaydet"}`;
+      cekOdemeTarihiAlaniniGuncelle(false);
+    }
+
+    function cekOdemeTarihiAlaniniGuncelle(kullaniciDegisikligi=false) {
+      const cekMi = document.getElementById("odeme-tur")?.value === "cek";
+      const odendiMi = cekMi && document.getElementById("cek-durum")?.value === "Ödendi";
+      const alan = document.getElementById("cek-odeme-tarihi-alani");
+      const tarih = document.getElementById("cek-odeme-tarihi");
+      if (alan) alan.hidden = !odendiMi;
+      if (tarih && !odendiMi) tarih.value = "";
+      if (tarih && odendiMi && kullaniciDegisikligi && !tarih.value) tarih.value = bugununTarihi();
     }
 
     function cariHareketDuzenlemeyiIptalEt() {
@@ -4985,7 +5006,7 @@
       });
       cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => {
         const iptalMi = cek.durum === "İptal";
-        const detay = [`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,iptalMi && cek.iptalOncesiDurum ? `İptal öncesi: ${cek.iptalOncesiDurum}` : "",iptalMi ? `İptal nedeni: ${cek.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
+        const detay = [`${cek.cekNo || "No belirtilmedi"} · ${cek.banka || "Banka belirtilmedi"} · Vade ${formatTarih(tarihOlusturYerel(cek.vadeTarihi))}`,cek.odemeTarihi ? `Ödeme tarihi: ${formatTarih(tarihOlusturYerel(cek.odemeTarihi))}` : "",iptalMi && cek.iptalOncesiDurum ? `İptal öncesi: ${cek.iptalOncesiDurum}` : "",iptalMi ? `İptal nedeni: ${cek.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
         satirlar.push({
           id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay,
           borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar),
@@ -5165,6 +5186,7 @@
       document.getElementById("cek-banka").value = kayit.banka || "";
       document.getElementById("cek-vade").value = kayit.vadeTarihi || bugununTarihi();
       document.getElementById("cek-durum").value = ["Verildi","Ödendi"].includes(kayit.durum) ? kayit.durum : "Verildi";
+      document.getElementById("cek-odeme-tarihi").value = kayit.odemeTarihi || "";
       document.getElementById("odeme-form-mesaj").textContent = "Kaydın türü değiştirilemez; diğer alanları güvenle güncelleyebilirsiniz.";
       document.getElementById("odeme-form-mesaj").style.color = "#60a5fa";
       odemeTuruDegisti();
@@ -5209,8 +5231,10 @@
             const banka = document.getElementById("cek-banka").value.trim();
             const vadeTarihi = document.getElementById("cek-vade").value;
             const durum = document.getElementById("cek-durum").value;
+            const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
             if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-            guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
+            if (durum === "Ödendi" && !tarihGecerliMi(odemeTarihi)) { mesaj.textContent = "Ödenen çek için geçerli bir ödeme tarihi seçin."; return; }
+            guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
           } else {
             const yontem = document.getElementById("odeme-yontem").value.trim();
             guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, yontem, referans, aciklama, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
@@ -5253,8 +5277,10 @@
           const banka = document.getElementById("cek-banka").value.trim();
           const vadeTarihi = document.getElementById("cek-vade").value;
           const durum = document.getElementById("cek-durum").value;
+          const odemeTarihi = durum === "Ödendi" ? document.getElementById("cek-odeme-tarihi").value : "";
           if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
-          const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, kayitZamani });
+          if (durum === "Ödendi" && !tarihGecerliMi(odemeTarihi)) { mesaj.textContent = "Ödenen çek için geçerli bir ödeme tarihi seçin."; return; }
+          const yeniCek = cekiNormallestir({ id:cariHareketKimligiOlustur("cek"), cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, odemeTarihi, referans, aciklama, kayitZamani });
           const benzerCek = benzerCariHareketiBul("cek",yeniCek,mevcutHareketler,mevcutCekler);
           if (benzerCek && !confirm("Aynı bilgilerle aktif bir çek kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?")) {
             mesaj.textContent = "Benzer çek kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.";
@@ -5357,7 +5383,22 @@
     function cekDurumunuDegistir(kimlik, durum) {
       if (!yoneticiGerekli()) return;
       if (!["Verildi","Ödendi"].includes(durum)) return;
-      cariVerileriniKaydet(cariHareketleriYukle(), cekleriYukle().map(cek => cek.id === kimlik && cek.durum !== "İptal" ? { ...cek, durum, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" } : cek), "Çek durumu güncellendi");
+      const mevcutCekler = cekleriYukle();
+      const mevcut = mevcutCekler.find(cek => cek.id === kimlik && cek.durum !== "İptal");
+      if (!mevcut || mevcut.durum === durum) return;
+      const odemeTarihi = durum === "Ödendi" ? bugununTarihi() : "";
+      const onayMetni = durum === "Ödendi"
+        ? `${mevcut.cekNo || "Çek"} ödendi olarak işaretlensin mi? Ödeme tarihi ${formatTarih(tarihOlusturYerel(odemeTarihi))} olarak kaydedilecektir.`
+        : `${mevcut.cekNo || "Çek"} yeniden verildi/bekliyor durumuna alınsın mı? Kayıtlı ödeme tarihi temizlenecektir.`;
+      if (!confirm(onayMetni)) {
+        cekTakibiniGoster();
+        odemeYonetiminiGuncelle();
+        return;
+      }
+      const guncelCekler = mevcutCekler.map(cek => cek.id === kimlik
+        ? { ...cek, durum, odemeTarihi, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" }
+        : cek);
+      cariVerileriniKaydet(cariHareketleriYukle(), guncelCekler, durum === "Ödendi" ? "Çek ödendi olarak işaretlendi" : "Çek yeniden bekliyor durumuna alındı");
       odemeYonetiminiGuncelle();
     }
 
