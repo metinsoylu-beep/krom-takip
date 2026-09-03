@@ -20,6 +20,10 @@ const context = {
   Map,
   Set,
   tutarSayiyaCevir,
+  tarihOlusturYerel: deger => {
+    const [yil, ay, gun] = String(deger || "").split("-").map(Number);
+    return new Date(yil, ay - 1, gun, 12, 0, 0, 0);
+  },
   cariHareketleriYukle: () => [],
   cekleriYukle: () => [],
   formatPara: deger => `${Number(deger)} ₺`,
@@ -70,7 +74,26 @@ const cariRaporu = context.veriKontrolRaporuOlustur(farkliCariler, farkliCariler
 assert.equal(cariRaporu.yinelenenSayisi, 0, "Farklı carilerin aynı numaralı faturaları yinelenen sayılmamalı");
 assert.equal(cariRaporu.ayniNumaraSayisi, 0, "Aynı fatura numarası farklı carilerde kullanılabilmeli");
 
-assert.match(index, /Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez\./);
+const cekTarihiRaporu = context.veriKontrolRaporuOlustur(
+  farkliCariler,
+  farkliCariler,
+  null,
+  [],
+  [
+    { id:"cek-1", cari:"Firma A", cekNo:"CHK-1", tarih:"2026-08-01", vadeTarihi:"2026-09-01", tutar:100, durum:"Ödendi", odemeTarihi:"" },
+    { id:"cek-2", cari:"Firma B", cekNo:"CHK-2", tarih:"2026-08-10", vadeTarihi:"2026-09-10", tutar:200, durum:"Ödendi", odemeTarihi:"2026-08-09" },
+    { id:"cek-3", cari:"Firma C", cekNo:"CHK-3", tarih:"2026-08-15", vadeTarihi:"2026-09-15", tutar:300, durum:"Ödendi", odemeTarihi:"2026-09-04" },
+    { id:"cek-4", cari:"Firma D", cekNo:"CHK-4", tarih:"2026-08-20", vadeTarihi:"2026-09-20", tutar:400, durum:"Ödendi", odemeTarihi:"2026-09-03" }
+  ],
+  new Date(2026, 8, 3, 12, 0, 0, 0)
+);
+assert.equal(cekTarihiRaporu.cekTarihiSorunuSayisi, 3, "Eksik, erken ve gelecek çek ödeme tarihleri raporlanmalı");
+assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-1.*ödeme tarihi eksik/, "Eksik ödeme tarihli çek açıklanmalı");
+assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-2.*veriliş tarihinden önce/, "Erken ödeme tarihli çek açıklanmalı");
+assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-3.*bugünden ileri/, "Gelecek ödeme tarihli çek açıklanmalı");
+
+assert.match(index, /id="kontrol-cek-tarihi"/, "Çek ödeme tarihi kontrol sayacı bulunmalı");
+assert.match(index, /Bu merkez yalnızca denetler; hiçbir kaydı otomatik değiştirmez\./);
 const listeKonumu = index.indexOf('id="liste"');
 const kontrolKonumu = index.indexOf('class="sayfa-sonu-kontroller"');
 const footerKonumu = index.indexOf("<footer>");

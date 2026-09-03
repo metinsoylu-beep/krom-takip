@@ -910,7 +910,7 @@
     .veri-kontrol-ust[aria-expanded="true"] .veri-kontrol-ok { transform: rotate(180deg); }
     .veri-kontrol-detay { padding: 0 13px 13px 55px; }
     .veri-kontrol-detay[hidden] { display: none; }
-    .veri-kontrol-sayaclar { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
+    .veri-kontrol-sayaclar { display: grid; grid-template-columns: repeat(auto-fit,minmax(145px,1fr)); gap: 7px; }
     .veri-kontrol-sayac {
       min-width: 0; padding: 8px 9px; background: #07152580; border: 1px solid var(--cizgi-yumusak);
       border-radius: 7px;
@@ -1959,10 +1959,11 @@
                 <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK ÖDEME TARİHİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
               </div>
               <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
-              <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez.</p>
+              <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Bu merkez yalnızca denetler; hiçbir kaydı otomatik değiştirmez.</p>
             </div>
           </section>
 
@@ -2992,10 +2993,13 @@
       return temizNo ? `${temizCari}|${temizNo}` : "";
     }
 
-    function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null) {
+    function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null, hareketListesi=null, cekListesi=null, referans=new Date()) {
       const hamKayitlar = Array.isArray(hamListe) ? hamListe : [];
       const gecerliKayitlar = Array.isArray(liste) ? liste : [];
+      const hareketler = Array.isArray(hareketListesi) ? hareketListesi : cariHareketleriYukle();
+      const cekler = Array.isArray(cekListesi) ? cekListesi : cekleriYukle();
       const gecersizAciklamalar = [];
+      const cekTarihiAciklamalari = [];
       const yinelenenSatirlar = new Set();
       const gorulenId = new Map();
       const gorulenImza = new Map();
@@ -3045,13 +3049,30 @@
       });
       const ayniNumaraGruplari = [...numaraGruplari.entries()].filter(([, kayitlar]) => kayitlar.length > 1);
 
+      const bugun = new Date(referans);
+      bugun.setHours(12, 0, 0, 0);
+      cekler.filter(cek => cek?.durum === "Ödendi").forEach(cek => {
+        const etiket = String(cek.cekNo || cek.cari || "Numarası belirtilmeyen çek").slice(0, 60);
+        if (!tarihGecerliMi(cek.odemeTarihi)) {
+          cekTarihiAciklamalari.push(`“${etiket}”: ödenmiş çekin ödeme tarihi eksik`);
+          return;
+        }
+        const odemeTarihi = tarihOlusturYerel(cek.odemeTarihi);
+        const verilisTarihi = tarihGecerliMi(cek.tarih) ? tarihOlusturYerel(cek.tarih) : null;
+        if (verilisTarihi && odemeTarihi < verilisTarihi) {
+          cekTarihiAciklamalari.push(`“${etiket}”: ödeme tarihi veriliş tarihinden önce`);
+        } else if (odemeTarihi > bugun) {
+          cekTarihiAciklamalari.push(`“${etiket}”: ödeme tarihi bugünden ileri`);
+        }
+      });
+
       let toplam = 0;
       gecerliKayitlar.forEach(inv => {
         const tutar = tutarSayiyaCevir(inv.tutar);
         toplam += tutar;
       });
-      const hareketToplami = cariHareketleriYukle().filter(hareket => hareket?.durum !== "İptal").reduce((deger,hareket) => deger + tutarSayiyaCevir(hareket.tutar), 0);
-      const cekToplami = cekleriYukle().filter(cek => cek.durum !== "İptal").reduce((deger,cek) => deger + tutarSayiyaCevir(cek.tutar), 0);
+      const hareketToplami = hareketler.filter(hareket => hareket?.durum !== "İptal").reduce((deger,hareket) => deger + tutarSayiyaCevir(hareket.tutar), 0);
+      const cekToplami = cekler.filter(cek => cek.durum !== "İptal").reduce((deger,cek) => deger + tutarSayiyaCevir(cek.tutar), 0);
       const alacakToplami = hareketToplami + cekToplami;
       const netBakiye = toplam - alacakToplami;
       const beklenenOzet = {
@@ -3073,17 +3094,19 @@
         const etiket = ilk.cari ? `${ilk.cari.slice(0, 45)} · ${ilk.no.slice(0, 45)}` : ilk.no.slice(0, 60);
         mesajlar.push(`“${etiket}” fatura numarası ${kayitlar.length} kayıtta kullanılıyor.`);
       });
+      cekTarihiAciklamalari.forEach(metin => mesajlar.push(`Kontrol gerekli: ${metin}`));
       if (!toplamlarDogru) {
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
       }
 
       const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size +
-        ayniNumaraGruplari.length + (toplamlarDogru ? 0 : 1);
+        ayniNumaraGruplari.length + cekTarihiAciklamalari.length + (toplamlarDogru ? 0 : 1);
       return {
         kayitSayisi: gecerliKayitlar.length,
         gecersizSayisi: gecersizAciklamalar.length,
         yinelenenSayisi: yinelenenSatirlar.size,
         ayniNumaraSayisi: ayniNumaraGruplari.length,
+        cekTarihiSorunuSayisi: cekTarihiAciklamalari.length,
         toplamlarDogru,
         uyariSayisi,
         mesajlar
@@ -3118,11 +3141,12 @@
       veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-yinelenen-kart", "kontrol-yinelenen", rapor.yinelenenSayisi, rapor.yinelenenSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-no-kart", "kontrol-ayni-no", rapor.ayniNumaraSayisi, rapor.ayniNumaraSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-cek-tarihi-kart", "kontrol-cek-tarihi", rapor.cekTarihiSorunuSayisi, rapor.cekTarihiSorunuSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);
 
       const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
       sorunListesi.replaceChildren();
-      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, tarihler, tutarlar ve özet toplamları tutarlı."];
+      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, çek ödeme tarihleri, tutarlar ve özet toplamları tutarlı."];
       gosterilecekler.forEach(metin => {
         const satir = document.createElement("li");
         if (!uyariVar) satir.className = "basarili";
