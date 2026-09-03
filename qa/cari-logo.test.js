@@ -30,6 +30,6 @@ assert.match(guvenliLogo, /&lt;script&gt; Firma/, "Cari adı güvenli biçimde g
 assert.match(guvenliLogo, /data-logo-kimligi="[a-z0-9]+"/, "Her firma için sabit logo kimliği üretilmeli");
 assert.match(guvenliLogo, /--logo-zemin:hsl\(/, "Firma adına özel renkler logoya uygulanmalı");
 assert.doesNotMatch(index, /\.cari-logo-7/, "Sınırlı sabit renk paleti kullanılmamalı");
-assert.equal((index.match(/\$\{cariLogosuHtml\(/g) || []).length, 3, "Logolar ana liste, rapor ve cari hesaplarda kullanılmalı");
+assert.equal((index.match(/\$\{cariLogosuHtml\(/g) || []).length, 4, "Logolar ana liste, rapor, cari hesaplar ve çek takibinde kullanılmalı");
 
 console.log("Firmaya özel tek harfli logo testleri başarılı.");
