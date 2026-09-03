@@ -529,7 +529,7 @@
     .odeme-kaydi-tutar { color: #4ade80; font: 700 12px Georgia,serif; }
     .odeme-kaydi-yontem { color: #d4dee8; font-size: 10px; }
     .odeme-kaydi-detay { min-width: 0; overflow: hidden; color: #8294a7; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-    .odeme-kaydi-iptal, .odeme-kaydi-geri-al {
+    .odeme-kaydi-iptal, .odeme-kaydi-geri-al, .odeme-kaydi-duzenle {
       min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
       padding: 0 8px; border: 1px solid #ff3f4f55; border-radius: 6px; background: #ff3f4f0d;
       color: #ff6b77; font: 700 9px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
@@ -537,6 +537,15 @@
     .odeme-kaydi-iptal:hover { background: #ff3f4f22; }
     .odeme-kaydi-geri-al { color: #68e394; border-color: #39c56b66; background: #39c56b10; }
     .odeme-kaydi-geri-al:hover { background: #39c56b24; }
+    .odeme-kaydi-duzenle { color: #60a5fa; border-color: #3d96f566; background: #3d96f510; }
+    .odeme-kaydi-duzenle:hover { background: #3d96f524; }
+    .odeme-duzenleme-vazgec {
+      min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 13px; border: 1px solid var(--cizgi); border-radius: 7px; background: transparent;
+      color: #aebcca; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .odeme-duzenleme-vazgec:hover { background: #ffffff0a; }
+    .odeme-duzenleme-vazgec[hidden] { display: none; }
     .durum.kismi { color: #fbbf24; background: #f59e0b1a; border-color: #f59e0b33; }
     .odeme-ilerleme { display: block; margin-top: 4px; color: #8ea0b2; font-size: 9px; text-decoration: none !important; }
     .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
@@ -817,6 +826,7 @@
       border: 1px solid var(--cizgi); border-left: 4px solid #4ade80; border-radius: 9px;
       transition: border-color .18s, background .18s;
     }
+    .sayfa-sonu-kontroller { margin-top: 18px; }
     .veri-kontrol-panel.uyari { border-left-color: #f59e0b; background: #211b0d; }
     .veri-kontrol-ust {
       width: 100%; min-height: 54px; display: grid;
@@ -1547,6 +1557,7 @@
         <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
         <div class="odeme-form-islem">
           <span class="odeme-form-mesaj" id="odeme-form-mesaj" role="status"></span>
+          <button class="odeme-duzenleme-vazgec" id="odeme-duzenleme-vazgec" type="button" onclick="cariHareketDuzenlemeyiIptalEt()" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i> Düzenlemeyi İptal Et</button>
           <button class="odeme-kaydet-btn" id="odeme-kaydet-btn" type="button" onclick="cariHareketKaydet()"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Cari Hareketi Kaydet</button>
         </div>
       </div>
@@ -1785,58 +1796,6 @@
           </div>
         </section>
 
-        <!-- VERİ KONTROL MERKEZİ -->
-        <section class="veri-kontrol-panel" id="veri-kontrol-panel" aria-labelledby="veri-kontrol-baslik">
-          <button class="veri-kontrol-ust" id="veri-kontrol-dugme" type="button" aria-expanded="false" aria-controls="veri-kontrol-detay" onclick="veriKontrolDetayiniDegistir()">
-            <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
-            <span>
-              <span class="veri-kontrol-baslik" id="veri-kontrol-baslik">Veri Kontrol Merkezi</span>
-              <span class="veri-kontrol-durum" id="veri-kontrol-durum" role="status">Kayıtlar denetleniyor…</span>
-            </span>
-            <span class="veri-kontrol-rozet" id="veri-kontrol-rozet">OTOMATİK KONTROL</span>
-            <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
-          </button>
-          <div class="veri-kontrol-detay" id="veri-kontrol-detay" hidden>
-            <div class="veri-kontrol-sayaclar">
-              <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
-              <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
-              <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
-              <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
-            </div>
-            <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
-            <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez.</p>
-          </div>
-        </section>
-
-        <!-- DEPOLAMA SAĞLIĞI -->
-        <section class="veri-kontrol-panel depolama-sagligi-panel yalnizca-yonetici" id="depolama-sagligi-panel" aria-labelledby="depolama-sagligi-baslik">
-          <button class="veri-kontrol-ust" id="depolama-sagligi-dugme" type="button" aria-expanded="false" aria-controls="depolama-sagligi-detay" onclick="depolamaSagligiDetayiniDegistir()">
-            <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-database"></i></span>
-            <span>
-              <span class="veri-kontrol-baslik" id="depolama-sagligi-baslik">Depolama Sağlığı</span>
-              <span class="veri-kontrol-durum" id="depolama-sagligi-durum" role="status">Google Sheets alanı ölçülüyor…</span>
-            </span>
-            <span class="veri-kontrol-rozet" id="depolama-sagligi-rozet">ÖLÇÜLÜYOR</span>
-            <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
-          </button>
-          <div class="veri-kontrol-detay" id="depolama-sagligi-detay" hidden>
-            <div class="veri-kontrol-sayaclar">
-              <div class="veri-kontrol-sayac"><span>AYRILMIŞ HÜCRE</span><strong id="depolama-ayrilmis">—</strong></div>
-              <div class="veri-kontrol-sayac"><span>DOLU HÜCRE TAHMİNİ</span><strong id="depolama-kullanilan">—</strong></div>
-              <div class="veri-kontrol-sayac"><span>MERKEZİ YEDEK</span><strong id="depolama-yedek-sayisi">—</strong></div>
-              <div class="veri-kontrol-sayac"><span>YEDEK BOYUTU</span><strong id="depolama-yedek-boyutu">—</strong></div>
-            </div>
-            <div class="depolama-cubuk" role="progressbar" aria-label="Google Sheets hücre kullanımı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="depolama-cubuk">
-              <div class="depolama-cubuk-dolgu" id="depolama-cubuk-dolgu"></div>
-            </div>
-            <div class="depolama-alt-satir">
-              <p class="depolama-kaynak" id="depolama-sagligi-notu">%70 uyarı, %85 kritik, %95 koruma eşiği. Kritik seviyede eski yedekler otomatik azaltılır.</p>
-              <button class="depolama-yenile" id="depolama-sagligi-yenile" type="button" onclick="depolamaSagligiYenile(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yeniden Ölç</button>
-            </div>
-            <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Google hesabının Drive, Gmail ve Fotoğraflar ile ortak alanı ayrıdır. <a href="https://one.google.com/storage" target="_blank" rel="noopener">Google depolama alanını aç</a></p>
-          </div>
-        </section>
-
         <!-- LİSTE -->
         <section class="toplu-islem-panel yalnizca-yonetici" id="toplu-islem-panel" aria-label="Toplu fatura işlemleri" aria-live="polite" hidden>
           <div class="toplu-islem-bilgi">
@@ -1889,6 +1848,59 @@
             <i class="fa-solid fa-rotate" aria-hidden="true"></i>
             Yenile
           </button>
+        </div>
+
+        <!-- SAYFA SONU KONTROL PANELLERİ -->
+        <div class="sayfa-sonu-kontroller">
+          <section class="veri-kontrol-panel" id="veri-kontrol-panel" aria-labelledby="veri-kontrol-baslik">
+            <button class="veri-kontrol-ust" id="veri-kontrol-dugme" type="button" aria-expanded="false" aria-controls="veri-kontrol-detay" onclick="veriKontrolDetayiniDegistir()">
+              <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+              <span>
+                <span class="veri-kontrol-baslik" id="veri-kontrol-baslik">Veri Kontrol Merkezi</span>
+                <span class="veri-kontrol-durum" id="veri-kontrol-durum" role="status">Kayıtlar denetleniyor…</span>
+              </span>
+              <span class="veri-kontrol-rozet" id="veri-kontrol-rozet">OTOMATİK KONTROL</span>
+              <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
+            </button>
+            <div class="veri-kontrol-detay" id="veri-kontrol-detay" hidden>
+              <div class="veri-kontrol-sayaclar">
+                <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
+              </div>
+              <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
+              <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez.</p>
+            </div>
+          </section>
+
+          <section class="veri-kontrol-panel depolama-sagligi-panel yalnizca-yonetici" id="depolama-sagligi-panel" aria-labelledby="depolama-sagligi-baslik">
+            <button class="veri-kontrol-ust" id="depolama-sagligi-dugme" type="button" aria-expanded="false" aria-controls="depolama-sagligi-detay" onclick="depolamaSagligiDetayiniDegistir()">
+              <span class="veri-kontrol-ikon" aria-hidden="true"><i class="fa-solid fa-database"></i></span>
+              <span>
+                <span class="veri-kontrol-baslik" id="depolama-sagligi-baslik">Depolama Sağlığı</span>
+                <span class="veri-kontrol-durum" id="depolama-sagligi-durum" role="status">Google Sheets alanı ölçülüyor…</span>
+              </span>
+              <span class="veri-kontrol-rozet" id="depolama-sagligi-rozet">ÖLÇÜLÜYOR</span>
+              <i class="fa-solid fa-chevron-down veri-kontrol-ok" aria-hidden="true"></i>
+            </button>
+            <div class="veri-kontrol-detay" id="depolama-sagligi-detay" hidden>
+              <div class="veri-kontrol-sayaclar">
+                <div class="veri-kontrol-sayac"><span>AYRILMIŞ HÜCRE</span><strong id="depolama-ayrilmis">—</strong></div>
+                <div class="veri-kontrol-sayac"><span>DOLU HÜCRE TAHMİNİ</span><strong id="depolama-kullanilan">—</strong></div>
+                <div class="veri-kontrol-sayac"><span>MERKEZİ YEDEK</span><strong id="depolama-yedek-sayisi">—</strong></div>
+                <div class="veri-kontrol-sayac"><span>YEDEK BOYUTU</span><strong id="depolama-yedek-boyutu">—</strong></div>
+              </div>
+              <div class="depolama-cubuk" role="progressbar" aria-label="Google Sheets hücre kullanımı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="depolama-cubuk">
+                <div class="depolama-cubuk-dolgu" id="depolama-cubuk-dolgu"></div>
+              </div>
+              <div class="depolama-alt-satir">
+                <p class="depolama-kaynak" id="depolama-sagligi-notu">%70 uyarı, %85 kritik, %95 koruma eşiği. Kritik seviyede eski yedekler otomatik azaltılır.</p>
+                <button class="depolama-yenile" id="depolama-sagligi-yenile" type="button" onclick="depolamaSagligiYenile(true)"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yeniden Ölç</button>
+              </div>
+              <p class="veri-kontrol-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Google hesabının Drive, Gmail ve Fotoğraflar ile ortak alanı ayrıdır. <a href="https://one.google.com/storage" target="_blank" rel="noopener">Google depolama alanını aç</a></p>
+            </div>
+          </section>
         </div>
 
       </main>
@@ -1965,6 +1977,7 @@
     let bulutKaydiCalisiyor = false;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
+    let duzenlenenCariHareket = null;
     const kayitliBulutSurumMetni = localStorage.getItem(BULUT_SURUM_ANAHTAR);
     const kayitliBulutSurumu = kayitliBulutSurumMetni === null
       ? Number.NaN
@@ -4581,6 +4594,7 @@
     }
 
     function odemeYonetiminiAc(cari="") {
+      duzenlenenCariHareket = null;
       cariListesiniDoldur(cari);
       document.getElementById("odeme-tur").value = "odeme";
       document.getElementById("odeme-tarih").value = bugununTarihi();
@@ -4601,11 +4615,22 @@
 
     function odemeTuruDegisti() {
       const cekMi = document.getElementById("odeme-tur")?.value === "cek";
+      const duzenlemeMi = Boolean(duzenlenenCariHareket);
       document.getElementById("cek-alanlari").hidden = !cekMi;
       document.getElementById("odeme-yontem-alani").hidden = cekMi;
+      document.getElementById("odeme-tur").disabled = duzenlemeMi;
+      document.getElementById("odeme-duzenleme-vazgec").hidden = !duzenlemeMi;
+      document.getElementById("odeme-yonetim-baslik").innerHTML = duzenlemeMi
+        ? `<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> ${cekMi ? "Çek" : "Ödeme"} Kaydını Düzenle`
+        : '<i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i> Cari Ödeme / Çek Girişi';
       document.getElementById("odeme-kaydet-btn").innerHTML = cekMi
-        ? '<i class="fa-solid fa-money-check" aria-hidden="true"></i> Çeki Kaydet'
-        : '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Ödemeyi Kaydet';
+        ? `<i class="fa-solid fa-${duzenlemeMi ? "floppy-disk" : "money-check"}" aria-hidden="true"></i> ${duzenlemeMi ? "Çek Değişikliklerini Kaydet" : "Çeki Kaydet"}`
+        : `<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> ${duzenlemeMi ? "Ödeme Değişikliklerini Kaydet" : "Ödemeyi Kaydet"}`;
+    }
+
+    function cariHareketDuzenlemeyiIptalEt() {
+      const cari = document.getElementById("odeme-cari")?.value.trim() || "";
+      odemeYonetiminiAc(cari);
     }
 
     function cariEkstreHareketleriniOlustur(cari) {
@@ -4627,7 +4652,7 @@
         satirlar.push({
           id:h.id, tarih:h.tarih, tur:iptalMi ? `${h.yontem} · İptal` : h.yontem, detay:detay || "Cari ödeme",
           borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(h.tutar), tutar:tutarSayiyaCevir(h.tutar),
-          iptalEdilebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"hareket", durum:h.durum, iptalZamani:h.iptalZamani, iptalNedeni:h.iptalNedeni, kayitZamani:h.kayitZamani
+          iptalEdilebilir:!iptalMi, duzenlenebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"hareket", durum:h.durum, iptalZamani:h.iptalZamani, iptalNedeni:h.iptalNedeni, kayitZamani:h.kayitZamani
         });
       });
       cekleriYukle().filter(cek => cariAdiAnahtari(cek.cari) === anahtar).forEach(cek => {
@@ -4636,7 +4661,7 @@
         satirlar.push({
           id:cek.id, tarih:cek.tarih, tur:`Çek · ${cek.durum}`, detay,
           borc:0, alacak:iptalMi ? 0 : tutarSayiyaCevir(cek.tutar), tutar:tutarSayiyaCevir(cek.tutar),
-          iptalEdilebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"cek", durum:cek.durum, iptalZamani:cek.iptalZamani, iptalNedeni:cek.iptalNedeni, iptalOncesiDurum:cek.iptalOncesiDurum, kayitZamani:cek.kayitZamani
+          iptalEdilebilir:!iptalMi, duzenlenebilir:!iptalMi, geriAlinabilir:iptalMi, kaynak:"cek", durum:cek.durum, iptalZamani:cek.iptalZamani, iptalNedeni:cek.iptalNedeni, iptalOncesiDurum:cek.iptalOncesiDurum, kayitZamani:cek.kayitZamani
         });
       });
       let bakiye = 0;
@@ -4765,7 +4790,7 @@
               <strong class="hareket-tur ${satir.borc ? 'borc' : 'alacak'}">${satir.borc ? 'BORÇ' : 'ALACAK'} · ${formatPara(satir.borc || satir.tutar || satir.alacak)}</strong>
               <span class="odeme-kaydi-yontem">${htmlGuvenli(satir.tur)} ${cekDurumu}</span>
               <span class="odeme-kaydi-detay" title="${htmlGuvenli(satir.detay)}">${htmlGuvenli(satir.detay)}</span>
-              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.iptalEdilebilir && yoneticiMi() ? `<button class="odeme-kaydi-iptal" type="button" onclick="cariHareketIptaliniAc('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi iptal et" title="Kaydı silmeden iptal et"><i class="fa-solid fa-ban" aria-hidden="true"></i> İptal</button>` : ""}${satir.geriAlinabilir && yoneticiMi() ? `<button class="odeme-kaydi-geri-al" type="button" onclick="cariHareketIptaliniGeriAl('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="İptal edilen cari hareketini geri al" title="Kaydı yeniden bakiyeye dahil et"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>` : ""}</span>
+              <span class="hareket-sonuc"><span class="hareket-bakiye ${satirBakiyesi.sinif}">${formatPara(satirBakiyesi.tutar)} · ${satirBakiyesi.etiket.replace(" Bakiyesi","")}</span>${satir.duzenlenebilir && yoneticiMi() ? `<button class="odeme-kaydi-duzenle" type="button" onclick="cariHareketDuzenlemeyiBaslat('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi düzenle" title="Ödeme veya çek bilgilerini düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i> Düzenle</button>` : ""}${satir.iptalEdilebilir && yoneticiMi() ? `<button class="odeme-kaydi-iptal" type="button" onclick="cariHareketIptaliniAc('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="Cari hareketi iptal et" title="Kaydı silmeden iptal et"><i class="fa-solid fa-ban" aria-hidden="true"></i> İptal</button>` : ""}${satir.geriAlinabilir && yoneticiMi() ? `<button class="odeme-kaydi-geri-al" type="button" onclick="cariHareketIptaliniGeriAl('${htmlGuvenli(satir.kaynak)}','${htmlGuvenli(satir.id)}')" aria-label="İptal edilen cari hareketini geri al" title="Kaydı yeniden bakiyeye dahil et"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Geri Al</button>` : ""}</span>
             </div>`;
           }).join("")
         : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-receipt" aria-hidden="true"></i><br>Bu cari hesapta henüz hareket yok.</div>';
@@ -4790,6 +4815,32 @@
       return `${onEk}-${rastgele}`;
     }
 
+    function cariHareketDuzenlemeyiBaslat(kaynak, kimlik) {
+      if (!yoneticiGerekli() || !["hareket","cek"].includes(kaynak)) return;
+      const kayit = kaynak === "cek"
+        ? cekleriYukle().find(cek => cek.id === kimlik)
+        : cariHareketleriYukle().find(hareket => hareket.id === kimlik);
+      if (!kayit || kayit.durum === "İptal") return;
+      duzenlenenCariHareket = { kaynak, kimlik };
+      cariListesiniDoldur(kayit.cari);
+      document.getElementById("odeme-tur").value = kaynak === "cek" ? "cek" : "odeme";
+      document.getElementById("odeme-tarih").value = kayit.tarih;
+      document.getElementById("odeme-tutar").value = tutarSayiyaCevir(kayit.tutar);
+      document.getElementById("odeme-yontem").value = kayit.yontem || "Havale / EFT";
+      document.getElementById("odeme-referans").value = kayit.referans || "";
+      document.getElementById("odeme-aciklama").value = kayit.aciklama || "";
+      document.getElementById("cek-no").value = kayit.cekNo || "";
+      document.getElementById("cek-banka").value = kayit.banka || "";
+      document.getElementById("cek-vade").value = kayit.vadeTarihi || bugununTarihi();
+      document.getElementById("cek-durum").value = ["Verildi","Ödendi"].includes(kayit.durum) ? kayit.durum : "Verildi";
+      document.getElementById("odeme-form-mesaj").textContent = "Kaydın türü değiştirilemez; diğer alanları güvenle güncelleyebilirsiniz.";
+      document.getElementById("odeme-form-mesaj").style.color = "#60a5fa";
+      odemeTuruDegisti();
+      odemeYonetiminiGuncelle();
+      document.getElementById("odeme-yonetim-overlay").classList.add("aktif");
+      setTimeout(() => document.getElementById("odeme-tutar")?.focus(), 60);
+    }
+
     function cariHareketKaydet() {
       if (!yoneticiGerekli()) return;
       let cari = document.getElementById("odeme-cari").value.trim();
@@ -4804,6 +4855,47 @@
       if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir işlem tarihi seçin."; return; }
       if (!(tutar > 0)) { mesaj.textContent = "Tutar sıfırdan büyük olmalıdır."; return; }
       const kayitZamani = new Date().toISOString();
+      if (duzenlenenCariHareket) {
+        const { kaynak, kimlik } = duzenlenenCariHareket;
+        const mevcut = kaynak === "cek"
+          ? cekleriYukle().find(cek => cek.id === kimlik)
+          : cariHareketleriYukle().find(hareket => hareket.id === kimlik);
+        if (!mevcut || mevcut.durum === "İptal" || (kaynak === "cek") !== (tur === "cek")) {
+          mesaj.textContent = "Düzenlenecek aktif kayıt bulunamadı. Listeyi yenileyip tekrar deneyin.";
+          return;
+        }
+        let guncellenen;
+        if (kaynak === "cek") {
+          const cekNo = document.getElementById("cek-no").value.trim();
+          const banka = document.getElementById("cek-banka").value.trim();
+          const vadeTarihi = document.getElementById("cek-vade").value;
+          const durum = document.getElementById("cek-durum").value;
+          if (!cekNo || !banka || !tarihGecerliMi(vadeTarihi)) { mesaj.textContent = "Çek numarası, banka ve geçerli vade tarihi zorunludur."; return; }
+          guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, durum, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
+        } else {
+          const yontem = document.getElementById("odeme-yontem").value.trim();
+          guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, yontem, referans, aciklama, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
+        }
+        if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
+        const turAdi = kaynak === "cek" ? "çek" : "ödeme";
+        if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki ${turAdi} kaydı ${formatPara(guncellenen.tutar)} olarak güncellensin mi? Değişiklikten önce otomatik yedek alınacaktır.`)) return;
+        cari = cariKartiniGarantiEt(cari)?.cari || cari;
+        guncellenen = kaynak === "cek"
+          ? cekiNormallestir({ ...guncellenen, cari })
+          : cariHareketiniNormallestir({ ...guncellenen, cari });
+        const hareketler = kaynak === "hareket"
+          ? cariHareketleriYukle().map(hareket => hareket.id === kimlik ? guncellenen : hareket)
+          : cariHareketleriYukle();
+        const cekler = kaynak === "cek"
+          ? cekleriYukle().map(cek => cek.id === kimlik ? guncellenen : cek)
+          : cekleriYukle();
+        cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi");
+        odemeYonetiminiAc(cari);
+        const basariMesaji = document.getElementById("odeme-form-mesaj");
+        basariMesaji.style.color = "#4ade80";
+        basariMesaji.textContent = `${formatPara(tutar)} tutarındaki ${turAdi} kaydı güncellendi.`;
+        return;
+      }
       cari = cariKartiniGarantiEt(cari)?.cari || cari;
       if (tur === "cek") {
         const cekNo = document.getElementById("cek-no").value.trim();
@@ -5027,6 +5119,9 @@
 
     function odemeYonetiminiKapat() {
       document.getElementById("odeme-yonetim-overlay")?.classList.remove("aktif");
+      duzenlenenCariHareket = null;
+      const turAlani = document.getElementById("odeme-tur");
+      if (turAlani) turAlani.disabled = false;
     }
 
     // ── DÜZENLEME POPUP ────────────────────────────────────────────────────────

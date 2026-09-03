@@ -71,4 +71,9 @@ assert.equal(cariRaporu.yinelenenSayisi, 0, "Farklı carilerin aynı numaralı f
 assert.equal(cariRaporu.ayniNumaraSayisi, 0, "Aynı fatura numarası farklı carilerde kullanılabilmeli");
 
 assert.match(index, /Bu merkez yalnızca denetler; hiçbir faturayı otomatik değiştirmez\./);
+const listeKonumu = index.indexOf('id="liste"');
+const kontrolKonumu = index.indexOf('class="sayfa-sonu-kontroller"');
+const footerKonumu = index.indexOf("<footer>");
+assert.ok(listeKonumu >= 0 && kontrolKonumu > listeKonumu, "Kontrol panelleri fatura listesinin altında olmalı");
+assert.ok(footerKonumu > kontrolKonumu, "Kontrol panelleri sayfa alt bilgisinden hemen önce yer almalı");
 console.log("Veri Kontrol Merkezi doğrulama testleri başarılı.");

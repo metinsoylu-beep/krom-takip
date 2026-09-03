@@ -63,6 +63,11 @@ assert.match(index, /id="cari-hareket-iptal-overlay"/, "Silme yerine nedenli ipt
 assert.match(index, /function cariHareketIptaliniOnayla\(/, "Cari hareket iptali desteklenmeli");
 assert.match(index, /function cariHareketIptaliniGeriAl\(/, "İptal edilen cari hareket yeniden etkinleştirilebilmeli");
 assert.match(index, /class="odeme-kaydi-geri-al"/, "İptal edilen kayıtta geri alma düğmesi bulunmalı");
+assert.match(index, /function cariHareketDuzenlemeyiBaslat\(/, "Aktif ödeme ve çek kayıtları düzenlenebilmeli");
+assert.match(index, /class="odeme-kaydi-duzenle"/, "Aktif cari harekette düzenleme düğmesi bulunmalı");
+assert.match(index, /Kaydın türü değiştirilemez/, "Düzenleme sırasında ödeme ve çek türü korunmalı");
+assert.match(index, /Değişiklikten önce otomatik yedek alınacaktır/, "Finansal kayıt düzenlemesi açık onay ve yedek uyarısı içermeli");
+assert.match(index, /"Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi"/, "Düzenleme işlem geçmişinde ayırt edilebilmeli");
 assert.match(index, /auditAction:mesaj \|\| "Cari hesap değiştirildi"/, "Cari hesap işlemi merkezi işlem geçmişinde adıyla saklanmalı");
 assert.doesNotMatch(index, /function cariHareketSil\(/, "Cari hareket fiziksel olarak silinmemeli");
 assert.doesNotMatch(index, />Ödeme Gir</, "Fatura satırında ödeme düğmesi bulunmamalı");
