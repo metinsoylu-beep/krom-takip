@@ -509,16 +509,35 @@
     .btn-odeme-gir { color: #61dc8b; border-color: #39c56b55; background: #39c56b10; }
     .cek-alanlari { display: contents; }
     .cek-alanlari[hidden] { display: none; }
-    .cari-hesap-kart { width: min(1080px,100%); max-width: 1080px; }
+    .cari-hesap-kart { width: min(1240px,100%); max-width: 1240px; }
+    .cari-ust-islemler { display: flex; align-items: center; gap: 8px; }
+    .cari-yeni-btn, .cari-kart-islem {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px;
+      padding: 7px 11px; border: 1px solid #4ade8066; border-radius: 7px; background: #39c56b17;
+      color: #68e394; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .cari-yeni-btn:hover, .cari-kart-islem:hover { background: #39c56b29; }
+    .cari-kart-formu {
+      display: grid; grid-template-columns: 1.5fr .8fr .8fr 1.15fr .8fr .8fr .8fr; gap: 9px;
+      padding: 13px 18px; background: #0a1a2b; border-bottom: 1px solid var(--cizgi-yumusak);
+    }
+    .cari-kart-formu[hidden] { display: none; }
+    .cari-kart-formu .odeme-form-alan { min-width: 0; }
+    .cari-kart-form-islem { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+    .cari-kart-form-mesaj { margin-right: auto; color: #ff7a85; font-size: 10px; }
+    .cari-kart-vazgec { min-height: 36px; padding: 7px 12px; border: 1px solid var(--cizgi); border-radius: 7px; background: transparent; color: #aebcca; cursor: pointer; }
     .cari-hesap-arama { padding: 12px 18px; border-bottom: 1px solid var(--cizgi-yumusak); }
     .cari-hesap-arama input { width: 100%; padding: 0 12px; }
     .cari-hesap-tablo-wrap { max-height: 62vh; overflow: auto; margin: 14px 18px 18px; border: 1px solid var(--cizgi); border-radius: 8px; }
-    .cari-hesap-tablo { min-width: 820px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
+    .cari-hesap-tablo { min-width: 1280px; font-family: "Segoe UI",Arial,sans-serif; font-size: 11px; }
     .cari-hesap-tablo th, .cari-hesap-tablo td { padding: 10px 12px; }
     .cari-hesap-tablo .bakiye-borc { color: #ff6b77; font-weight: 750; }
     .cari-hesap-tablo .bakiye-alacak { color: #4ade80; font-weight: 750; }
     .cari-hesap-tablo .bakiye-kapali { color: #94a3b8; font-weight: 750; }
     .cari-ekstre-btn { padding: 6px 9px; border: 1px solid #38bdf855; border-radius: 6px; background: #38bdf810; color: #7dd3fc; cursor: pointer; }
+    .cari-kart-islem { width: 30px; min-height: 30px; padding: 0; color: #f3be3e; border-color: #f3be3e55; background: #f3be3e0d; }
+    .cari-kart-islem.sil { color: #ff6b77; border-color: #ff3f4f55; background: #ff3f4f0d; }
+    .cari-kart-islemler { display: flex; gap: 6px; white-space: nowrap; }
     .cari-ekstre-kart {
       width: min(1080px,100%); max-width: 1080px; max-height: 96vh; overflow-y: auto;
       border-top-color: #e6a91f; background: #dfe7ef;
@@ -802,6 +821,7 @@
     }
     @media (max-width: 1180px) {
       .hizli-kartlar { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .cari-kart-formu { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
     @media (max-width: 760px) {
       .navbar { padding-inline: 16px; }
@@ -838,6 +858,11 @@
       .odeme-kaydi-yontem, .odeme-kaydi-detay { grid-column: 1; }
       .hareket-sonuc { grid-column: 2; grid-row: 2 / span 2; }
       .cari-hesap-arama { padding: 12px; }
+      .cari-ust-islemler { align-items: stretch; flex-direction: column-reverse; }
+      .cari-yeni-btn { width: 100%; }
+      .cari-kart-formu { grid-template-columns: 1fr; padding: 12px; }
+      .cari-kart-form-islem { grid-column: 1; align-items: stretch; flex-direction: column; }
+      .cari-kart-form-mesaj { margin: 0; }
       .cari-hesap-tablo-wrap { margin: 12px; }
       .cari-ekstre-kart { min-height: 100vh; max-height: none; border-radius: 0; }
       .cari-ekstre-toolbar { align-items: flex-start; flex-direction: column; }
@@ -996,7 +1021,7 @@
       <div class="duzenle-grid">
         <div class="duzenle-alan duzenle-alan-genis">
           <label>CARİ / FİRMA ADI</label>
-          <input type="text" id="d-cari" placeholder="Firma adını yazın" maxlength="120" autocomplete="organization"/>
+          <input type="text" id="d-cari" list="cari-kart-listesi" placeholder="Kayıtlı cari seçin" maxlength="120" autocomplete="organization"/>
         </div>
         <div class="duzenle-alan">
           <label>FATURA NO</label>
@@ -1040,8 +1065,26 @@
           <h2 class="odeme-yonetim-baslik" id="cari-hesaplar-baslik"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Cari Hesaplar</h2>
           <p class="odeme-yonetim-alt">Faturalar borç, ödeme ve verilen çekler alacak hareketidir.</p>
         </div>
-        <button class="modal-kapat" type="button" onclick="cariHesaplariKapat()" aria-label="Cari hesapları kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <div class="cari-ust-islemler">
+          <button class="cari-yeni-btn yalnizca-yonetici" type="button" onclick="cariKartFormunuAc()"><i class="fa-solid fa-building-circle-check" aria-hidden="true"></i> Yeni Cari Kart</button>
+          <button class="modal-kapat" type="button" onclick="cariHesaplariKapat()" aria-label="Cari hesapları kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
       </div>
+      <form class="cari-kart-formu yalnizca-yonetici" id="cari-kart-formu" onsubmit="cariKartKaydet(event)" hidden>
+        <input id="cari-kart-id" type="hidden"/>
+        <div class="odeme-form-alan"><label for="cari-kart-adi">CARİ / FİRMA</label><input id="cari-kart-adi" type="text" maxlength="120" placeholder="Firma adı" required/></div>
+        <div class="odeme-form-alan"><label for="cari-kart-vergi">VERGİ NO</label><input id="cari-kart-vergi" type="text" maxlength="32" placeholder="İsteğe bağlı"/></div>
+        <div class="odeme-form-alan"><label for="cari-kart-telefon">TELEFON</label><input id="cari-kart-telefon" type="tel" maxlength="40" placeholder="İsteğe bağlı"/></div>
+        <div class="odeme-form-alan"><label for="cari-kart-eposta">E-POSTA</label><input id="cari-kart-eposta" type="email" maxlength="254" placeholder="İsteğe bağlı"/></div>
+        <div class="odeme-form-alan"><label for="cari-kart-acilis-tarih">DEVİR TARİHİ</label><input id="cari-kart-acilis-tarih" type="date"/></div>
+        <div class="odeme-form-alan"><label for="cari-kart-bakiye-turu">DEVİR TÜRÜ</label><select id="cari-kart-bakiye-turu" onchange="cariKartBakiyeTurunuGuncelle()"><option value="yok">Bakiye Yok</option><option value="borc">Borç</option><option value="alacak">Alacak</option></select></div>
+        <div class="odeme-form-alan"><label for="cari-kart-bakiye">DEVİR TUTARI (₺)</label><input id="cari-kart-bakiye" type="number" min="0" step="0.01" placeholder="0,00" disabled/></div>
+        <div class="cari-kart-form-islem">
+          <span class="cari-kart-form-mesaj" id="cari-kart-form-mesaj" role="status"></span>
+          <button class="cari-kart-vazgec" type="button" onclick="cariKartFormunuKapat()">Vazgeç</button>
+          <button class="odeme-kaydet-btn" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Cari Kartı Kaydet</button>
+        </div>
+      </form>
       <div class="cari-hesap-arama"><input id="cari-hesap-arama" type="search" placeholder="Cari/firma ara" oninput="cariHesaplariniGoster()"/></div>
       <div class="cari-hesap-tablo-wrap" id="cari-hesap-tablo-wrap"></div>
     </section>
@@ -1078,8 +1121,8 @@
           <div class="ekstre-kimlik"><span>HAREKET DÖNEMİ</span><strong id="ekstre-donem">—</strong></div>
         </div>
         <div class="ekstre-ozetler">
-          <div class="ekstre-ozet" style="--ekstre-renk:#b7791f"><span>TOPLAM FATURA / BORÇ</span><strong id="ekstre-toplam-borc">0 ₺</strong></div>
-          <div class="ekstre-ozet" style="--ekstre-renk:#17864b"><span>TOPLAM ÖDEME</span><strong id="ekstre-toplam-odeme">0 ₺</strong></div>
+          <div class="ekstre-ozet" style="--ekstre-renk:#b7791f"><span>TOPLAM BORÇ</span><strong id="ekstre-toplam-borc">0 ₺</strong></div>
+          <div class="ekstre-ozet" style="--ekstre-renk:#17864b"><span>TOPLAM ALACAK</span><strong id="ekstre-toplam-odeme">0 ₺</strong></div>
           <div class="ekstre-ozet" style="--ekstre-renk:#6d4bc3"><span>VERİLEN ÇEK</span><strong id="ekstre-toplam-cek">0 ₺</strong></div>
           <div class="ekstre-ozet" id="ekstre-bakiye-kart" style="--ekstre-renk:#c53030"><span id="ekstre-bakiye-etiket">GÜNCEL BAKİYE</span><strong id="ekstre-guncel-bakiye">0 ₺</strong></div>
         </div>
@@ -1141,12 +1184,12 @@
         <button class="modal-kapat" type="button" onclick="odemeYonetiminiKapat()" aria-label="Ödeme penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
       <div class="odeme-ozetler">
-        <div class="odeme-ozet" style="--odeme-renk:#f3be3e"><span>FATURA BORCU</span><strong id="odeme-fatura-tutari">0 ₺</strong></div>
-        <div class="odeme-ozet" style="--odeme-renk:#4ade80"><span>ÖDEME / ÇEK</span><strong id="odeme-odenen-tutar">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#f3be3e"><span>TOPLAM BORÇ</span><strong id="odeme-fatura-tutari">0 ₺</strong></div>
+        <div class="odeme-ozet" style="--odeme-renk:#4ade80"><span>TOPLAM ALACAK</span><strong id="odeme-odenen-tutar">0 ₺</strong></div>
         <div class="odeme-ozet" id="odeme-bakiye-kart" style="--odeme-renk:#ff6b77"><span id="odeme-bakiye-etiket">BORÇ BAKİYESİ</span><strong id="odeme-kalan-tutar">0 ₺</strong></div>
       </div>
       <div class="odeme-formu yalnizca-yonetici">
-        <div class="odeme-form-alan genis"><label for="odeme-cari">CARİ / FİRMA</label><input id="odeme-cari" type="text" list="odeme-cari-listesi" maxlength="120" placeholder="Firma seçin veya yazın" oninput="odemeYonetiminiGuncelle()"/><datalist id="odeme-cari-listesi"></datalist></div>
+        <div class="odeme-form-alan genis"><label for="odeme-cari">CARİ / FİRMA</label><input id="odeme-cari" type="text" list="cari-kart-listesi" maxlength="120" placeholder="Kayıtlı cari seçin" oninput="odemeYonetiminiGuncelle()"/></div>
         <div class="odeme-form-alan"><label for="odeme-tur">İŞLEM TÜRÜ</label><select id="odeme-tur" onchange="odemeTuruDegisti()"><option value="odeme">Ödeme</option><option value="cek">Çek Verme</option></select></div>
         <div class="odeme-form-alan"><label for="odeme-tarih">İŞLEM TARİHİ</label><input id="odeme-tarih" type="date"/></div>
         <div class="odeme-form-alan"><label for="odeme-tutar">TUTAR (₺)</label><input id="odeme-tutar" type="number" min="0.01" step="0.01" placeholder="0,00"/></div>
@@ -1353,14 +1396,14 @@
           <div class="ozet-kart toplam">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
             <span>
-              <span class="ozet-etiket">Fatura Borcu</span>
+              <span class="ozet-etiket">Toplam Borç</span>
               <span class="ozet-deger" id="oz-toplam">0 ₺</span>
             </span>
           </div>
           <div class="ozet-kart odenen">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
             <span>
-              <span class="ozet-etiket">Ödeme / Çek</span>
+              <span class="ozet-etiket">Toplam Alacak</span>
               <span class="ozet-deger" id="oz-odenen">0 ₺</span>
             </span>
           </div>
@@ -1479,7 +1522,7 @@
             <button class="modal-kapat" type="button" onclick="yeniFaturaKapat()" aria-label="Yeni fatura penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </div>
           <div class="form-grid">
-            <div class="form-alan form-alan-genis"><label>CARİ / FİRMA ADI</label><input type="text" id="inp-cari" placeholder="Örn. Örnek Metal San. ve Tic. A.Ş." maxlength="120" autocomplete="organization"/></div>
+            <div class="form-alan form-alan-genis"><label>CARİ / FİRMA ADI</label><input type="text" id="inp-cari" list="cari-kart-listesi" placeholder="Kayıtlı cari seçin" maxlength="120" autocomplete="organization"/><datalist id="cari-kart-listesi"></datalist></div>
             <div class="form-alan"><label>FATURA NO</label><input type="text" id="inp-no" placeholder="FTR-001"/></div>
             <div class="form-alan"><label>FATURA TARİHİ</label><input type="date" id="inp-tarih" oninput="gosterVade()"/></div>
             <div class="form-alan"><label>VADE GÜNÜ <span class="hint">(gün)</span></label><input type="number" id="inp-vade-gun" placeholder="90" min="1" value="90" oninput="gosterVade()"/><div id="vade-hint"></div></div>
@@ -1501,7 +1544,7 @@
     <div class="footer-ic">
       <div class="footer-baslik"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> Veri Saklama Bilgisi</div>
       <ul class="footer-maddeler">
-        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari ödeme ve çek verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
+        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari kart, ödeme ve çek verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
         <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı yoksa son yerel veriler gösterilir.</span></li>
@@ -1520,6 +1563,7 @@
     const KUR_ANAHTAR   = "tcmb-kurlar-son";
     const CARI_HAREKET_ANAHTAR = "krom-takip-cari-hareketler";
     const CEK_ANAHTAR = "krom-takip-cekler";
+    const CARI_KART_ANAHTAR = "krom-takip-cari-kartlar";
     const ESKI_ODEME_GECIS_ANAHTAR = "krom-takip-eski-odeme-gecisi";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
@@ -1649,7 +1693,8 @@
       return {
         items:faturalariTekillestir(faturalar).liste,
         cariHareketler:cariHareketleriYukle(),
-        cekler:cekleriYukle()
+        cekler:cekleriYukle(),
+        cariler:cariKartlariniYukle()
       };
     }
 
@@ -1673,6 +1718,11 @@
         })),
         cekler:cekleriNormallestir(kaynak.cekler).map(cek => ({
           ...cek, tutar:tutarSayiyaCevir(cek.tutar).toFixed(2)
+        })),
+        cariler:cariKartlariniNormallestir(kaynak.cariler).map(cari => ({
+          ...cari,
+          acilisBorc:tutarSayiyaCevir(cari.acilisBorc).toFixed(2),
+          acilisAlacak:tutarSayiyaCevir(cari.acilisAlacak).toFixed(2)
         }))
       });
     }
@@ -1689,7 +1739,8 @@
         lastRequestId: String(ham.lastRequestId || ""),
         items: ham.items,
         cariHareketler:Array.isArray(ham.cariHareketler) ? ham.cariHareketler : null,
-        cekler:Array.isArray(ham.cekler) ? ham.cekler : null
+        cekler:Array.isArray(ham.cekler) ? ham.cekler : null,
+        cariler:Array.isArray(ham.cariler) ? ham.cariler : null
       };
     }
 
@@ -1738,7 +1789,8 @@
             requestId,
             items: faturalariTekillestir(durum.items).liste,
             cariHareketler:cariHareketleriNormallestir(durum.cariHareketler),
-            cekler:cekleriNormallestir(durum.cekler)
+            cekler:cekleriNormallestir(durum.cekler),
+            cariler:cariKartlariniNormallestir(durum.cariler)
           });
           bulutSurumunuKaydet(Number(yanit.revision));
           localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
@@ -1808,6 +1860,7 @@
           localStorage.setItem(ESKI_ODEME_GECIS_ANAHTAR, "1");
         }
         if (Array.isArray(uzakDurum.cekler)) localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(uzakDurum.cekler)));
+        if (Array.isArray(uzakDurum.cariler)) localStorage.setItem(CARI_KART_ANAHTAR, JSON.stringify(cariKartlariniNormallestir(uzakDurum.cariler)));
 
         if (Array.isArray(data) && data.length > 0) {
           // Sheets sütun adları: id, "Fatura No", "Cari/Firma", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
@@ -1854,6 +1907,7 @@
 
           // Sheets verisi localStorage'ı her zaman günceller
           localStorage.setItem(ANAHTAR, JSON.stringify(liste));
+          cariSecenekleriniGuncelle();
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
           if (kaldirilan > 0) {
             syncGoster(`${liste.length} fatura yüklendi · ${kaldirilan} yinelenen kayıt temizlendi`, "#4ade80");
@@ -1864,6 +1918,7 @@
         } else {
           localStorage.setItem(ANAHTAR, "[]");
           syncGoster("Google Sheets'te fatura bulunamadı", "#94a3b8");
+          cariSecenekleriniGuncelle();
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
         }
       } catch(e) {
@@ -1873,6 +1928,7 @@
           return;
         }
         syncGoster("Bağlantı hatası — yerel veriler kullanılıyor", "#f59e0b");
+        cariSecenekleriniGuncelle();
         listeyiGoster(); ozetGuncelle(); rozetGuncelle();
       } finally {
         bulutYuklemeDevamEdiyor = false;
@@ -1991,6 +2047,103 @@
       catch { return []; }
     }
 
+    function cariKimligiOlustur(cari) {
+      const metin = cariAdiAnahtari(cari);
+      let ozet = 2166136261;
+      for (let i=0; i<metin.length; i++) {
+        ozet ^= metin.charCodeAt(i);
+        ozet = Math.imul(ozet,16777619);
+      }
+      return `cari-${(ozet>>>0).toString(16).padStart(8,"0")}`;
+    }
+
+    function cariKartiniNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const cari = String(ham.cari || ham.ad || ham.firma || "").trim().replace(/\s+/g," ").slice(0,120);
+      if (!cari) return null;
+      let acilisBorc = Math.max(0,tutarSayiyaCevir(ham.acilisBorc));
+      let acilisAlacak = Math.max(0,tutarSayiyaCevir(ham.acilisAlacak));
+      if (acilisBorc > 0 && acilisAlacak > 0) {
+        const net = acilisBorc-acilisAlacak;
+        acilisBorc = net>0 ? net : 0;
+        acilisAlacak = net<0 ? Math.abs(net) : 0;
+      }
+      const acilisTarihiHam = String(ham.acilisTarihi || ham.devirTarihi || "").split("T")[0];
+      return {
+        id:String(ham.id || ham.cariId || cariKimligiOlustur(cari) || `cari-${sira+1}`).trim().slice(0,160),
+        cari,
+        vergiNo:String(ham.vergiNo || ham.vergiKimlikNo || "").trim().replace(/\s+/g,"").slice(0,32),
+        telefon:String(ham.telefon || "").trim().slice(0,40),
+        eposta:String(ham.eposta || ham.email || "").trim().toLowerCase().slice(0,254),
+        acilisTarihi:tarihGecerliMi(acilisTarihiHam) ? acilisTarihiHam : "",
+        acilisBorc,
+        acilisAlacak,
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
+        guncellemeZamani:String(ham.guncellemeZamani || "").trim().slice(0,80)
+      };
+    }
+
+    function cariKartlariniNormallestir(hamListe) {
+      const gorulenId = new Set();
+      const gorulenAd = new Set();
+      const gorulenVergi = new Set();
+      return (Array.isArray(hamListe) ? hamListe : []).map((ham,sira)=>cariKartiniNormallestir(ham,sira)).filter(kart=>{
+        if (!kart) return false;
+        const adAnahtari = cariAdiAnahtari(kart.cari);
+        const vergiAnahtari = kart.vergiNo.toLocaleUpperCase("tr-TR");
+        if (gorulenId.has(kart.id) || gorulenAd.has(adAnahtari) || (vergiAnahtari && gorulenVergi.has(vergiAnahtari))) return false;
+        gorulenId.add(kart.id);
+        gorulenAd.add(adAnahtari);
+        if (vergiAnahtari) gorulenVergi.add(vergiAnahtari);
+        return true;
+      }).sort((a,b)=>a.cari.localeCompare(b.cari,"tr"));
+    }
+
+    function cariKartlariniTamamla(cariler, faturalar, hareketler, cekler) {
+      const sonuc = cariKartlariniNormallestir(cariler);
+      const adlar = new Set(sonuc.map(kart=>cariAdiAnahtari(kart.cari)));
+      [faturalar,hareketler,cekler].forEach(liste=>(Array.isArray(liste)?liste:[]).forEach(kayit=>{
+        const cari = String(kayit?.cari || "").trim();
+        const anahtar = cariAdiAnahtari(cari);
+        if (!cari || adlar.has(anahtar)) return;
+        const kart = cariKartiniNormallestir({cari},sonuc.length);
+        if (kart) { sonuc.push(kart); adlar.add(anahtar); }
+      }));
+      return cariKartlariniNormallestir(sonuc);
+    }
+
+    function cariKartlariniYukle() {
+      let kayitli = [];
+      try { kayitli = cariKartlariniNormallestir(JSON.parse(localStorage.getItem(CARI_KART_ANAHTAR) || "[]")); }
+      catch { kayitli = []; }
+      return cariKartlariniTamamla(kayitli,faturaYukle(),cariHareketleriYukle(),cekleriYukle());
+    }
+
+    function cariKartiniBul(cari) {
+      const anahtar = cariAdiAnahtari(cari);
+      return cariKartlariniYukle().find(kart=>cariAdiAnahtari(kart.cari)===anahtar) || null;
+    }
+
+    function cariKartiniGarantiEt(cari) {
+      const ad = String(cari || "").trim().replace(/\s+/g," ").slice(0,120);
+      if (!ad) return null;
+      const kartlar = cariKartlariniYukle();
+      const mevcut = kartlar.find(kart=>cariAdiAnahtari(kart.cari)===cariAdiAnahtari(ad));
+      if (mevcut) {
+        localStorage.setItem(CARI_KART_ANAHTAR,JSON.stringify(cariKartlariniNormallestir(kartlar)));
+        return mevcut;
+      }
+      const yeniKart = cariKartiniNormallestir({cari:ad,kayitZamani:new Date().toISOString()},kartlar.length);
+      localStorage.setItem(CARI_KART_ANAHTAR,JSON.stringify(cariKartlariniNormallestir([...kartlar,yeniKart])));
+      return yeniKart;
+    }
+
+    function cariSecenekleriniGuncelle() {
+      const liste = document.getElementById("cari-kart-listesi");
+      if (!liste) return;
+      liste.innerHTML = cariKartlariniYukle().map(kart=>`<option value="${htmlGuvenli(kart.cari)}"></option>`).join("");
+    }
+
     function eskiFaturaOdemeleriniAktar(faturalar) {
       if (localStorage.getItem(ESKI_ODEME_GECIS_ANAHTAR) === "1") return false;
       const mevcut = cariHareketleriYukle();
@@ -2025,14 +2178,24 @@
       return degisti;
     }
 
-    function cariOzetleriniHesapla(faturalar=faturaYukle(), hareketler=cariHareketleriYukle(), cekler=cekleriYukle()) {
+    function cariOzetleriniHesapla(faturalar=faturaYukle(), hareketler=cariHareketleriYukle(), cekler=cekleriYukle(), cariler=cariKartlariniYukle()) {
       const hesaplar = new Map();
       const hesapGetir = cari => {
         const ad = String(cari || "Belirtilmedi").trim() || "Belirtilmedi";
         const anahtar = cariAdiAnahtari(ad);
-        if (!hesaplar.has(anahtar)) hesaplar.set(anahtar,{ anahtar, cari:ad, faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0 });
+        if (!hesaplar.has(anahtar)) hesaplar.set(anahtar,{ anahtar, cari:ad, kartId:"", vergiNo:"", telefon:"", eposta:"", acilisTarihi:"", acilisBorc:0, acilisAlacak:0, faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0 });
         return hesaplar.get(anahtar);
       };
+      (cariler || []).forEach(kart => Object.assign(hesapGetir(kart.cari),{
+        kartId:kart.id,
+        cari:kart.cari,
+        vergiNo:kart.vergiNo || "",
+        telefon:kart.telefon || "",
+        eposta:kart.eposta || "",
+        acilisTarihi:kart.acilisTarihi || "",
+        acilisBorc:tutarSayiyaCevir(kart.acilisBorc),
+        acilisAlacak:tutarSayiyaCevir(kart.acilisAlacak)
+      }));
       (faturalar || []).forEach(inv => { hesapGetir(inv.cari).faturaToplami += tutarSayiyaCevir(inv.tutar); });
       (hareketler || []).forEach(hareket => { hesapGetir(hareket.cari).odemeToplami += tutarSayiyaCevir(hareket.tutar); });
       (cekler || []).forEach(cek => {
@@ -2042,14 +2205,14 @@
       });
       return Array.from(hesaplar.values()).map(hesap => ({
         ...hesap,
-        bakiye:hesap.faturaToplami - hesap.odemeToplami - hesap.cekToplami
+        bakiye:hesap.acilisBorc + hesap.faturaToplami - hesap.acilisAlacak - hesap.odemeToplami - hesap.cekToplami
       })).sort((a,b) => a.cari.localeCompare(b.cari,"tr"));
     }
 
     function cariOzetiniGetir(cari) {
       const anahtar = cariAdiAnahtari(cari);
       return cariOzetleriniHesapla().find(hesap => hesap.anahtar === anahtar) || {
-        anahtar, cari:String(cari || "Belirtilmedi"), faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0
+        anahtar, cari:String(cari || "Belirtilmedi"), kartId:"", vergiNo:"", telefon:"", eposta:"", acilisTarihi:"", acilisBorc:0, acilisAlacak:0, faturaToplami:0, odemeToplami:0, cekToplami:0, bekleyenCek:0, bakiye:0
       };
     }
 
@@ -2644,7 +2807,7 @@
       const guvenliDurum = uygulamaDurumuOlustur(guvenliListe);
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler[yedekler.length - 1];
-      const sonDurum = sonYedek?.durum || (sonYedek ? { items:sonYedek.liste, cariHareketler:[], cekler:[] } : null);
+      const sonDurum = sonYedek?.durum || (sonYedek ? { items:sonYedek.liste, cariHareketler:[], cekler:[], cariler:[] } : null);
       if (!sonDurum || listeSurumImzasi(sonDurum) !== listeSurumImzasi(guvenliDurum)) {
         yedekler.push({
           kayitZamani: new Date().toISOString(),
@@ -2673,14 +2836,16 @@
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler.pop();
       if (!sonYedek) return;
-      const geriDurum = sonYedek.durum || { items:sonYedek.liste, cariHareketler:cariHareketleriYukle(), cekler:cekleriYukle() };
+      const geriDurum = sonYedek.durum || { items:sonYedek.liste, cariHareketler:cariHareketleriYukle(), cekler:cekleriYukle(), cariler:cariKartlariniYukle() };
       const geriYuklenecek = faturalariTekillestir(geriDurum.items).liste;
       if (yedekler.length) localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler));
       else localStorage.removeItem(YEDEK_ANAHTAR);
       localStorage.setItem(ANAHTAR, JSON.stringify(geriYuklenecek));
       localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(geriDurum.cariHareketler)));
       localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(geriDurum.cekler)));
+      localStorage.setItem(CARI_KART_ANAHTAR, JSON.stringify(cariKartlariniNormallestir(geriDurum.cariler)));
       buludaKaydet(geriYuklenecek);
+      cariSecenekleriniGuncelle();
       listeyiGoster();
       rozetGuncelle();
       ozetGuncelle();
@@ -3357,8 +3522,7 @@
 
     // ── CARİ HESAP, ÖDEME VE ÇEK KAYITLARI ─────────────────────────────────
     function cariListesiniDoldur(seciliCari="") {
-      const adlar = cariOzetleriniHesapla().map(hesap => hesap.cari);
-      document.getElementById("odeme-cari-listesi").innerHTML = adlar.map(cari => `<option value="${htmlGuvenli(cari)}"></option>`).join("");
+      cariSecenekleriniGuncelle();
       document.getElementById("odeme-cari").value = seciliCari;
     }
 
@@ -3393,6 +3557,12 @@
     function cariEkstreHareketleriniOlustur(cari) {
       const anahtar = cariAdiAnahtari(cari);
       const satirlar = [];
+      const kart = cariKartiniBul(cari);
+      if (kart?.acilisTarihi && (kart.acilisBorc>0 || kart.acilisAlacak>0)) satirlar.push({
+        id:`acilis-${kart.id}`, tarih:kart.acilisTarihi, tur:"Açılış Bakiyesi",
+        detay:kart.acilisBorc>0 ? "Devir borç bakiyesi" : "Devir alacak bakiyesi",
+        borc:tutarSayiyaCevir(kart.acilisBorc), alacak:tutarSayiyaCevir(kart.acilisAlacak), silinebilir:false, kayitZamani:""
+      });
       faturaYukle().filter(inv => cariAdiAnahtari(inv.cari) === anahtar).forEach(inv => satirlar.push({
         id:`fatura-${inv.id}`, tarih:inv.tarih, tur:"Fatura", detay:`${inv.no} · Vade ${formatTarih(vadeTarihi(inv.tarih,inv.vadeGun))}`,
         borc:tutarSayiyaCevir(inv.tutar), alacak:0, silinebilir:false, kayitZamani:""
@@ -3424,6 +3594,8 @@
         cari:cariAdi,
         hareketler:satirlar,
         hesap:{
+          acilisBorc:tutarSayiyaCevir(hesapOzeti.acilisBorc),
+          acilisAlacak:tutarSayiyaCevir(hesapOzeti.acilisAlacak),
           faturaToplami:tutarSayiyaCevir(hesapOzeti.faturaToplami),
           odemeToplami:tutarSayiyaCevir(hesapOzeti.odemeToplami),
           cekToplami:tutarSayiyaCevir(hesapOzeti.cekToplami),
@@ -3450,8 +3622,8 @@
       document.getElementById("ekstre-cari-adi").textContent = veri.cari;
       document.getElementById("ekstre-rapor-tarihi").textContent = formatTarih(tarihOlusturYerel(veri.raporTarihi));
       document.getElementById("ekstre-donem").textContent = donem;
-      document.getElementById("ekstre-toplam-borc").textContent = formatPara(veri.hesap.faturaToplami);
-      document.getElementById("ekstre-toplam-odeme").textContent = formatPara(veri.hesap.odemeToplami);
+      document.getElementById("ekstre-toplam-borc").textContent = formatPara(veri.hesap.faturaToplami + veri.hesap.acilisBorc);
+      document.getElementById("ekstre-toplam-odeme").textContent = formatPara(veri.hesap.odemeToplami + veri.hesap.cekToplami + veri.hesap.acilisAlacak);
       document.getElementById("ekstre-toplam-cek").textContent = formatPara(veri.hesap.cekToplami);
       document.getElementById("ekstre-bakiye-etiket").textContent = veri.bakiye.etiket.toLocaleUpperCase("tr-TR");
       document.getElementById("ekstre-guncel-bakiye").textContent = formatPara(veri.bakiye.tutar);
@@ -3513,8 +3685,8 @@
       const hesap = cariOzetiniGetir(cari || "Belirtilmedi");
       const bakiye = bakiyeBilgisi(hesap.bakiye);
       document.getElementById("odeme-fatura-bilgisi").textContent = cari ? `${cari} cari hesabı` : "İşlem bir faturaya değil, seçilen cari hesaba işlenir.";
-      document.getElementById("odeme-fatura-tutari").textContent = formatPara(hesap.faturaToplami);
-      document.getElementById("odeme-odenen-tutar").textContent = formatPara(hesap.odemeToplami + hesap.cekToplami);
+      document.getElementById("odeme-fatura-tutari").textContent = formatPara(hesap.faturaToplami + hesap.acilisBorc);
+      document.getElementById("odeme-odenen-tutar").textContent = formatPara(hesap.odemeToplami + hesap.cekToplami + hesap.acilisAlacak);
       document.getElementById("odeme-bakiye-etiket").textContent = bakiye.etiket.toLocaleUpperCase("tr-TR");
       document.getElementById("odeme-kalan-tutar").textContent = formatPara(bakiye.tutar);
       document.getElementById("odeme-bakiye-kart")?.style.setProperty("--odeme-renk", bakiye.sinif === "bakiye-borc" ? "#ff6b77" : bakiye.sinif === "bakiye-alacak" ? "#4ade80" : "#94a3b8");
@@ -3556,7 +3728,7 @@
 
     function cariHareketKaydet() {
       if (!yoneticiGerekli()) return;
-      const cari = document.getElementById("odeme-cari").value.trim();
+      let cari = document.getElementById("odeme-cari").value.trim();
       const tur = document.getElementById("odeme-tur").value;
       const tarih = document.getElementById("odeme-tarih").value;
       const tutar = tutarSayiyaCevir(document.getElementById("odeme-tutar").value);
@@ -3568,6 +3740,7 @@
       if (!tarihGecerliMi(tarih)) { mesaj.textContent = "Geçerli bir işlem tarihi seçin."; return; }
       if (!(tutar > 0)) { mesaj.textContent = "Tutar sıfırdan büyük olmalıdır."; return; }
       const kayitZamani = new Date().toISOString();
+      cari = cariKartiniGarantiEt(cari)?.cari || cari;
       if (tur === "cek") {
         const cekNo = document.getElementById("cek-no").value.trim();
         const banka = document.getElementById("cek-banka").value.trim();
@@ -3608,8 +3781,108 @@
       odemeYonetiminiGuncelle();
     }
 
+    function cariKartBakiyeTurunuGuncelle() {
+      const tur = document.getElementById("cari-kart-bakiye-turu")?.value || "yok";
+      const tutar = document.getElementById("cari-kart-bakiye");
+      const tarih = document.getElementById("cari-kart-acilis-tarih");
+      if (tutar) {
+        tutar.disabled = tur === "yok";
+        if (tur === "yok") tutar.value = "";
+      }
+      if (tarih) {
+        tarih.disabled = tur === "yok";
+        if (tur !== "yok" && !tarih.value) tarih.value = bugununTarihi();
+      }
+    }
+
+    function cariKartFormunuAc(kimlik="") {
+      if (!yoneticiGerekli()) return;
+      const kart = cariKartlariniYukle().find(item=>item.id===kimlik) || null;
+      document.getElementById("cari-kart-id").value = kart?.id || "";
+      document.getElementById("cari-kart-adi").value = kart?.cari || "";
+      document.getElementById("cari-kart-vergi").value = kart?.vergiNo || "";
+      document.getElementById("cari-kart-telefon").value = kart?.telefon || "";
+      document.getElementById("cari-kart-eposta").value = kart?.eposta || "";
+      document.getElementById("cari-kart-acilis-tarih").value = kart?.acilisTarihi || "";
+      const tur = kart?.acilisBorc>0 ? "borc" : kart?.acilisAlacak>0 ? "alacak" : "yok";
+      document.getElementById("cari-kart-bakiye-turu").value = tur;
+      document.getElementById("cari-kart-bakiye").value = tur === "borc" ? kart.acilisBorc : tur === "alacak" ? kart.acilisAlacak : "";
+      document.getElementById("cari-kart-form-mesaj").textContent = "";
+      document.getElementById("cari-kart-formu").hidden = false;
+      cariKartBakiyeTurunuGuncelle();
+      setTimeout(()=>document.getElementById("cari-kart-adi")?.focus(),60);
+    }
+
+    function cariKartFormunuKapat() {
+      const form = document.getElementById("cari-kart-formu");
+      if (form) form.hidden = true;
+    }
+
+    function cariKartKaydet(event) {
+      event?.preventDefault();
+      if (!yoneticiGerekli()) return;
+      const mesaj = document.getElementById("cari-kart-form-mesaj");
+      mesaj.style.color = "#ff7a85";
+      const kimlik = document.getElementById("cari-kart-id").value;
+      const cari = document.getElementById("cari-kart-adi").value.trim().replace(/\s+/g," ");
+      const vergiNo = document.getElementById("cari-kart-vergi").value.trim().replace(/\s+/g,"");
+      const telefon = document.getElementById("cari-kart-telefon").value.trim();
+      const epostaAlani = document.getElementById("cari-kart-eposta");
+      const eposta = epostaAlani.value.trim().toLowerCase();
+      const tur = document.getElementById("cari-kart-bakiye-turu").value;
+      const acilisTarihi = tur === "yok" ? "" : document.getElementById("cari-kart-acilis-tarih").value;
+      const acilisTutari = tur === "yok" ? 0 : tutarSayiyaCevir(document.getElementById("cari-kart-bakiye").value);
+      if (!cari) { mesaj.textContent = "Cari/firma adı zorunludur."; return; }
+      if (eposta && !epostaAlani.checkValidity()) { epostaAlani.reportValidity(); mesaj.textContent = "Geçerli bir e-posta adresi girin."; return; }
+      if (tur !== "yok" && (!tarihGecerliMi(acilisTarihi) || !(acilisTutari>0))) { mesaj.textContent = "Devir bakiyesi için tarih ve sıfırdan büyük tutar girin."; return; }
+      const kartlar = cariKartlariniYukle();
+      const onceki = kartlar.find(kart=>kart.id===kimlik) || null;
+      const ayniAd = kartlar.find(kart=>kart.id!==kimlik && cariAdiAnahtari(kart.cari)===cariAdiAnahtari(cari));
+      if (ayniAd) { mesaj.textContent = "Bu cari/firma adıyla zaten bir kart var."; return; }
+      const ayniVergi = vergiNo && kartlar.find(kart=>kart.id!==kimlik && kart.vergiNo && kart.vergiNo.toLocaleUpperCase("tr-TR")===vergiNo.toLocaleUpperCase("tr-TR"));
+      if (ayniVergi) { mesaj.textContent = `Bu vergi numarası ${ayniVergi.cari} kartında kayıtlı.`; return; }
+      const zaman = new Date().toISOString();
+      const yeniKart = cariKartiniNormallestir({
+        id:onceki?.id || cariHareketKimligiOlustur("cari"), cari, vergiNo, telefon, eposta, acilisTarihi,
+        acilisBorc:tur==="borc" ? acilisTutari : 0,
+        acilisAlacak:tur==="alacak" ? acilisTutari : 0,
+        kayitZamani:onceki?.kayitZamani || zaman, guncellemeZamani:zaman
+      });
+      const eskiAnahtar = onceki ? cariAdiAnahtari(onceki.cari) : "";
+      const yeniFaturalar = faturaYukle().map(inv=>eskiAnahtar && cariAdiAnahtari(inv.cari)===eskiAnahtar ? {...inv,cari} : inv);
+      const yeniHareketler = cariHareketleriYukle().map(h=>eskiAnahtar && cariAdiAnahtari(h.cari)===eskiAnahtar ? {...h,cari} : h);
+      const yeniCekler = cekleriYukle().map(cek=>eskiAnahtar && cariAdiAnahtari(cek.cari)===eskiAnahtar ? {...cek,cari} : cek);
+      otomatikYedekOlustur(faturaYukle(),onceki ? "Cari kart düzenlenmeden önce" : "Cari kart eklenmeden önce");
+      localStorage.setItem(ANAHTAR,JSON.stringify(faturalariTekillestir(yeniFaturalar).liste));
+      localStorage.setItem(CARI_HAREKET_ANAHTAR,JSON.stringify(cariHareketleriNormallestir(yeniHareketler)));
+      localStorage.setItem(CEK_ANAHTAR,JSON.stringify(cekleriNormallestir(yeniCekler)));
+      localStorage.setItem(CARI_KART_ANAHTAR,JSON.stringify(cariKartlariniNormallestir([...kartlar.filter(kart=>kart.id!==kimlik),yeniKart])));
+      buludaKaydet(yeniFaturalar);
+      cariKartFormunuKapat();
+      cariSecenekleriniGuncelle();
+      cariHesaplariniGoster(); listeyiGoster(); rozetGuncelle(); ozetGuncelle();
+      syncGoster(`${cari} cari kartı kaydedildi`,"#4ade80");
+    }
+
+    function cariKartSil(kimlik) {
+      if (!yoneticiGerekli()) return;
+      const kart = cariKartlariniYukle().find(item=>item.id===kimlik);
+      if (!kart) return;
+      const anahtar = cariAdiAnahtari(kart.cari);
+      const kullanimda = faturaYukle().some(inv=>cariAdiAnahtari(inv.cari)===anahtar) || cariHareketleriYukle().some(h=>cariAdiAnahtari(h.cari)===anahtar) || cekleriYukle().some(cek=>cariAdiAnahtari(cek.cari)===anahtar);
+      if (kullanimda) { alert("Bu cari karta bağlı fatura, ödeme veya çek bulunduğu için silinemez. Kartı düzenleyebilirsiniz."); return; }
+      if (!confirm(`${kart.cari} cari kartı silinsin mi?`)) return;
+      otomatikYedekOlustur(faturaYukle(),"Cari kart silinmeden önce");
+      localStorage.setItem(CARI_KART_ANAHTAR,JSON.stringify(cariKartlariniNormallestir(cariKartlariniYukle().filter(item=>item.id!==kimlik))));
+      buludaKaydet();
+      cariSecenekleriniGuncelle(); cariHesaplariniGoster(); ozetGuncelle();
+      syncGoster(`${kart.cari} cari kartı silindi`,"#4ade80");
+    }
+
     function cariHesaplariAc() {
       document.getElementById("cari-hesap-arama").value = "";
+      cariKartFormunuKapat();
+      cariSecenekleriniGuncelle();
       cariHesaplariniGoster();
       document.getElementById("cari-hesaplar-overlay").classList.add("aktif");
     }
@@ -3619,9 +3892,9 @@
       if (!tablo) return;
       const arama = String(document.getElementById("cari-hesap-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
       const hesaplar = cariOzetleriniHesapla().filter(hesap => !arama || hesap.cari.toLocaleUpperCase("tr-TR").includes(arama));
-      tablo.innerHTML = hesaplar.length ? `<table class="cari-hesap-tablo"><thead><tr><th>CARİ / FİRMA</th><th>FATURA BORCU</th><th>ÖDEMELER</th><th>VERİLEN ÇEK</th><th>BEKLEYEN ÇEK</th><th>BAKİYE</th><th></th></tr></thead><tbody>${hesaplar.map(hesap => {
+      tablo.innerHTML = hesaplar.length ? `<table class="cari-hesap-tablo"><thead><tr><th>CARİ / FİRMA</th><th>DEVİR BORÇ</th><th>DEVİR ALACAK</th><th>FATURA</th><th>ÖDEMELER</th><th>VERİLEN ÇEK</th><th>BEKLEYEN ÇEK</th><th>BAKİYE</th><th>EKSTRE</th><th class="yalnizca-yonetici">KART</th></tr></thead><tbody>${hesaplar.map(hesap => {
         const bakiye = bakiyeBilgisi(hesap.bakiye);
-        return `<tr><td>${cariLogosuHtml(hesap.cari)}</td><td>${formatPara(hesap.faturaToplami)}</td><td style="color:#4ade80">${formatPara(hesap.odemeToplami)}</td><td style="color:#a78bfa">${formatPara(hesap.cekToplami)}</td><td>${formatPara(hesap.bekleyenCek)}</td><td class="${bakiye.sinif}">${formatPara(bakiye.tutar)} · ${bakiye.etiket}</td><td><button class="cari-ekstre-btn" type="button" data-cari="${htmlGuvenli(hesap.cari)}" onclick="cariEkstreAc(this.dataset.cari)">Ekstre</button></td></tr>`;
+        return `<tr><td>${cariLogosuHtml(hesap.cari)}</td><td>${formatPara(hesap.acilisBorc)}</td><td style="color:#67cdfa">${formatPara(hesap.acilisAlacak)}</td><td>${formatPara(hesap.faturaToplami)}</td><td style="color:#4ade80">${formatPara(hesap.odemeToplami)}</td><td style="color:#a78bfa">${formatPara(hesap.cekToplami)}</td><td>${formatPara(hesap.bekleyenCek)}</td><td class="${bakiye.sinif}">${formatPara(bakiye.tutar)} · ${bakiye.etiket}</td><td><button class="cari-ekstre-btn" type="button" data-cari="${htmlGuvenli(hesap.cari)}" onclick="cariEkstreAc(this.dataset.cari)">Ekstre</button></td><td class="yalnizca-yonetici"><span class="cari-kart-islemler"><button class="cari-kart-islem" type="button" data-kimlik="${htmlGuvenli(hesap.kartId)}" onclick="cariKartFormunuAc(this.dataset.kimlik)" title="Cari kartı düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button class="cari-kart-islem sil" type="button" data-kimlik="${htmlGuvenli(hesap.kartId)}" onclick="cariKartSil(this.dataset.kimlik)" title="Cari kartı sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></span></td></tr>`;
       }).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos">Cari hesap bulunamadı.</div>';
     }
 
@@ -3638,6 +3911,7 @@
 
     function cariHesaplariKapat() {
       document.getElementById("cari-hesaplar-overlay")?.classList.remove("aktif");
+      cariKartFormunuKapat();
     }
 
     function odemeYonetiminiKapat() {
@@ -3671,7 +3945,7 @@
     function duzenleKaydet() {
       if (!yoneticiGerekli()) return;
       const id    = Number(document.getElementById("d-id").value);
-      const cari  = document.getElementById("d-cari").value.trim();
+      let cari  = document.getElementById("d-cari").value.trim();
       const no    = document.getElementById("d-no").value.trim();
       const tarih = document.getElementById("d-tarih").value;
       const vadeG = document.getElementById("d-vade-gun").value;
@@ -3679,6 +3953,7 @@
       const takipKapali = document.getElementById("d-takip-durumu").value === "kapali";
       const msg   = document.getElementById("d-msg");
       if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
+      cari = cariKartiniGarantiEt(cari)?.cari || cari;
       const mevcutListe = faturaYukle();
       const mevcutFatura = mevcutListe.find(i => i.id === id);
       faturaKaydet(mevcutListe.map(i => i.id===id ? {
@@ -3710,10 +3985,14 @@
     function ozetGuncelle() {
       const hamListe=hamFaturaVerisiniYukle();
       const liste=faturaYukle();
-      const toplam=liste.reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
+      const cariler=cariKartlariniYukle();
+      const faturaToplami=liste.reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
+      const acilisBorc=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisBorc),0);
+      const acilisAlacak=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisAlacak),0);
       const odemeler=cariHareketleriYukle().reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
       const cekler=cekleriYukle().filter(cek=>cek.durum!=="İptal").reduce((deger,cek)=>deger+tutarSayiyaCevir(cek.tutar),0);
-      const toplamAlacak=odemeler+cekler;
+      const toplam=faturaToplami+acilisBorc;
+      const toplamAlacak=odemeler+cekler+acilisAlacak;
       const netBakiye=toplam-toplamAlacak;
       const bakiye=bakiyeBilgisi(netBakiye);
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
@@ -3754,6 +4033,7 @@
     }
     function yeniFaturaAc() {
       if (!yoneticiGerekli()) return;
+      cariSecenekleriniGuncelle();
       document.getElementById("yeni-fatura-overlay")?.classList.add("aktif");
       setTimeout(() => document.getElementById("inp-cari")?.focus(), 60);
     }
@@ -3764,13 +4044,14 @@
     function faturaEkle() {
       if (!yoneticiGerekli()) return;
       if (faturaEklemeKilidi) return;
-      const cari    = document.getElementById("inp-cari").value.trim();
+      let cari    = document.getElementById("inp-cari").value.trim();
       const no      = document.getElementById("inp-no").value.trim();
       const tarih   = document.getElementById("inp-tarih").value;
       const vadeGun = document.getElementById("inp-vade-gun").value;
       const tutar   = document.getElementById("inp-tutar").value.trim();
       const msg     = document.getElementById("msg");
       if (!cari||!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
+      cari = cariKartiniGarantiEt(cari)?.cari || cari;
       const liste = faturaYukle();
       const yeniFatura = { id:Date.now(), cari, no, tarih, vadeGun:parseInt(vadeGun), tutar };
       if (liste.some(inv => faturaImzasi(inv) === faturaImzasi(yeniFatura))) {
@@ -3868,6 +4149,7 @@
       uygulamaBaslatildi = true;
       firmaAdiniYukle();
       document.getElementById("navbar-tarih").textContent = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
+      cariSecenekleriniGuncelle();
       listeyiGoster();
       ozetGuncelle();
       rozetGuncelle();
@@ -3906,6 +4188,7 @@
           topluSilmeKapat();
           odemeYonetiminiKapat();
           cariHesaplariKapat();
+          cariKartFormunuKapat();
           cariEkstreKapat();
           kullaniciPaneliniKapat();
         }

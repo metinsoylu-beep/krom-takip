@@ -18,8 +18,10 @@ let paymentValues = [
 ];
 let movementValues = [];
 let checkValues = [];
+let customerValues = [];
 let movementExists = false;
 let checkExists = false;
+let customerExists = false;
 
 const propertyData = { VIEWER_EMAILS: "viewer@example.com" };
 const properties = {
@@ -65,6 +67,7 @@ const invoiceSheet = sheetOlustur(() => invoiceValues, next => { invoiceValues =
 const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues = next; });
 const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; });
 const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; });
+const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; });
 
 let locked = false;
 const context = {
@@ -79,11 +82,13 @@ const context = {
       if (name === "Ödemeler") return paymentSheet;
       if (name === "Cari Hareketler") return movementExists ? movementSheet : null;
       if (name === "Çekler") return checkExists ? checkSheet : null;
+      if (name === "Cariler") return customerExists ? customerSheet : null;
       return null;
     },
     insertSheet(name) {
       if (name === "Cari Hareketler") { movementExists = true; return movementSheet; }
       if (name === "Çekler") { checkExists = true; return checkSheet; }
+      if (name === "Cariler") { customerExists = true; return customerSheet; }
       return invoiceSheet;
     }
   }) },
@@ -131,6 +136,10 @@ const hareketler = [
   { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, yontem:"Nakit" }
 ];
 const cekler = [{ id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", durum:"Verildi" }];
+const cariler = [
+  { id:"cari-1", cari:"Örnek Metal", vergiNo:"1234567890", acilisTarihi:"2026-01-01", acilisBorc:25, acilisAlacak:0 },
+  { id:"cari-2", cari:"Başarı Çelik", vergiNo:"", acilisTarihi:"", acilisBorc:0, acilisAlacak:10 }
+];
 
 assert.equal(read(context.doGet()).code, "AUTH_REQUIRED");
 const firstRead = post({ action:"read" });
@@ -165,19 +174,22 @@ const kullaniciKaldirildi = post({ action:"users.delete", email:"yeni@example.co
 assert.equal(kullaniciKaldirildi.users.some(item => item.email === "yeni@example.com"), false);
 assert.doesNotMatch(propertyData.ADMIN_EMAILS, /yeni@example\.com/);
 
-const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
-assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount },
-  { ok:true, revision:1, count:2, movementCount:2, checkCount:1 });
+const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler, cariler });
+assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount, customerCount:saved.customerCount },
+  { ok:true, revision:1, count:2, movementCount:2, checkCount:1, customerCount:2 });
 assert.equal(movementValues[0][0], "Hareket ID");
 assert.equal(movementValues.length, 3);
 assert.equal(checkValues[0][0], "Çek ID");
 assert.equal(checkValues.length, 2);
+assert.equal(customerValues[0][0], "Cari ID");
+assert.equal(customerValues.length, 3);
 assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi olarak korunmalı");
 
 const kayitSonrasi = post({ action:"read" });
 assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");
 assert.equal(kayitSonrasi.cariHareketler[0].tutar, 140);
 assert.equal(kayitSonrasi.cekler[0].durum, "Verildi");
+assert.equal(kayitSonrasi.cariler.find(cari => cari.cari === "Örnek Metal").acilisBorc, 25);
 assert.equal(invoiceValues[3][7], "Vade Durumu", "Fatura sayfasında ödeme durumu yerine vade durumu bulunmalı");
 
 const replayed = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
@@ -192,6 +204,7 @@ assert.equal(eskiOnYuzSonucu.revision, 2);
 const eskiOnYuzOkumasi = post({ action:"read" });
 assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 2, "Eski ön yüz cari hareket alanını göndermese de kayıtlar korunmalı");
 assert.equal(eskiOnYuzOkumasi.cekler.length, 1, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
+assert.equal(eskiOnYuzOkumasi.cariler.length, 2, "Eski ön yüz cari kart alanını göndermese de kartlar korunmalı");
 
 assert.match(index, /firebase-auth-compat/);
 assert.match(index, /cariHareketler/);

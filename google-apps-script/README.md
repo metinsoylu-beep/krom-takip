@@ -10,9 +10,16 @@ yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 - `viewer`: Verileri görüntüler ve filtreler; hiçbir kayıt değişikliği yapamaz.
 
 Yeni manuel ödemeler faturadan bağımsız olarak `Cari Hareketler` sayfasına,
-verilen çekler ise `Çekler` sayfasına yazılır. Cari bakiye; toplam fatura borcu
-eksi ödeme ve iptal edilmemiş çekler şeklinde hesaplanır. Ödeme tutarı bir
-faturaya otomatik dağıtılmaz.
+verilen çekler `Çekler`, cari kart bilgileri ise `Cariler` sayfasına yazılır.
+Cari kartta firma ve iletişim bilgileriyle birlikte devir borç veya devir alacak
+bakiyesi tutulabilir. Cari bakiye; devir borcu ve fatura toplamından devir
+alacağı, ödemeler ve iptal edilmemiş çekler düşülerek hesaplanır. Ödeme tutarı
+bir faturaya otomatik dağıtılmaz.
+
+`Cariler` sayfası ilk kayıt sırasında otomatik oluşturulur. Aynı firma adı veya
+aynı dolu vergi numarasıyla ikinci bir cari kart oluşturulmaz. Eski fatura,
+ödeme ve çeklerde bulunan firma adları sıfır devir bakiyeli cari kartlar olarak
+otomatik tamamlanır; mevcut hareketler değiştirilmez.
 
 `Faturalar` sayfasındaki `Takip Durumu` cari bakiyeden ayrıdır. Kapalı faturalar
 vadesi geçen ve yaklaşan vade listelerine girmez; fatura düzenleme ekranından

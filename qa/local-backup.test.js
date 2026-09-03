@@ -17,6 +17,7 @@ const context = {
   ANAHTAR: "faturalar",
   CARI_HAREKET_ANAHTAR: "hareketler",
   CEK_ANAHTAR: "cekler",
+  CARI_KART_ANAHTAR: "cariler",
   YEDEK_ANAHTAR: "yedekler",
   YEDEK_SINIR: 10,
   kullaniciRolu: "admin",
@@ -30,12 +31,16 @@ const context = {
   eskiFaturaOdemeleriniAktar() {},
   cariHareketleriNormallestir: liste => Array.isArray(liste) ? liste : [],
   cekleriNormallestir: liste => Array.isArray(liste) ? liste : [],
+  cariKartlariniNormallestir: liste => Array.isArray(liste) ? liste : [],
   cariHareketleriYukle: () => JSON.parse(depo.get("hareketler") || "[]"),
   cekleriYukle: () => JSON.parse(depo.get("cekler") || "[]"),
+  cariKartlariniYukle: () => JSON.parse(depo.get("cariler") || "[]"),
+  cariSecenekleriniGuncelle() {},
   uygulamaDurumuOlustur: liste => ({
     items:Array.isArray(liste) ? liste : [],
     cariHareketler:JSON.parse(depo.get("hareketler") || "[]"),
-    cekler:JSON.parse(depo.get("cekler") || "[]")
+    cekler:JSON.parse(depo.get("cekler") || "[]"),
+    cariler:JSON.parse(depo.get("cariler") || "[]")
   }),
   listeSurumImzasi: durum => JSON.stringify(durum),
   buludaKaydet: liste => { bulutaGonderilen = liste; },
@@ -52,6 +57,7 @@ const ilkListe = [{ id: 1, no: "F-1", tarih: "2026-09-01", vadeGun: 30, tutar: "
 depo.set("faturalar", JSON.stringify(ilkListe));
 depo.set("hareketler", JSON.stringify([{ id:"h-1", cari:"Firma A", tarih:"2026-09-01", tutar:40 }]));
 depo.set("cekler", JSON.stringify([{ id:"c-1", cari:"Firma A", tarih:"2026-09-01", vadeTarihi:"2026-10-01", tutar:20, durum:"Verildi" }]));
+depo.set("cariler", JSON.stringify([{ id:"cari-1", cari:"Firma A", acilisBorc:10, acilisAlacak:0 }]));
 
 const yeniListe = [...ilkListe, { id: 2, no: "F-2", tarih: "2026-09-02", vadeGun: 30, tutar: "200", odendi: false }];
 context.faturaKaydet(yeniListe, "Fatura eklendi");
@@ -61,6 +67,7 @@ assert.equal(yedekler.length, 1, "Değişiklikten önce bir yedek oluşmalı");
 assert.deepEqual(yedekler[0].liste, ilkListe, "Yedek eski listeyi içermeli");
 assert.equal(yedekler[0].durum.cariHareketler.length, 1, "Cari hareketler aynı güvenlik yedeğinde tutulmalı");
 assert.equal(yedekler[0].durum.cekler.length, 1, "Çekler aynı güvenlik yedeğinde tutulmalı");
+assert.equal(yedekler[0].durum.cariler.length, 1, "Cari kartlar aynı güvenlik yedeğinde tutulmalı");
 assert.equal(dugme.hidden, false, "Geri alma düğmesi görünür olmalı");
 
 context.sonIslemiGeriAl();

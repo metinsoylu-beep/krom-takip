@@ -2,6 +2,7 @@ const SHEET_NAME = "Faturalar";
 const PAYMENT_SHEET_NAME = "Ödemeler";
 const MOVEMENT_SHEET_NAME = "Cari Hareketler";
 const CHECK_SHEET_NAME = "Çekler";
+const CUSTOMER_SHEET_NAME = "Cariler";
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -54,6 +55,18 @@ const CEK_BASLIK = [
   "Referans",
   "Açıklama",
   "Kayıt Zamanı"
+];
+const CARI_BASLIK = [
+  "Cari ID",
+  "Cari/Firma",
+  "Vergi No",
+  "Telefon",
+  "E-posta",
+  "Açılış Tarihi",
+  "Açılış Borç",
+  "Açılış Alacak",
+  "Kayıt Zamanı",
+  "Güncelleme Zamanı"
 ];
 
 function jsonCevabi(deger) {
@@ -541,6 +554,107 @@ function cekleriNormallestir(hamListe) {
   });
 }
 
+function cariAdiAnahtari(cari) {
+  return String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ";
+}
+
+function cariKimligiOlustur(cari) {
+  const metin = cariAdiAnahtari(cari);
+  let ozet = 2166136261;
+  for (let i = 0; i < metin.length; i++) {
+    ozet ^= metin.charCodeAt(i);
+    ozet = Math.imul(ozet, 16777619);
+  }
+  return "cari-" + (ozet >>> 0).toString(16).padStart(8, "0");
+}
+
+function cariKartiniNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const cari = String(ham.cari || ham.ad || ham.firma || "").trim().replace(/\s+/g, " ").slice(0, 120);
+  if (!cari) return null;
+  let acilisBorc = Math.max(0, tutarSayisi(ham.acilisBorc));
+  let acilisAlacak = Math.max(0, tutarSayisi(ham.acilisAlacak));
+  if (acilisBorc > 0 && acilisAlacak > 0) {
+    const net = acilisBorc - acilisAlacak;
+    acilisBorc = net > 0 ? net : 0;
+    acilisAlacak = net < 0 ? Math.abs(net) : 0;
+  }
+  const acilisTarihi = tarihMetni(ham.acilisTarihi || ham.devirTarihi);
+  return {
+    id: String(ham.id || ham.cariId || cariKimligiOlustur(cari) || ("cari-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    cari: cari,
+    vergiNo: String(ham.vergiNo || ham.vergiKimlikNo || "").trim().replace(/\s+/g, "").slice(0, 32),
+    telefon: String(ham.telefon || "").trim().slice(0, 40),
+    eposta: String(ham.eposta || ham.email || "").trim().toLowerCase().slice(0, 254),
+    acilisTarihi: acilisTarihi,
+    acilisBorc: acilisBorc,
+    acilisAlacak: acilisAlacak,
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    guncellemeZamani: String(ham.guncellemeZamani || "").trim().slice(0, 80)
+  };
+}
+
+function cariKartlariniNormallestir(hamListe) {
+  const gorulenId = {};
+  const gorulenAd = {};
+  const gorulenVergi = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const kart = cariKartiniNormallestir(ham, sira);
+    if (!kart) return;
+    const adAnahtari = cariAdiAnahtari(kart.cari);
+    const vergiAnahtari = kart.vergiNo.toLocaleUpperCase("tr-TR");
+    if (gorulenId[kart.id] || gorulenAd[adAnahtari] || (vergiAnahtari && gorulenVergi[vergiAnahtari])) return;
+    gorulenId[kart.id] = true;
+    gorulenAd[adAnahtari] = true;
+    if (vergiAnahtari) gorulenVergi[vergiAnahtari] = true;
+    sonuc.push(kart);
+  });
+  return sonuc.sort(function(a, b) { return a.cari.localeCompare(b.cari, "tr"); });
+}
+
+function cariKartlariniTamamla(cariler, items, hareketler, cekler) {
+  const sonuc = cariKartlariniNormallestir(cariler);
+  const adlar = {};
+  sonuc.forEach(function(kart) { adlar[cariAdiAnahtari(kart.cari)] = true; });
+  [items, hareketler, cekler].forEach(function(liste) {
+    (Array.isArray(liste) ? liste : []).forEach(function(kayit) {
+      const cari = String(kayit && kayit.cari || "").trim();
+      const anahtar = cariAdiAnahtari(cari);
+      if (!cari || adlar[anahtar]) return;
+      const kart = cariKartiniNormallestir({ cari:cari }, sonuc.length);
+      if (!kart) return;
+      sonuc.push(kart);
+      adlar[anahtar] = true;
+    });
+  });
+  return cariKartlariniNormallestir(sonuc);
+}
+
+function cariKartVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CUSTOMER_SHEET_NAME);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Cari ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return cariKartlariniNormallestir(data.slice(baslikSatiri + 1).map(function(row) {
+    return {
+      id: row[konum("Cari ID")],
+      cari: row[konum("Cari/Firma")],
+      vergiNo: row[konum("Vergi No")],
+      telefon: row[konum("Telefon")],
+      eposta: row[konum("E-posta")],
+      acilisTarihi: row[konum("Açılış Tarihi")],
+      acilisBorc: row[konum("Açılış Borç")],
+      acilisAlacak: row[konum("Açılış Alacak")],
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      guncellemeZamani: row[konum("Güncelleme Zamanı")]
+    };
+  }));
+}
+
 function cariHareketVerileriniOku() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(MOVEMENT_SHEET_NAME);
   if (!sheet) return null;
@@ -689,12 +803,14 @@ function faturaVerileriniOku() {
     ? eskiCariHareketler
     : (kayitliCariHareketler || []);
   const cekler = cekVerileriniOku();
+  const cariler = cariKartlariniTamamla(cariKartVerileriniOku() || [], items, cariHareketler, cekler);
   return {
     revision: bulutSurumuOku(properties),
     lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
     items: items,
     cariHareketler: cariHareketler,
-    cekler: cekler
+    cekler: cekler,
+    cariler: cariler
   };
 }
 
@@ -766,7 +882,8 @@ function doPost(e) {
         lastRequestId: durum.lastRequestId,
         items: durum.items,
         cariHareketler: durum.cariHareketler,
-        cekler: durum.cekler
+        cekler: durum.cekler,
+        cariler: durum.cariler
       });
     }
 
@@ -811,6 +928,13 @@ function doPost(e) {
     const cekler = Object.prototype.hasOwnProperty.call(payload, "cekler")
       ? cekleriNormallestir(payload.cekler)
       : cekVerileriniOku();
+    const mevcutCariler = cariKartVerileriniOku() || [];
+    const cariler = cariKartlariniTamamla(
+      Object.prototype.hasOwnProperty.call(payload, "cariler") ? payload.cariler : mevcutCariler,
+      items,
+      cariHareketler,
+      cekler
+    );
     const mevcutSurum = bulutSurumuOku(properties);
     const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
 
@@ -841,19 +965,23 @@ function doPost(e) {
     const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
     const movementSheet = ss.getSheetByName(MOVEMENT_SHEET_NAME) || ss.insertSheet(MOVEMENT_SHEET_NAME);
     const checkSheet = ss.getSheetByName(CHECK_SHEET_NAME) || ss.insertSheet(CHECK_SHEET_NAME);
+    const customerSheet = ss.getSheetByName(CUSTOMER_SHEET_NAME) || ss.insertSheet(CUSTOMER_SHEET_NAME);
 
-    const toplam = items.reduce(function(deger, item) { return deger + item.tutar; }, 0);
+    const faturaToplami = items.reduce(function(deger, item) { return deger + item.tutar; }, 0);
+    const acilisBorcToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisBorc; }, 0);
+    const acilisAlacakToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisAlacak; }, 0);
     const odemeToplami = cariHareketler.reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
     const cekToplami = cekler.filter(function(cek) { return cek.durum !== "İptal"; })
       .reduce(function(deger, cek) { return deger + cek.tutar; }, 0);
-    const toplamAlacak = odemeToplami + cekToplami;
-    const netBakiye = toplam - toplamAlacak;
+    const toplamBorc = faturaToplami + acilisBorcToplami;
+    const toplamAlacak = odemeToplami + cekToplami + acilisAlacakToplami;
+    const netBakiye = toplamBorc - toplamAlacak;
     const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
 
     const satirlar = [
-      ["💰 FATURA BORCU", "✅ ÖDEME / ÇEK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", ""],
+      ["💰 TOPLAM BORÇ", "✅ TOPLAM ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", ""],
       [
-        toplam.toLocaleString("tr-TR") + " ₺",
+        toplamBorc.toLocaleString("tr-TR") + " ₺",
         toplamAlacak.toLocaleString("tr-TR") + " ₺",
         Math.abs(netBakiye).toLocaleString("tr-TR") + " ₺",
         new Date().toLocaleString("tr-TR"),
@@ -909,6 +1037,21 @@ function doPost(e) {
         cek.kayitZamani
       ]);
     });
+    const cariSatirlari = [CARI_BASLIK];
+    cariler.forEach(function(cari) {
+      cariSatirlari.push([
+        cari.id,
+        cari.cari,
+        cari.vergiNo,
+        cari.telefon,
+        cari.eposta,
+        cari.acilisTarihi,
+        cari.acilisBorc,
+        cari.acilisAlacak,
+        cari.kayitZamani,
+        cari.guncellemeZamani
+      ]);
+    });
 
     // Kilit altında tek seferde yazılır; eşzamanlı istekler satırları iç içe geçiremez.
     sheet.clearContents();
@@ -940,6 +1083,12 @@ function doPost(e) {
       .setBackground("#1e3a5f")
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
+    customerSheet.clearContents();
+    customerSheet.getRange(1, 1, cariSatirlari.length, CARI_BASLIK.length).setValues(cariSatirlari);
+    customerSheet.getRange(1, 1, 1, CARI_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
 
     const yeniSurum = mevcutSurum + 1;
     const yeniProperties = {};
@@ -955,7 +1104,8 @@ function doPost(e) {
       requestId: requestId,
       count: items.length,
       movementCount: cariHareketler.length,
-      checkCount: cekler.length
+      checkCount: cekler.length,
+      customerCount: cariler.length
     });
   } catch (err) {
     return jsonCevabi({
