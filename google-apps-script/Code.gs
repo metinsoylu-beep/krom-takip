@@ -176,6 +176,48 @@ function bulutYedekleriniSinirla(sheet, hedefKayitSayisi) {
   return Math.max(sheet.getLastRow() - 1, 0);
 }
 
+function bulutYedegiKontrolKodu(ham) {
+  const metin = String(ham || "");
+  let hash = 2166136261;
+  for (let i = 0; i < metin.length; i++) {
+    hash ^= metin.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return ("00000000" + (hash >>> 0).toString(16)).slice(-8).toUpperCase();
+}
+
+function bulutYedekSatiriMetasi(satir) {
+  const parcaSayisi = Number(satir && satir[5]) || 0;
+  const ham = parcaSayisi > 0
+    ? satir.slice(6, 6 + parcaSayisi).map(function(parca) { return String(parca || ""); }).join("")
+    : "";
+  const temel = {
+    parcaSayisi: parcaSayisi,
+    boyutBayt: ham.length * 2,
+    kontrolKodu: ham ? bulutYedegiKontrolKodu(ham) : "",
+    saglam: false,
+    kayitSayilari: { fatura:0, cariHareket:0, cek:0, cariKart:0, toplam:0 }
+  };
+  if (!ham) return temel;
+  try {
+    const durum = JSON.parse(ham);
+    if (![durum.items, durum.cariHareketler, durum.cekler, durum.cariler].every(Array.isArray)) return temel;
+    const sayilar = {
+      fatura: faturalariTekillestir(durum.items).length,
+      cariHareket: cariHareketleriNormallestir(durum.cariHareketler).length,
+      cek: cekleriNormallestir(durum.cekler).length,
+      cariKart: cariKartlariniNormallestir(durum.cariler).length
+    };
+    sayilar.toplam = sayilar.fatura + sayilar.cariHareket + sayilar.cek + sayilar.cariKart;
+    temel.saglam = true;
+    temel.kayitSayilari = sayilar;
+    temel.durum = durum;
+    return temel;
+  } catch (err) {
+    return temel;
+  }
+}
+
 function jsonCevabi(deger) {
   return ContentService.createTextOutput(JSON.stringify(deger))
     .setMimeType(ContentService.MimeType.JSON);
@@ -298,13 +340,18 @@ function bulutYedekleriniOku(limit) {
   if (!sheet || sheet.getLastRow() < 2) return [];
   const guvenliLimit = Math.min(Math.max(parseInt(limit, 10) || CLOUD_BACKUP_MAX_RECORDS, 1), CLOUD_BACKUP_MAX_RECORDS);
   return sheet.getDataRange().getValues().slice(1).reverse().slice(0, guvenliLimit).map(function(row) {
+    const meta = bulutYedekSatiriMetasi(row);
     return {
       id: String(row[0] || ""),
       kayitZamani: row[1] instanceof Date ? row[1].toISOString() : String(row[1] || ""),
       kullanici: String(row[2] || ""),
       revision: Number(row[3]) || 0,
       aciklama: String(row[4] || ""),
-      parcaSayisi: Number(row[5]) || 0
+      parcaSayisi: meta.parcaSayisi,
+      boyutBayt: meta.boyutBayt,
+      kontrolKodu: meta.kontrolKodu,
+      saglam: meta.saglam,
+      kayitSayilari: meta.kayitSayilari
     };
   }).filter(function(yedek) { return Boolean(yedek.id); });
 }
@@ -317,16 +364,20 @@ function bulutYedeginiOku(yedekId) {
     return String(row[0] || "") === temizId;
   });
   if (!satir) return null;
-  const parcaSayisi = Number(satir[5]) || 0;
-  if (parcaSayisi < 1) return null;
-  const ham = satir.slice(6, 6 + parcaSayisi).map(function(parca) { return String(parca || ""); }).join("");
-  const durum = JSON.parse(ham || "{}");
+  const meta = bulutYedekSatiriMetasi(satir);
+  if (!meta.saglam || !meta.durum) return null;
+  const durum = meta.durum;
   return {
     id: temizId,
     kayitZamani: satir[1] instanceof Date ? satir[1].toISOString() : String(satir[1] || ""),
     kullanici: String(satir[2] || ""),
     revision: Number(satir[3]) || 0,
     aciklama: String(satir[4] || ""),
+    parcaSayisi: meta.parcaSayisi,
+    boyutBayt: meta.boyutBayt,
+    kontrolKodu: meta.kontrolKodu,
+    saglam: true,
+    kayitSayilari: meta.kayitSayilari,
     durum: {
       items: faturalariTekillestir(durum.items),
       cariHareketler: cariHareketleriNormallestir(durum.cariHareketler),

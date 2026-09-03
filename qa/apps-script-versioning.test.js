@@ -237,6 +237,10 @@ assert.match(veriGecmisi.logs[0].aciklama, /Fatura:/, "Değişiklik özeti etkil
 const yedekler = post({ action:"backups.list" });
 assert.equal(yedekler.backups.length, 1, "Başarılı kayıt öncesinde merkezi bulut yedeği alınmalı");
 assert.equal(yedekler.backups[0].revision, 0, "Yedek değişiklikten önceki veri sürümünü taşımalı");
+assert.equal(yedekler.backups[0].saglam, true, "Yedek listelenirken içerik bütünlüğü kontrol edilmeli");
+assert.equal(yedekler.backups[0].kayitSayilari.fatura, 1, "Yedek özeti fatura sayısını göstermeli");
+assert.equal(yedekler.backups[0].kayitSayilari.cariHareket, 1, "Yedek özeti cari hareket sayısını göstermeli");
+assert.match(yedekler.backups[0].kontrolKodu, /^[0-9A-F]{8}$/, "Yedek için sabit kontrol kodu üretilmeli");
 const yedekDetayi = post({ action:"backups.get", backupId:yedekler.backups[0].id });
 assert.equal(yedekDetayi.backup.durum.items.length, 1, "Bulut yedeği önceki fatura durumunu geri verebilmeli");
 assert.equal(yedekDetayi.backup.durum.cariHareketler.length, 1, "Bulut yedeği önceki cari hareketleri içermeli");
