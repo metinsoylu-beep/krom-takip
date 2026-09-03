@@ -724,7 +724,7 @@
 
     .kur-panel {
       width: 100%; min-height: 62px; margin: 0 0 14px; display: grid;
-      grid-template-columns: minmax(230px, .8fr) minmax(460px, 1.8fr) auto;
+      grid-template-columns: max-content max-content minmax(0, 1fr);
       align-items: stretch; overflow: hidden;
       background: linear-gradient(90deg, #11263b 0%, var(--panel) 48%, #102238 100%);
       border: 1px solid #d8a62f66; border-radius: 8px;
@@ -746,7 +746,7 @@
     }
     .kur-satirlar {
       min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(205px, 240px));
-      justify-content: center;
+      justify-content: start;
     }
     .kur-satir {
       grid-template-columns: 32px minmax(145px,1fr);
@@ -767,8 +767,8 @@
     .kur-fiyat small { display: inline; margin: 0; color: #75889d; }
     .kur-fiyat strong { display: inline; color: #f4f7fa; font-size: 12px; }
     .kur-islemler {
-      display: flex; align-items: center; gap: 7px; padding: 0 13px;
-      border-left: 1px solid var(--cizgi-yumusak);
+      display: flex; align-items: center; justify-content: flex-end; gap: 7px; padding: 0 13px;
+      border-left: 0;
     }
     .kur-yenile, .kur-kaynak { width: 32px; height: 32px; border-radius: 7px; }
 
