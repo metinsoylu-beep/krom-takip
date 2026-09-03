@@ -27,6 +27,12 @@ assert.match(index, /BÜTÜNLÜK/, "Yedek kartı okunabilirlik kontrolünü gös
 assert.match(index, /action:"backups\.create"/, "Manuel yedekleme sunucu API'sini kullanmalı");
 assert.match(index, /function bulutYedeginiIndir\(yedekId\)/, "Merkezi yedek JSON olarak indirilebilmeli");
 assert.match(index, /application\/json;charset=utf-8/, "İndirilen yedek taşınabilir JSON biçiminde olmalı");
+assert.match(index, /id="json-yedek-dosyasi"[^>]*type="file"/, "Bilgisayardaki JSON yedek dosyası seçilebilmeli");
+assert.match(index, /function jsonYedekVerisiniDogrula\(veri/, "JSON yedeği geri yüklenmeden önce doğrulanmalı");
+assert.match(index, /Yedek dosyasının kontrol kodu eşleşmiyor/, "Değiştirilmiş veya bozuk yedek reddedilmeli");
+assert.match(index, /12 \* 1024 \* 1024/, "Aşırı büyük yedek dosyaları işlenmemeli");
+assert.match(index, /auditAction:"JSON yedeği geri yüklendi"/, "Dosyadan geri yükleme işlem geçmişine yazılmalı");
+assert.match(index, /JSON yedeği geri yüklenemedi; mevcut veriler korundu/, "Bulut kaydı başarısızsa mevcut veriler korunmalı");
 assert.match(index, /action:"backups\.get", backupId:yedekId/, "Geri yükleme öncesi seçilen yedek sunucudan alınmalı");
 assert.match(index, /Mevcut veriler önce yeni bir güvenlik yedeğine alınacaktır/, "Geri yükleme etkisi kullanıcıya açıkça bildirilmeli");
 assert.match(index, /auditAction:"Bulut yedeği geri yüklendi"/, "Geri yükleme işlem geçmişinde ayırt edilebilmeli");

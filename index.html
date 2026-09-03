@@ -695,6 +695,39 @@
     .bulut-yedegi-olustur { color: #071827; border-color: #5eead4; background: #5eead4; }
     .bulut-yedegi-olustur:hover { background: #99f6e4; }
     .bulut-yedegi-geri:disabled, .bulut-yedegi-indir:disabled, .bulut-yedegi-olustur:disabled { opacity: .55; cursor: wait; }
+    .bulut-yedegi-dosya {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 7px 11px; border: 1px solid #f3be3e66; border-radius: 7px; background: #f3be3e12;
+      color: #f6c95c; font: 700 10px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
+    }
+    .bulut-yedegi-dosya:hover { background: #f3be3e24; }
+    .json-yedek-onizleme {
+      margin: 12px 18px 0; padding: 14px; background: #0b2033; border: 1px solid #f3be3e55;
+      border-left: 3px solid #f3be3e; border-radius: 8px;
+    }
+    .json-yedek-onizleme[hidden] { display: none; }
+    .json-yedek-ust { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; align-items: center; gap: 10px; }
+    .json-yedek-ikon {
+      width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px;
+      color: #f6c95c; background: #f3be3e16; border: 1px solid #f3be3e44;
+    }
+    .json-yedek-baslik span { display: block; color: #718398; font-size: 8px; }
+    .json-yedek-baslik strong { display: block; margin-top: 3px; color: #eef4fa; font-size: 11px; overflow-wrap: anywhere; }
+    .json-yedek-baslik small { display: block; margin-top: 3px; color: #8fa2b7; font-size: 8px; }
+    .json-yedek-rozet { padding: 5px 8px; border-radius: 999px; color: #4ade80; background: #4ade8015; border: 1px solid #4ade8040; font-size: 8px; font-weight: 800; white-space: nowrap; }
+    .json-yedek-sayilar { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+    .json-yedek-sayi { padding: 8px 9px; border-radius: 6px; background: #071827; border: 1px solid var(--cizgi-yumusak); }
+    .json-yedek-sayi span { display: block; color: #718398; font-size: 8px; }
+    .json-yedek-sayi strong { display: block; margin-top: 3px; color: #dce6ef; font: 700 14px Georgia,serif; }
+    .json-yedek-not { margin: 10px 0 0; color: #8fa2b7; font-size: 9px; line-height: 1.5; }
+    .json-yedek-not i { margin-right: 5px; color: #5eead4; }
+    .json-yedek-islemler { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .json-yedek-iptal, .json-yedek-uygula {
+      min-height: 34px; padding: 7px 12px; border-radius: 7px; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .json-yedek-iptal { color: #9fb0c1; background: transparent; border: 1px solid var(--cizgi); }
+    .json-yedek-uygula { color: #071827; background: #5eead4; border: 1px solid #5eead4; }
+    .json-yedek-uygula:disabled { opacity: .55; cursor: wait; }
     .hareket-tur { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; white-space: nowrap; }
     .hareket-tur.borc { color: #ff6b77; }
     .hareket-tur.alacak { color: #4ade80; }
@@ -989,6 +1022,11 @@
       .bulut-yedekleri-liste { padding: 12px; }
       .bulut-yedekleri-filtreler { grid-template-columns: 1fr; padding: 12px; }
       .bulut-yedek-ozet { text-align: left; }
+      .json-yedek-onizleme { margin: 12px 12px 0; }
+      .json-yedek-ust { grid-template-columns: 34px minmax(0,1fr); }
+      .json-yedek-rozet { grid-column: 2; justify-self: start; }
+      .json-yedek-sayilar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .json-yedek-islemler { display: grid; grid-template-columns: 1fr 1fr; }
       .bulut-yedegi-satir { grid-template-columns: 1fr 1fr; }
       .bulut-yedegi-aciklama, .bulut-yedegi-icerik, .bulut-yedegi-islemler { grid-column: 1 / -1; }
       .bulut-yedegi-islemler { justify-content: stretch; }
@@ -1296,11 +1334,13 @@
           <p class="odeme-yonetim-alt">Her kayıt öncesi alınan son 20 merkezi güvenlik kopyası.</p>
         </div>
         <div class="islem-gecmisi-islemler">
+          <button class="bulut-yedegi-dosya" type="button" onclick="document.getElementById('json-yedek-dosyasi').click()"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i> JSON Yedeği Aç</button>
           <button class="bulut-yedegi-olustur" id="bulut-yedegi-olustur" type="button" onclick="bulutYedegiOlustur()"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Şimdi Yedekle</button>
           <button class="islem-gecmisi-yenile" id="bulut-yedekleri-yenile" type="button" onclick="bulutYedekleriniYukle()"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Yenile</button>
           <button class="modal-kapat" type="button" onclick="bulutYedekleriniKapat()" aria-label="Bulut yedeklerini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
       </div>
+      <input id="json-yedek-dosyasi" type="file" accept=".json,application/json" onchange="jsonYedekDosyasiSecildi(event)" hidden/>
       <div class="bulut-yedekleri-filtreler">
         <label class="bulut-yedek-arama" aria-label="Bulut yedeklerinde ara">
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -1314,6 +1354,24 @@
         </select>
         <div class="bulut-yedek-ozet" id="bulut-yedek-ozet">—</div>
       </div>
+      <section class="json-yedek-onizleme" id="json-yedek-onizleme" aria-live="polite" hidden>
+        <div class="json-yedek-ust">
+          <span class="json-yedek-ikon"><i class="fa-solid fa-file-shield" aria-hidden="true"></i></span>
+          <div class="json-yedek-baslik"><span>SEÇİLEN YEDEK DOSYASI</span><strong id="json-yedek-dosya-adi">—</strong><small id="json-yedek-meta">—</small></div>
+          <span class="json-yedek-rozet"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Kontrol edildi</span>
+        </div>
+        <div class="json-yedek-sayilar">
+          <div class="json-yedek-sayi"><span>FATURA</span><strong id="json-yedek-fatura">0</strong></div>
+          <div class="json-yedek-sayi"><span>CARİ</span><strong id="json-yedek-cari">0</strong></div>
+          <div class="json-yedek-sayi"><span>ÖDEME</span><strong id="json-yedek-odeme">0</strong></div>
+          <div class="json-yedek-sayi"><span>ÇEK</span><strong id="json-yedek-cek">0</strong></div>
+        </div>
+        <p class="json-yedek-not" id="json-yedek-not"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Dosya yalnızca bu tarayıcıda kontrol edildi; henüz hiçbir veri değiştirilmedi.</p>
+        <div class="json-yedek-islemler">
+          <button class="json-yedek-iptal" type="button" onclick="jsonYedekSeciminiTemizle()">Dosyayı Kapat</button>
+          <button class="json-yedek-uygula" id="json-yedek-uygula" type="button" onclick="jsonYedeginiGeriYukle()"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Bu Yedeği Geri Yükle</button>
+        </div>
+      </section>
       <div class="bulut-yedekleri-liste" id="bulut-yedekleri-liste" aria-live="polite">
         <div class="islem-gecmisi-bos">Bulut yedekleri yükleniyor…</div>
       </div>
@@ -1788,6 +1846,7 @@
       { id:"yedek-yerel-1", kayitZamani:new Date().toISOString(), kullanici:"arlinoksmuhasebe@gmail.com", revision:1, aciklama:"Fatura değişikliği öncesi otomatik yedek", saglam:true, boyutBayt:12840, kontrolKodu:"A18C32F1", kayitSayilari:{ fatura:25, cariHareket:5, cek:2, cariKart:4, toplam:36 } }
     ];
     let sonBulutYedekleri = [];
+    let seciliJsonYedegi = null;
     let aktifRaporListesi = [];
     let aktifCariEkstresi = null;
     const seciliFaturaKimlikleri = new Set();
@@ -3080,6 +3139,128 @@
       return `${(bayt / 1024).toLocaleString("tr-TR", { maximumFractionDigits:1 })} KB`;
     }
 
+    function jsonYedekKontrolKodu(ham) {
+      const metin = String(ham || "");
+      let hash = 2166136261;
+      for (let i=0; i<metin.length; i++) {
+        hash ^= metin.charCodeAt(i);
+        hash = Math.imul(hash,16777619);
+      }
+      return ("00000000" + (hash>>>0).toString(16)).slice(-8).toUpperCase();
+    }
+
+    function jsonYedekVerisiniDogrula(veri, dosyaAdi="yedek.json") {
+      if (!veri || typeof veri !== "object" || Array.isArray(veri)) throw new Error("Seçilen dosya geçerli bir JSON yedeği değil.");
+      if (String(veri.format || "") !== "arlinoks-merkezi-yedek-v1") throw new Error("Bu dosya Arlinoks merkezi yedek biçiminde değil.");
+      const durum = veri.durum;
+      if (!durum || typeof durum !== "object" || ![durum.items, durum.cariHareketler, durum.cekler, durum.cariler].every(Array.isArray)) {
+        throw new Error("Yedek dosyasının fatura, cari, ödeme veya çek bölümü eksik.");
+      }
+      const hamDurum = JSON.stringify({
+        items:durum.items,
+        cariHareketler:durum.cariHareketler,
+        cekler:durum.cekler,
+        cariler:durum.cariler
+      });
+      const hesaplananKod = jsonYedekKontrolKodu(hamDurum);
+      const beklenenKod = String(veri.kontrol?.kod || "").trim().toUpperCase();
+      if (beklenenKod && beklenenKod !== hesaplananKod) throw new Error("Yedek dosyasının kontrol kodu eşleşmiyor. Dosya değiştirilmiş veya bozulmuş olabilir.");
+
+      const faturaSonucu = faturalariTekillestir(durum.items);
+      const guvenliDurum = {
+        items:faturaSonucu.liste,
+        cariHareketler:cariHareketleriNormallestir(durum.cariHareketler),
+        cekler:cekleriNormallestir(durum.cekler),
+        cariler:cariKartlariniNormallestir(durum.cariler)
+      };
+      const sayilar = {
+        fatura:guvenliDurum.items.length,
+        cariHareket:guvenliDurum.cariHareketler.length,
+        cek:guvenliDurum.cekler.length,
+        cariKart:guvenliDurum.cariler.length
+      };
+      const ayiklanan = Math.max(durum.items.length - sayilar.fatura,0)
+        + Math.max(durum.cariHareketler.length - sayilar.cariHareket,0)
+        + Math.max(durum.cekler.length - sayilar.cek,0)
+        + Math.max(durum.cariler.length - sayilar.cariKart,0);
+      return {
+        dosyaAdi:String(dosyaAdi || "yedek.json"),
+        kayitZamani:String(veri.kayitZamani || ""),
+        revision:Number(veri.revision) || 0,
+        kontrolKodu:hesaplananKod,
+        kodDogrulandi:Boolean(beklenenKod),
+        ayiklanan,
+        sayilar,
+        durum:guvenliDurum
+      };
+    }
+
+    function jsonYedekSeciminiTemizle() {
+      seciliJsonYedegi = null;
+      const onizleme = document.getElementById("json-yedek-onizleme");
+      const dosyaAlani = document.getElementById("json-yedek-dosyasi");
+      if (onizleme) onizleme.hidden = true;
+      if (dosyaAlani) dosyaAlani.value = "";
+    }
+
+    function jsonYedekOnizlemesiniGoster(yedek) {
+      document.getElementById("json-yedek-dosya-adi").textContent = yedek.dosyaAdi;
+      document.getElementById("json-yedek-meta").textContent = `${bulutYedegiTarihiniFormatla(yedek.kayitZamani)} · Sürüm ${yedek.revision || "—"} · Kod ${yedek.kontrolKodu}`;
+      document.getElementById("json-yedek-fatura").textContent = yedek.sayilar.fatura;
+      document.getElementById("json-yedek-cari").textContent = yedek.sayilar.cariKart;
+      document.getElementById("json-yedek-odeme").textContent = yedek.sayilar.cariHareket;
+      document.getElementById("json-yedek-cek").textContent = yedek.sayilar.cek;
+      document.getElementById("json-yedek-not").innerHTML = yedek.ayiklanan
+        ? `<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>${yedek.ayiklanan} geçersiz veya tekrar eden kayıt güvenli biçimde ayıklandı. Henüz hiçbir veri değiştirilmedi.`
+        : `<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>${yedek.kodDogrulandi ? "Kontrol kodu ve veri yapısı doğrulandı." : "Eski yedek: veri yapısı doğrulandı, kontrol kodu bulunmuyor."} Henüz hiçbir veri değiştirilmedi.`;
+      document.getElementById("json-yedek-onizleme").hidden = false;
+    }
+
+    async function jsonYedekDosyasiSecildi(event) {
+      if (!yoneticiGerekli()) return;
+      const dosya = event?.target?.files?.[0];
+      if (!dosya) return;
+      jsonYedekSeciminiTemizle();
+      try {
+        if (dosya.size > 12 * 1024 * 1024) throw new Error("Yedek dosyası 12 MB sınırını aşıyor.");
+        const veri = JSON.parse(await dosya.text());
+        seciliJsonYedegi = jsonYedekVerisiniDogrula(veri, dosya.name);
+        jsonYedekOnizlemesiniGoster(seciliJsonYedegi);
+        syncGoster("JSON yedeği kontrol edildi · Henüz veri değiştirilmedi", "#f6c95c");
+      } catch (hata) {
+        jsonYedekSeciminiTemizle();
+        alert(hata?.message || "Yedek dosyası okunamadı.");
+      }
+    }
+
+    async function jsonYedeginiGeriYukle() {
+      if (!yoneticiGerekli() || !seciliJsonYedegi) return;
+      const yedek = seciliJsonYedegi;
+      const dugme = document.getElementById("json-yedek-uygula");
+      if (!confirm(`${yedek.dosyaAdi} dosyasındaki ${yedek.sayilar.fatura} fatura, ${yedek.sayilar.cariKart} cari, ${yedek.sayilar.cariHareket} ödeme ve ${yedek.sayilar.cek} çek geri yüklensin mi?\n\nMevcut veriler önce yeni bir güvenlik yedeğine alınacaktır.`)) return;
+      if (dugme) dugme.disabled = true;
+      const mevcutDurum = uygulamaDurumuOlustur();
+      try {
+        otomatikYedekOlustur(mevcutDurum.items, "JSON yedeği geri yüklenmeden önce");
+        const geriYuklenenDurum = uygulamaDurumunuYereldeUygula(yedek.durum);
+        const kaydedildi = YEREL_GELISTIRME
+          ? true
+          : await bulutKaydiniGonder(geriYuklenenDurum, { auditAction:"JSON yedeği geri yüklendi" });
+        if (!kaydedildi) {
+          uygulamaDurumunuYereldeUygula(mevcutDurum);
+          throw new Error("JSON yedeği geri yüklenemedi; mevcut veriler korundu.");
+        }
+        syncGoster("JSON yedeği güvenli biçimde geri yüklendi", "#4ade80");
+        jsonYedekSeciminiTemizle();
+        bulutYedekleriniKapat();
+      } catch (hata) {
+        uygulamaDurumunuYereldeUygula(mevcutDurum);
+        alert(hata?.message || "JSON yedeği geri yüklenemedi.");
+      } finally {
+        if (dugme) dugme.disabled = false;
+      }
+    }
+
     function bulutYedekleriniFiltrele() {
       const arama = String(document.getElementById("bulut-yedek-arama")?.value || "").trim().toLocaleLowerCase("tr-TR");
       const tur = document.getElementById("bulut-yedek-tur")?.value || "tum";
@@ -3238,6 +3419,7 @@
 
     async function bulutYedekleriniAc() {
       if (!yoneticiGerekli()) return;
+      jsonYedekSeciminiTemizle();
       const arama = document.getElementById("bulut-yedek-arama");
       const tur = document.getElementById("bulut-yedek-tur");
       if (arama) arama.value = "";
@@ -3247,6 +3429,7 @@
     }
 
     function bulutYedekleriniKapat() {
+      jsonYedekSeciminiTemizle();
       document.getElementById("bulut-yedekleri-overlay")?.classList.remove("aktif");
     }
 
