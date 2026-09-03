@@ -20,10 +20,12 @@ let movementValues = [];
 let checkValues = [];
 let customerValues = [];
 let auditValues = [];
+let backupValues = [];
 let movementExists = false;
 let checkExists = false;
 let customerExists = false;
 let auditExists = false;
+let backupExists = false;
 
 const propertyData = { VIEWER_EMAILS: "viewer@example.com" };
 const properties = {
@@ -77,6 +79,7 @@ const movementSheet = sheetOlustur(() => movementValues, next => { movementValue
 const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; });
 const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; });
 const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; });
+const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; });
 
 let locked = false;
 const context = {
@@ -93,6 +96,7 @@ const context = {
       if (name === "Çekler") return checkExists ? checkSheet : null;
       if (name === "Cariler") return customerExists ? customerSheet : null;
       if (name === "İşlem Geçmişi") return auditExists ? auditSheet : null;
+      if (name === "Bulut Yedekleri") return backupExists ? backupSheet : null;
       return null;
     },
     insertSheet(name) {
@@ -100,6 +104,7 @@ const context = {
       if (name === "Çekler") { checkExists = true; return checkSheet; }
       if (name === "Cariler") { customerExists = true; return customerSheet; }
       if (name === "İşlem Geçmişi") { auditExists = true; return auditSheet; }
+      if (name === "Bulut Yedekleri") { backupExists = true; return backupSheet; }
       return invoiceSheet;
     }
   }) },
@@ -113,7 +118,7 @@ const context = {
     const user = users[token];
     return { getResponseCode: () => user ? 200 : 401, getContentText: () => JSON.stringify(user ? { users:[user] } : { error:{} }) };
   } },
-  Utilities: { formatDate(date, zone, pattern) {
+  Utilities: { getUuid: () => "12345678-1234-1234-1234-123456789abc", formatDate(date, zone, pattern) {
     const pad = value => String(value).padStart(2,"0");
     return pattern === "yyyy-MM-dd"
       ? `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`
@@ -164,6 +169,7 @@ assert.equal(post({ action:"read" }, "viewer-token").role, "viewer");
 assert.equal(post({ action:"save", baseRevision:0, requestId:"viewer-save", items:[item1] }, "viewer-token").code, "FORBIDDEN");
 assert.equal(post({ action:"users.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici kullanıcı yönetimine erişememeli");
 assert.equal(post({ action:"audit.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici işlem geçmişini görüntüleyememeli");
+assert.equal(post({ action:"backups.list" }, "viewer-token").code, "FORBIDDEN", "İzleyici bulut yedeklerini görüntüleyememeli");
 assert.equal(post({ action:"read" }, "unknown-token").code, "ACCESS_DENIED");
 
 const ilkKullanicilar = post({ action:"users.list" });
@@ -202,6 +208,12 @@ assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi o
 const veriGecmisi = post({ action:"audit.list" });
 assert.equal(veriGecmisi.logs[0].islem, "Veri değişikliği", "Muhasebe veri değişikliği işlem geçmişine yazılmalı");
 assert.match(veriGecmisi.logs[0].aciklama, /Fatura:/, "Değişiklik özeti etkilenen kayıt türünü açıklamalı");
+const yedekler = post({ action:"backups.list" });
+assert.equal(yedekler.backups.length, 1, "Başarılı kayıt öncesinde merkezi bulut yedeği alınmalı");
+assert.equal(yedekler.backups[0].revision, 0, "Yedek değişiklikten önceki veri sürümünü taşımalı");
+const yedekDetayi = post({ action:"backups.get", backupId:yedekler.backups[0].id });
+assert.equal(yedekDetayi.backup.durum.items.length, 1, "Bulut yedeği önceki fatura durumunu geri verebilmeli");
+assert.equal(yedekDetayi.backup.durum.cariHareketler.length, 1, "Bulut yedeği önceki cari hareketleri içermeli");
 
 const kayitSonrasi = post({ action:"read" });
 assert.equal(kayitSonrasi.items[0].cari, "Örnek Metal");

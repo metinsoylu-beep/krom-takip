@@ -15,6 +15,11 @@ Cari, fatura, ödeme/çek ve kullanıcı yetkisi değişiklikleri `İşlem Geçm
 sayfasına kullanıcı, tarih, işlem özeti ve veri sürümüyle kaydedilir. Bu kayıtları
 uygulamadaki **İşlem Geçmişi** düğmesinden yalnızca yöneticiler görüntüleyebilir;
 sayfanın sınırsız büyümemesi için son 500 kayıt korunur.
+Her başarılı veri kaydından hemen önce fatura, cari kart, ödeme ve çeklerin
+tamamı `Bulut Yedekleri` sayfasına merkezi güvenlik kopyası olarak yazılır.
+Yalnızca yöneticilerin erişebildiği **Bulut Yedekleri** panelinde son 20 kopya
+listelenir ve seçilen sürüm güvenli biçimde geri yüklenebilir. Büyük veri
+kümeleri Google Sheets hücre sınırına takılmaması için parçalara bölünür.
 Cari kartta firma ve iletişim bilgileriyle birlikte devir borç veya devir alacak
 bakiyesi tutulabilir. Cari bakiye; devir borcu ve fatura toplamından devir
 alacağı, ödemeler ve iptal edilmemiş çekler düşülerek hesaplanır. Ödeme tutarı

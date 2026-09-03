@@ -5,6 +5,9 @@ const CHECK_SHEET_NAME = "Çekler";
 const CUSTOMER_SHEET_NAME = "Cariler";
 const AUDIT_SHEET_NAME = "İşlem Geçmişi";
 const AUDIT_MAX_RECORDS = 500;
+const CLOUD_BACKUP_SHEET_NAME = "Bulut Yedekleri";
+const CLOUD_BACKUP_MAX_RECORDS = 20;
+const CLOUD_BACKUP_CHUNK_SIZE = 40000;
 const SURUM_ANAHTAR = "FATURA_DATA_REVISION";
 const SON_ISTEK_ANAHTAR = "FATURA_LAST_REQUEST_ID";
 const IZLEYICI_EPOSTALARI_ANAHTAR = "VIEWER_EMAILS";
@@ -79,6 +82,14 @@ const AUDIT_BASLIK = [
   "İstek ID",
   "Veri Sürümü"
 ];
+const CLOUD_BACKUP_BASLIK = [
+  "Yedek ID",
+  "Kayıt Zamanı",
+  "Kullanıcı",
+  "Veri Sürümü",
+  "Açıklama",
+  "Parça Sayısı"
+];
 
 function jsonCevabi(deger) {
   return ContentService.createTextOutput(JSON.stringify(deger))
@@ -128,6 +139,90 @@ function islemGecmisiniOku(limit) {
       revision: Number(row[konum("Veri Sürümü")]) || 0
     };
   });
+}
+
+function bulutYedegiKaydet(durum, kayit) {
+  const guvenliDurum = {
+    items: faturalariTekillestir(durum && durum.items),
+    cariHareketler: cariHareketleriNormallestir(durum && durum.cariHareketler),
+    cekler: cekleriNormallestir(durum && durum.cekler),
+    cariler: cariKartlariniNormallestir(durum && durum.cariler)
+  };
+
+  const json = JSON.stringify(guvenliDurum);
+  const parcalar = [];
+  for (let konum = 0; konum < json.length; konum += CLOUD_BACKUP_CHUNK_SIZE) {
+    parcalar.push(json.slice(konum, konum + CLOUD_BACKUP_CHUNK_SIZE));
+  }
+  if (!parcalar.length) parcalar.push("{}");
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(CLOUD_BACKUP_SHEET_NAME) || ss.insertSheet(CLOUD_BACKUP_SHEET_NAME);
+  if (sheet.getLastRow() === 0 || String(sheet.getRange(1, 1).getValue() || "").trim() !== CLOUD_BACKUP_BASLIK[0]) {
+    sheet.clearContents();
+    sheet.getRange(1, 1, 1, CLOUD_BACKUP_BASLIK.length).setValues([CLOUD_BACKUP_BASLIK]);
+    sheet.getRange(1, 1, 1, CLOUD_BACKUP_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+  }
+
+  const yedekId = "yedek-" + Date.now() + "-" + Utilities.getUuid().slice(0, 8);
+  sheet.appendRow([
+    yedekId,
+    new Date().toISOString(),
+    String(kayit && kayit.kullanici || "").slice(0, 254),
+    Number(kayit && kayit.revision) || 0,
+    String(kayit && kayit.aciklama || "Değişiklik öncesi otomatik yedek").slice(0, 500),
+    parcalar.length
+  ].concat(parcalar));
+
+  const fazlaSatir = sheet.getLastRow() - (CLOUD_BACKUP_MAX_RECORDS + 1);
+  if (fazlaSatir > 0) sheet.deleteRows(2, fazlaSatir);
+  return yedekId;
+}
+
+function bulutYedekleriniOku(limit) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CLOUD_BACKUP_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const guvenliLimit = Math.min(Math.max(parseInt(limit, 10) || CLOUD_BACKUP_MAX_RECORDS, 1), CLOUD_BACKUP_MAX_RECORDS);
+  return sheet.getDataRange().getValues().slice(1).reverse().slice(0, guvenliLimit).map(function(row) {
+    return {
+      id: String(row[0] || ""),
+      kayitZamani: row[1] instanceof Date ? row[1].toISOString() : String(row[1] || ""),
+      kullanici: String(row[2] || ""),
+      revision: Number(row[3]) || 0,
+      aciklama: String(row[4] || ""),
+      parcaSayisi: Number(row[5]) || 0
+    };
+  }).filter(function(yedek) { return Boolean(yedek.id); });
+}
+
+function bulutYedeginiOku(yedekId) {
+  const temizId = String(yedekId || "").trim();
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CLOUD_BACKUP_SHEET_NAME);
+  if (!temizId || !sheet || sheet.getLastRow() < 2) return null;
+  const satir = sheet.getDataRange().getValues().slice(1).find(function(row) {
+    return String(row[0] || "") === temizId;
+  });
+  if (!satir) return null;
+  const parcaSayisi = Number(satir[5]) || 0;
+  if (parcaSayisi < 1) return null;
+  const ham = satir.slice(6, 6 + parcaSayisi).map(function(parca) { return String(parca || ""); }).join("");
+  const durum = JSON.parse(ham || "{}");
+  return {
+    id: temizId,
+    kayitZamani: satir[1] instanceof Date ? satir[1].toISOString() : String(satir[1] || ""),
+    kullanici: String(satir[2] || ""),
+    revision: Number(satir[3]) || 0,
+    aciklama: String(satir[4] || ""),
+    durum: {
+      items: faturalariTekillestir(durum.items),
+      cariHareketler: cariHareketleriNormallestir(durum.cariHareketler),
+      cekler: cekleriNormallestir(durum.cekler),
+      cariler: cariKartlariniNormallestir(durum.cariler)
+    }
+  };
 }
 
 function listeDegisiklikSayilari(eskiListe, yeniListe) {
@@ -961,6 +1056,20 @@ function doPost(e) {
       return jsonCevabi({ ok:true, logs:islemGecmisiniOku(payload.limit) });
     }
 
+    if (["backups.list", "backups.get"].indexOf(payload.action) >= 0) {
+      if (yetki.role !== "admin") {
+        return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Bulut yedeklerini yalnızca yöneticiler görüntüleyebilir." });
+      }
+      kilit.waitLock(30000);
+      if (payload.action === "backups.list") {
+        return jsonCevabi({ ok:true, backups:bulutYedekleriniOku(payload.limit) });
+      }
+      const yedek = bulutYedeginiOku(payload.backupId);
+      return yedek
+        ? jsonCevabi({ ok:true, backup:yedek })
+        : jsonCevabi({ ok:false, code:"BACKUP_NOT_FOUND", message:"Seçilen bulut yedeği bulunamadı." });
+    }
+
     if (["users.list", "users.save", "users.delete"].indexOf(payload.action) >= 0) {
       if (yetki.role !== "admin") {
         return jsonCevabi({ ok:false, code:"FORBIDDEN", message:"Kullanıcı yetkilerini yalnızca yöneticiler değiştirebilir." });
@@ -1092,6 +1201,24 @@ function doPost(e) {
         revision: mevcutSurum,
         requestId: requestId,
         message: "Bulut verisi başka bir cihazda değiştirildi."
+      });
+    }
+
+    // Ana tabloların üzerine yazmadan önce tüm muhasebe durumunu ayrı bir
+    // Google Sheets sayfasında sakla. Yedekleme başarısızsa veri değişikliğini
+    // durdur; böylece kurtarma kopyası olmadan toplu üzerine yazma yapılmaz.
+    try {
+      bulutYedegiKaydet(oncekiDurum, {
+        kullanici:yetki.email,
+        revision:mevcutSurum,
+        aciklama:String(payload.auditAction || "Değişiklik öncesi otomatik yedek").slice(0, 500)
+      });
+    } catch (yedekHatasi) {
+      console.error("Bulut yedeği oluşturulamadı: " + yedekHatasi);
+      return jsonCevabi({
+        ok:false,
+        code:"BACKUP_FAILED",
+        message:"Güvenlik yedeği oluşturulamadığı için değişiklik kaydedilmedi."
       });
     }
 
@@ -1241,7 +1368,7 @@ function doPost(e) {
       try {
         islemGecmisiKaydet({
           kullanici:yetki.email,
-          islem:"Veri değişikliği",
+          islem:String(payload.auditAction || "Veri değişikliği").slice(0, 120),
           varlik:"Muhasebe kayıtları",
           aciklama:degisiklikOzeti,
           requestId:requestId,
