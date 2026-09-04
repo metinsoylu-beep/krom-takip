@@ -9,21 +9,37 @@ yazma işlemleri kimlik jetonunu `POST` gövdesinde gönderir.
 - `admin`: Verileri görüntüler; fatura ve manuel ödeme kayıtlarını ekler, düzenler ve siler.
 - `viewer`: Verileri görüntüler ve filtreler; hiçbir kayıt değişikliği yapamaz.
 
-Yeni manuel ödemeler faturadan bağımsız olarak `Cari Hareketler` sayfasına,
-verilen çekler `Çekler`, cari kart bilgileri ise `Cariler` sayfasına yazılır.
+Yeni manuel ödeme ve tahsilatlar faturadan bağımsız olarak `Cari Hareketler`
+sayfasına, verilen çekler `Çekler`, cari kart bilgileri ise `Cariler` sayfasına
+yazılır. Kasa ve banka kartları `Kasa Banka Hesapları` sayfasında tutulur;
+`Cari Hareketler` ve `Çekler` sayfalarındaki `Hesap ID` sütunu hareketi ilgili
+hesaba bağlar. `Faturalar` sayfasındaki `Fatura Türü` sütunu alış ve satış
+faturalarını; `Cari Hareketler` sayfasındaki `İşlem Türü` sütunu ödeme ve
+tahsilatları birbirinden ayırır.
 Cari, fatura, ödeme/çek ve kullanıcı yetkisi değişiklikleri `İşlem Geçmişi`
 sayfasına kullanıcı, tarih, işlem özeti ve veri sürümüyle kaydedilir. Bu kayıtları
 uygulamadaki **İşlem Geçmişi** düğmesinden yalnızca yöneticiler görüntüleyebilir;
 sayfanın sınırsız büyümemesi için son 500 kayıt korunur.
-Her başarılı veri kaydından hemen önce fatura, cari kart, ödeme ve çeklerin
+Her başarılı veri kaydından hemen önce fatura, cari kart, kasa/banka, ödeme ve çeklerin
 tamamı `Bulut Yedekleri` sayfasına merkezi güvenlik kopyası olarak yazılır.
 Yalnızca yöneticilerin erişebildiği **Bulut Yedekleri** panelinde son 20 kopya
 listelenir ve seçilen sürüm güvenli biçimde geri yüklenebilir. Büyük veri
 kümeleri Google Sheets hücre sınırına takılmaması için parçalara bölünür.
 Cari kartta firma ve iletişim bilgileriyle birlikte devir borç veya devir alacak
-bakiyesi tutulabilir. Cari bakiye; devir borcu ve fatura toplamından devir
-alacağı, ödemeler ve iptal edilmemiş çekler düşülerek hesaplanır. Ödeme tutarı
-bir faturaya otomatik dağıtılmaz.
+bakiyesi tutulabilir. Cari hesapta alış faturası ve tahsilat borç tarafına;
+satış faturası, ödeme ve iptal edilmemiş verilen çek alacak tarafına işlenir.
+Net bakiye bu iki tarafın farkından hesaplanır. Ödeme veya tahsilat tutarı bir
+faturaya otomatik dağıtılmaz.
+
+Kasa/banka bakiyesinde tahsilatlar giriş, ödemeler çıkış sayılır. Verilen çek
+beklerken banka bakiyesini etkilemez; yalnızca `Ödendi` durumuna geçtiğinde
+bağlı banka hesabından düşer. Hesaba bağlı hareket bulunan bir hesap silinmez,
+gerektiğinde `Pasif` duruma alınır. Eski hesap bilgisiz hareketler korunur ve
+`Hesap belirtilmedi` olarak gösterilir; yeni kayıtlarda hesap seçimi zorunludur.
+
+Eski kayıtlarla uyumluluk korunur. Tür alanı bulunmayan eski faturalar alış
+faturası, tür alanı bulunmayan eski cari hareketler ödeme olarak kabul edilir;
+mevcut kayıtlar silinmez veya yeniden oluşturulmaz.
 
 `Cariler` sayfası ilk kayıt sırasında otomatik oluşturulur. Aynı firma adı veya
 aynı dolu vergi numarasıyla ikinci bir cari kart oluşturulmaz. Eski fatura,
