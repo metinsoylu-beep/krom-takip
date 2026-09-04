@@ -88,6 +88,9 @@ assert.match(index, /Değişiklik bu cihazda güvenle bekliyor/, "Kullanıcı be
 assert.match(index, /id="kontrol-bekleyen"/, "Veri Kontrol Merkezi bekleyen gönderim sayacını göstermeli");
 assert.match(index, /function bekleyenBulutKaydiniIndir\(\)/, "Bekleyen gönderim güvenlik kopyası olarak indirilebilmeli");
 assert.match(index, /Kopyayı İndir/, "Bekleyen gönderim için görünür indirme eylemi bulunmalı");
+assert.match(index, /Tarayıcı güvenli saklama alanına yazılamadı/, "Tarayıcı deposu yazılamazsa kullanıcı açıkça uyarılmalı");
+assert.match(index, /\["oturum", "durdur"\]\.includes\(sonuc\)/, "Kalıcı engeller otomatik tekrar döngüsünü durdurmalı");
+assert.match(index, /\[true, "cakisma", "yerel"\]\.includes\(sonuc\)/, "Yalnızca tamamlanan veya güvenlik kopyasına alınan kayıtlar kuyruktan çıkarılmalı");
 
 const kuyrukBaslangici = index.indexOf("async function bulutKayitKuyrugunuCalistir");
 const kuyrukBitisi = index.indexOf("function buludaKaydet", kuyrukBaslangici);
@@ -116,6 +119,12 @@ vm.runInContext(index.slice(kuyrukBaslangici, kuyrukBitisi), kuyrukContext);
   await kuyrukContext.bulutKayitKuyrugunuCalistir();
   assert.equal(kuyrukContext.bekleyenBulutKaydi.id, "kuyruk-1", "Geçici bağlantı hatasında bekleyen kayıt silinmemeli");
   assert.equal(tekrarGecikmesi, 30000, "Geçici hata kontrollü aralıkla yeniden denenmeli");
+
+  kuyrukContext.bulutKaydiniGonder = async () => "durdur";
+  tekrarGecikmesi = 0;
+  await kuyrukContext.bulutKayitKuyrugunuCalistir();
+  assert.equal(kuyrukContext.bekleyenBulutKaydi.id, "kuyruk-1", "Depolama veya doğrulama engelinde bekleyen kayıt korunmalı");
+  assert.equal(tekrarGecikmesi, 0, "Kalıcı engel gereksiz otomatik tekrar döngüsü başlatmamalı");
 
   kuyrukContext.bulutKaydiniGonder = async () => true;
   tekrarGecikmesi = 0;

@@ -2882,10 +2882,11 @@
       if (!yoneticiGerekli()) return false;
       if (YEREL_GELISTIRME) {
         syncGoster("Yerel test modu · Google Sheets'e veri gönderilmedi", "#60a5fa");
-        return false;
+        return secenekler.kuyrukKaydi ? "yerel" : false;
       }
       try {
         let kaydedildi = false;
+        let kuyrukSonucu = false;
         await bulutKilidiyleCalistir(async () => {
           const uzakOnce = await bulutDurumunuGetir();
           const listelerAyni = listeSurumImzasi(uzakOnce) === listeSurumImzasi(durum);
@@ -2898,6 +2899,7 @@
             }
             if (uzakOnce.revision !== temelSurum) {
               bulutCakismasiniKaydet(durum, uzakOnce);
+              kuyrukSonucu = "cakisma";
               return;
             }
           }
@@ -2925,7 +2927,7 @@
           syncGoster("Google Sheets'e kaydedildi", "#4ade80", { bulutBasarili:true });
           depolamaSagligiYenile(false);
         }
-        return kaydedildi;
+        return secenekler.kuyrukKaydi && kuyrukSonucu ? kuyrukSonucu : kaydedildi;
       } catch(e) {
         if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED", "FORBIDDEN"].includes(e?.code)) {
           sonGirisHatasi = e.message;
@@ -2936,15 +2938,16 @@
           syncGoster("Google Sheets alanı kritik · Değişiklik kaydedilmedi", "#ef4444");
           depolamaSagligiYenile(false);
           alert(e.message || "Google Sheets alanı kritik seviyede. Muhasebe verileri korunarak yeni kayıt durduruldu.");
-          return false;
+          return secenekler.kuyrukKaydi ? "durdur" : false;
         }
         if (e?.response?.conflict) {
           try {
             bulutCakismasiniKaydet(durum, await bulutDurumunuGetir());
+            return secenekler.kuyrukKaydi ? "cakisma" : false;
           } catch (_) {
             syncGoster("Başka cihazda değişiklik algılandı · Yenileyin", "#ef4444");
+            return secenekler.kuyrukKaydi ? "durdur" : false;
           }
-          return false;
         }
         if (e?.code === "DUPLICATE_CHECK_NUMBER") {
           try {
@@ -2952,10 +2955,11 @@
               syncMesaji:"Aynı banka ve çek numarası bulutta zaten var · Yerel değişiklik yedeklendi",
               uyariMesaji:(e.message || "Google Sheets'te aynı banka ve çek numarasıyla başka bir aktif kayıt var.") + " Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel kayıtları almak için Yenile düğmesini kullanın."
             });
+            return secenekler.kuyrukKaydi ? "cakisma" : false;
           } catch (_) {
             syncGoster("Aynı çek numarası nedeniyle bulut kaydı durduruldu", "#ef4444");
+            return secenekler.kuyrukKaydi ? "durdur" : false;
           }
-          return false;
         }
         if (e?.code === "DUPLICATE_MOVEMENT") {
           try {
@@ -2963,25 +2967,26 @@
               syncMesaji:"Benzer ödeme/çek bulutta zaten var · Yerel değişiklik yedeklendi",
               uyariMesaji:(e.message || "Google Sheets'te benzer bir ödeme veya çek zaten var.") + " Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel kayıtları almak için Yenile düğmesini kullanın."
             });
+            return secenekler.kuyrukKaydi ? "cakisma" : false;
           } catch (_) {
             syncGoster("Benzer ödeme/çek nedeniyle bulut kaydı durduruldu", "#ef4444");
+            return secenekler.kuyrukKaydi ? "durdur" : false;
           }
-          return false;
         }
         if (e?.code === "INVALID_CHECK_DETAILS") {
           syncGoster("Eksik çek bilgisi · Değişiklik kaydedilmedi", "#ef4444");
           alert(e.message || "Aktif çeklerin çek numarası ve banka bilgisi zorunludur.");
-          return false;
+          return secenekler.kuyrukKaydi ? "durdur" : false;
         }
         if (e?.code === "INVALID_CHECK_SETTLEMENT_DATE") {
           syncGoster("Geçersiz çek ödeme tarihi · Değişiklik kaydedilmedi", "#ef4444");
           alert(e.message || "Ödenmiş çekin ödeme tarihini kontrol edin.");
-          return false;
+          return secenekler.kuyrukKaydi ? "durdur" : false;
         }
         if (e?.code === "INVALID_CHECK_DUE_DATE") {
           syncGoster("Geçersiz çek vade tarihi · Değişiklik kaydedilmedi", "#ef4444");
           alert(e.message || "Çekin veriliş ve vade tarihlerini kontrol edin.");
-          return false;
+          return secenekler.kuyrukKaydi ? "durdur" : false;
         }
         syncGoster(secenekler.kuyrukKaydi
           ? "Bulut bağlantısı kurulamadı · Değişiklik bu cihazda güvenle bekliyor"
@@ -2999,6 +3004,7 @@
         return;
       }
       bulutKaydiCalisiyor = true;
+      let otomatikTekrar = true;
       try {
         while (bekleyenBulutKaydi) {
           const sonKayit = bekleyenBulutKaydi;
@@ -3011,12 +3017,24 @@
           });
           const ayniKayitBekliyor = bekleyenBulutKaydi?.id === sonKayit.id;
           if (ayniKayitBekliyor) {
-            if (["tekrar", "oturum"].includes(sonuc)) break;
-            bekleyenBulutKaydiniTemizle(sonKayit.id);
+            if (sonuc === "tekrar") break;
+            if (["oturum", "durdur"].includes(sonuc)) {
+              otomatikTekrar = false;
+              break;
+            }
+            if ([true, "cakisma", "yerel"].includes(sonuc)) {
+              bekleyenBulutKaydiniTemizle(sonKayit.id);
+            } else {
+              otomatikTekrar = false;
+              break;
+            }
           } else if (sonuc === true && bekleyenBulutKaydi) {
             bekleyenBulutKaydi.baseRevision = bulutSurumu;
             bekleyenBulutKaydiniSakla(bekleyenBulutKaydi);
-          } else if (["tekrar", "oturum"].includes(sonuc)) {
+          } else if (sonuc === "tekrar") {
+            break;
+          } else if (["oturum", "durdur"].includes(sonuc)) {
+            otomatikTekrar = false;
             break;
           }
         }
@@ -3024,7 +3042,7 @@
         bulutKaydiCalisiyor = false;
         bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
         clearTimeout(bulutTekrarDenemeZamanlayici);
-        if (bekleyenBulutKaydi && yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
+        if (otomatikTekrar && bekleyenBulutKaydi && yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
           bulutTekrarDenemeZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 30000);
         }
       }
@@ -3048,7 +3066,10 @@
         allowDuplicateRecordIds:Array.from(new Set([...oncekiIzinler,...yeniIzinler]
           .map(kimlik => String(kimlik || "").slice(0,160)).filter(Boolean))).slice(0,20)
       };
-      bekleyenBulutKaydiniSakla(bekleyenBulutKaydi);
+      if (!bekleyenBulutKaydiniSakla(bekleyenBulutKaydi)) {
+        syncGoster("Tarayıcı güvenli saklama alanına yazılamadı · Sayfayı kapatmayın", "#ef4444");
+        alert("Bekleyen değişiklik tarayıcıda kalıcı olarak saklanamadı. İnternet bağlantınızı kontrol edin ve sayfayı kapatmadan Veri Kontrol Merkezi'ndeki Şimdi Gönder düğmesini kullanın.");
+      }
       clearTimeout(bulutKayitZamanlayici);
       clearTimeout(bulutTekrarDenemeZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
