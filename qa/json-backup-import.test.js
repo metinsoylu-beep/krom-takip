@@ -16,7 +16,9 @@ const context = {
   cariKartlariniNormallestir: liste => Array.isArray(liste) ? liste : [],
   finansHesaplariniNormallestir: liste => Array.isArray(liste) ? liste : [],
   isletmeHareketleriniNormallestir: liste => Array.isArray(liste) ? liste : [],
-  hesapTransferleriniNormallestir: liste => Array.isArray(liste) ? liste : []
+  hesapTransferleriniNormallestir: liste => Array.isArray(liste) ? liste : [],
+  urunKartlariniNormallestir: liste => Array.isArray(liste) ? liste : [],
+  stokHareketleriniNormallestir: liste => Array.isArray(liste) ? liste : []
 };
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);

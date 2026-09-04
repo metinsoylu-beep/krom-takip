@@ -22,6 +22,8 @@ let customerValues = [];
 let financeAccountValues = [];
 let businessMovementValues = [];
 let accountTransferValues = [];
+let productValues = [];
+let stockMovementValues = [];
 let auditValues = [];
 let backupValues = [];
 let movementExists = false;
@@ -30,6 +32,8 @@ let customerExists = false;
 let financeAccountExists = false;
 let businessMovementExists = false;
 let accountTransferExists = false;
+let productExists = false;
+let stockMovementExists = false;
 let auditExists = false;
 let backupExists = false;
 
@@ -98,6 +102,8 @@ const customerSheet = sheetOlustur(() => customerValues, next => { customerValue
 const financeAccountSheet = sheetOlustur(() => financeAccountValues, next => { financeAccountValues = next; }, "Kasa Banka Hesapları");
 const businessMovementSheet = sheetOlustur(() => businessMovementValues, next => { businessMovementValues = next; }, "Gelir Gider Fişleri");
 const accountTransferSheet = sheetOlustur(() => accountTransferValues, next => { accountTransferValues = next; }, "Hesap Transferleri");
+const productSheet = sheetOlustur(() => productValues, next => { productValues = next; }, "Ürün Hizmet Kartları");
+const stockMovementSheet = sheetOlustur(() => stockMovementValues, next => { stockMovementValues = next; }, "Stok Hareketleri");
 const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; }, "İşlem Geçmişi");
 const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; }, "Bulut Yedekleri");
 
@@ -117,6 +123,8 @@ const context = {
         .concat(financeAccountExists ? [financeAccountSheet] : [])
         .concat(businessMovementExists ? [businessMovementSheet] : [])
         .concat(accountTransferExists ? [accountTransferSheet] : [])
+        .concat(productExists ? [productSheet] : [])
+        .concat(stockMovementExists ? [stockMovementSheet] : [])
         .concat(auditExists ? [auditSheet] : [])
         .concat(backupExists ? [backupSheet] : []);
     },
@@ -129,6 +137,8 @@ const context = {
       if (name === "Kasa Banka Hesapları") return financeAccountExists ? financeAccountSheet : null;
       if (name === "Gelir Gider Fişleri") return businessMovementExists ? businessMovementSheet : null;
       if (name === "Hesap Transferleri") return accountTransferExists ? accountTransferSheet : null;
+      if (name === "Ürün Hizmet Kartları") return productExists ? productSheet : null;
+      if (name === "Stok Hareketleri") return stockMovementExists ? stockMovementSheet : null;
       if (name === "İşlem Geçmişi") return auditExists ? auditSheet : null;
       if (name === "Bulut Yedekleri") return backupExists ? backupSheet : null;
       return null;
@@ -140,6 +150,8 @@ const context = {
       if (name === "Kasa Banka Hesapları") { financeAccountExists = true; return financeAccountSheet; }
       if (name === "Gelir Gider Fişleri") { businessMovementExists = true; return businessMovementSheet; }
       if (name === "Hesap Transferleri") { accountTransferExists = true; return accountTransferSheet; }
+      if (name === "Ürün Hizmet Kartları") { productExists = true; return productSheet; }
+      if (name === "Stok Hareketleri") { stockMovementExists = true; return stockMovementSheet; }
       if (name === "İşlem Geçmişi") { auditExists = true; return auditSheet; }
       if (name === "Bulut Yedekleri") { backupExists = true; return backupSheet; }
       return invoiceSheet;

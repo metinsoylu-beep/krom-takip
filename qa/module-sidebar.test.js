@@ -9,6 +9,7 @@ const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
 assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön muhasebe modülleri">/, "Erişilebilir sol modül paneli bulunmalı");
 [
   "Alış &amp; Satış",
+  "Ürün &amp; Stok",
   "Cari Yönetimi",
   "Kasa &amp; Banka",
   "Gelir &amp; Gider",
@@ -20,6 +21,9 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
 [
   "Yeni Alış Faturası",
   "Yeni Satış Faturası",
+  "Ürün / Hizmet Kartları",
+  "Stok Hareketleri",
+  "Kritik Stok",
   "Cari Hesaplar &amp; Ekstre",
   "Tahsilat / Ödeme Girişi",
   "Hesap Transferleri",
@@ -56,6 +60,7 @@ const context = {
   odemeYonetiminiAc() { cagrilar.push(["odemeYonetiminiAc"]); },
   finansHesaplariniAc() { cagrilar.push(["finansHesaplariniAc"]); },
   hesapTransferleriniAc() { cagrilar.push(["hesapTransferleriniAc"]); },
+  urunStokMerkeziniAc(gorunum) { cagrilar.push(["urunStokMerkeziniAc", gorunum]); },
   gelirGiderMerkeziniAc() { cagrilar.push(["gelirGiderMerkeziniAc"]); },
   aylikFinansOzetiniAc() { cagrilar.push(["aylikFinansOzetiniAc"]); },
   cekTakibiniAc() { cagrilar.push(["cekTakibiniAc"]); },
@@ -69,12 +74,16 @@ vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
 
 context.modulNavigasyon("finans-hesaplari", dugme);
+context.modulNavigasyon("urun-kartlari", dugme);
+context.modulNavigasyon("stok-hareketleri", dugme);
+context.modulNavigasyon("kritik-stok", dugme);
 context.modulNavigasyon("hesap-transferleri", dugme);
 context.modulNavigasyon("gelir-gider", dugme);
 context.modulNavigasyon("aylik-ozet", dugme);
 context.modulNavigasyon("cek-takibi", dugme);
 
 assert.ok(cagrilar.some(([ad]) => ad === "finansHesaplariniAc"), "Kasa/banka bağlantısı mevcut ekrana bağlanmalı");
+assert.deepEqual(cagrilar.filter(([ad]) => ad === "urunStokMerkeziniAc").map(([,gorunum]) => gorunum), ["kartlar", "hareketler", "kritik"], "Ürün ve stok alt menüleri doğru görünüme bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "hesapTransferleriniAc"), "Transfer bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "gelirGiderMerkeziniAc"), "Gelir/gider bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "aylikFinansOzetiniAc"), "Aylık özet bağlantısı mevcut ekrana bağlanmalı");

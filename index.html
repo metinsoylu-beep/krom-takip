@@ -1532,6 +1532,81 @@
     .filtre-islemler .btn-cari-islem { display: none; }
     .filtre-panel { grid-template-columns: minmax(260px, 1fr) minmax(140px, .35fr) auto; }
 
+    /* ── ÜRÜN / HİZMET VE STOK YÖNETİMİ ───────────────────────────────────── */
+    .urun-stok-kart { width: min(1240px, 100%); max-height: calc(100vh - 36px); }
+    .urun-stok-ust-islemler { display: flex; align-items: center; gap: 8px; }
+    .urun-stok-aksiyon {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 7px 11px; border: 1px solid #38bdf866; border-radius: 6px;
+      background: #38bdf812; color: #7dd3fc; font: 650 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .urun-stok-aksiyon.hareket { border-color: #a78bfa66; background: #a78bfa12; color: #c4b5fd; }
+    .urun-stok-aksiyon:hover { background: #38bdf824; }
+    .urun-stok-aksiyon.hareket:hover { background: #a78bfa24; }
+    .urun-stok-ozetler {
+      display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px;
+      padding: 13px 18px 0;
+    }
+    .urun-stok-ozet {
+      min-height: 63px; display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: #10243a; border: 1px solid #1c3248; border-left: 3px solid var(--stok-renk);
+      border-radius: 7px;
+    }
+    .urun-stok-ozet i {
+      width: 31px; height: 31px; display: grid; place-items: center; flex: 0 0 31px;
+      border-radius: 8px; background: color-mix(in srgb,var(--stok-renk) 15%,transparent); color: var(--stok-renk);
+    }
+    .urun-stok-ozet > div { min-width: 0; }
+    .urun-stok-ozet span { display: block; color: #8294a7; font-size: 8px; }
+    .urun-stok-ozet strong { display: block; margin-top: 3px; color: var(--stok-renk); font: 700 15px Georgia,serif; }
+    .urun-stok-form {
+      margin: 13px 18px 0; padding: 13px; background: #0a1a2b;
+      border: 1px solid #294159; border-top: 2px solid var(--form-renk,#e6a91f); border-radius: 8px;
+    }
+    .urun-stok-form-baslik { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .urun-stok-form-baslik strong { color: #edf3f8; font: 700 13px Georgia,serif; }
+    .urun-stok-form-baslik small, .urun-stok-form-baslik span { color: #718398; font-size: 9px; }
+    .urun-stok-form-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+    .urun-stok-form-grid .odeme-form-alan.genis { grid-column: span 2; }
+    .urun-stok-form-grid .odeme-form-alan.tam { grid-column: 1 / -1; }
+    .urun-stok-form-islem {
+      grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    }
+    .urun-stok-form-mesaj { min-height: 16px; margin-right: auto; color: #ff7a85; font-size: 10px; }
+    .urun-stok-filtreler {
+      display: grid; grid-template-columns: minmax(240px,1fr) minmax(180px,.35fr); gap: 10px;
+      padding: 13px 18px;
+    }
+    .urun-stok-filtreler input, .urun-stok-filtreler select {
+      width: 100%; height: 40px; padding: 0 11px; border: 1px solid #294159; border-radius: 6px;
+      background: #10243a; color: #eef4fa; font: 11px "Segoe UI",Arial,sans-serif;
+    }
+    .urun-stok-tablo-wrap { min-height: 220px; margin: 0 18px 18px; overflow: auto; border: 1px solid #294159; border-radius: 7px; }
+    .urun-stok-tablo { min-width: 1030px; font: 11px "Segoe UI",Arial,sans-serif; }
+    .urun-stok-tablo th { height: 35px; padding: 0 12px; }
+    .urun-stok-tablo td { height: 44px; padding: 7px 12px; }
+    .urun-kod { color: #7dd3fc; font-weight: 750; white-space: nowrap; }
+    .urun-ad { color: #e5edf5; font-weight: 650; }
+    .urun-tur-rozet, .stok-durum-rozet {
+      display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px;
+      border: 1px solid #38bdf844; border-radius: 999px; background: #38bdf812; color: #7dd3fc; font-size: 9px; white-space: nowrap;
+    }
+    .urun-tur-rozet.hizmet { border-color: #a78bfa44; background: #a78bfa12; color: #c4b5fd; }
+    .stok-miktar { color: #dfe8f1; font-weight: 750; white-space: nowrap; }
+    .stok-miktar.kritik { color: #ff6b77; }
+    .stok-durum-rozet.aktif, .urun-tur-rozet.giris { border-color: #4ade8044; background: #4ade8012; color: #79e79d; }
+    .stok-durum-rozet.pasif, .urun-tur-rozet.cikis { border-color: #f59e0b44; background: #f59e0b12; color: #f6c95c; }
+    .stok-durum-rozet.iptal { border-color: #64748b55; background: #64748b14; color: #94a3b8; }
+    .urun-stok-tablo tr.iptal, .urun-stok-tablo tr.pasif { opacity: .58; }
+    .urun-stok-islem { display: flex; justify-content: flex-end; gap: 6px; }
+    .urun-stok-islem button {
+      width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #294159;
+      border-radius: 6px; background: #0b1b2d; color: #9fb0c1; cursor: pointer;
+    }
+    .urun-stok-islem button:hover { border-color: #e6a91f88; color: #f3be3e; }
+    .urun-stok-islem button.tehlike:hover { border-color: #ef444488; color: #ff6b77; }
+    .urun-stok-bos { padding: 54px 20px; color: #718398; text-align: center; line-height: 1.7; }
+
     @media (max-width: 1180px) {
       .modul-menu-ac { display: grid; }
       .modul-panel {
@@ -1551,6 +1626,7 @@
       footer { margin-left: 0; }
       .filtre-panel { grid-template-columns: minmax(220px, 1fr) minmax(140px, .45fr) auto; }
       .filtre-islemler { grid-column: auto; }
+      .urun-stok-form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
     @media (max-width: 760px) {
       .navbar { padding-inline: 10px; }
@@ -1559,6 +1635,18 @@
       .konteyner { width: calc(100vw - 24px); }
       .filtre-panel { grid-template-columns: 1fr 1fr; }
       .filtre-islemler { grid-column: 1 / -1; display: block; }
+      .urun-stok-overlay { padding: 0; }
+      .urun-stok-kart { min-height: 100vh; max-height: none; border-radius: 0; }
+      .urun-stok-ust-islemler { width: 100%; display: grid; grid-template-columns: 1fr 1fr auto; }
+      .urun-stok-ust-islemler .urun-stok-aksiyon { padding-inline: 8px; }
+      .urun-stok-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 12px 12px 0; }
+      .urun-stok-form { margin: 12px 12px 0; }
+      .urun-stok-form-grid, .urun-stok-filtreler { grid-template-columns: 1fr; }
+      .urun-stok-form-grid .odeme-form-alan.genis { grid-column: 1; }
+      .urun-stok-form-islem { align-items: stretch; flex-direction: column; }
+      .urun-stok-form-mesaj { margin: 0; }
+      .urun-stok-filtreler { padding: 12px; }
+      .urun-stok-tablo-wrap { margin: 0 12px 12px; }
     }
     body.auth-bekliyor .modul-panel,
     body.auth-bekliyor .modul-panel-perde { display: none !important; }
@@ -1780,6 +1868,74 @@
       </form>
       <div class="cari-hesap-arama"><input id="cari-hesap-arama" type="search" placeholder="Cari/firma ara" oninput="cariHesaplariniGoster()"/></div>
       <div class="cari-hesap-tablo-wrap" id="cari-hesap-tablo-wrap"></div>
+    </section>
+  </div>
+
+  <!-- ÜRÜN, HİZMET VE STOK YÖNETİMİ -->
+  <div class="popup-overlay odeme-yonetim-overlay urun-stok-overlay" id="urun-stok-overlay">
+    <section class="popup-kutu odeme-yonetim-kart urun-stok-kart" role="dialog" aria-modal="true" aria-labelledby="urun-stok-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="urun-stok-baslik"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Ürün, Hizmet ve Stok Yönetimi</h2>
+          <p class="odeme-yonetim-alt">Ürün ve hizmet kartları ayrı izlenir; stok miktarı hareket geçmişinden güvenli biçimde hesaplanır.</p>
+        </div>
+        <div class="urun-stok-ust-islemler">
+          <button class="urun-stok-aksiyon yalnizca-yonetici" type="button" onclick="urunKartFormunuAc()"><i class="fa-solid fa-plus" aria-hidden="true"></i> Yeni Kart</button>
+          <button class="urun-stok-aksiyon hareket yalnizca-yonetici" type="button" onclick="stokHareketFormunuAc()"><i class="fa-solid fa-right-left" aria-hidden="true"></i> Stok Hareketi</button>
+          <button class="modal-kapat" type="button" onclick="urunStokMerkeziniKapat()" aria-label="Ürün ve stok yönetimini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+
+      <form class="urun-stok-form yalnizca-yonetici" id="urun-kart-formu" onsubmit="urunKartKaydet(event)" hidden>
+        <input id="urun-kart-id" type="hidden"/>
+        <div class="urun-stok-form-baslik"><strong id="urun-kart-form-baslik">Yeni Ürün / Hizmet Kartı</strong><span id="urun-kart-form-notu">Kart kodu benzersiz olmalıdır.</span></div>
+        <div class="urun-stok-form-grid">
+          <div class="odeme-form-alan"><label for="urun-kart-tur">KART TÜRÜ</label><select id="urun-kart-tur" onchange="urunKartTurunuGuncelle()"><option value="urun">Ürün</option><option value="hizmet">Hizmet</option></select></div>
+          <div class="odeme-form-alan"><label for="urun-kart-kod">KOD</label><input id="urun-kart-kod" type="text" maxlength="50" placeholder="Örn. URN-001" required/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-ad">ÜRÜN / HİZMET ADI</label><input id="urun-kart-ad" type="text" maxlength="160" placeholder="Kart adı" required/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-birim">BİRİM</label><select id="urun-kart-birim"><option>Adet</option><option>Kg</option><option>Metre</option><option>Litre</option><option>Paket</option><option>Kutu</option><option>Hizmet</option></select></div>
+          <div class="odeme-form-alan"><label for="urun-kart-alis">ALIŞ FİYATI (₺)</label><input id="urun-kart-alis" type="number" min="0" step="0.01" value="0"/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-satis">SATIŞ FİYATI (₺)</label><input id="urun-kart-satis" type="number" min="0" step="0.01" value="0"/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-kdv">KDV ORANI</label><select id="urun-kart-kdv"><option value="0">%0</option><option value="1">%1</option><option value="10">%10</option><option value="20" selected>%20</option></select></div>
+          <div class="odeme-form-alan"><label for="urun-kart-acilis">AÇILIŞ STOĞU</label><input id="urun-kart-acilis" type="number" min="0" step="0.001" value="0"/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-kritik">KRİTİK STOK SEVİYESİ</label><input id="urun-kart-kritik" type="number" min="0" step="0.001" value="0"/></div>
+          <div class="odeme-form-alan"><label for="urun-kart-durum">DURUM</label><select id="urun-kart-durum"><option value="Aktif">Aktif</option><option value="Pasif">Pasif</option></select></div>
+        </div>
+        <div class="urun-stok-form-islem">
+          <span class="urun-stok-form-mesaj" id="urun-kart-form-mesaj" role="status"></span>
+          <button class="cari-kart-vazgec" type="button" onclick="urunStokFormlariniKapat()">Vazgeç</button>
+          <button class="odeme-kaydet-btn" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Kartı Kaydet</button>
+        </div>
+      </form>
+
+      <form class="urun-stok-form yalnizca-yonetici" id="stok-hareket-formu" onsubmit="stokHareketKaydet(event)" hidden>
+        <div class="urun-stok-form-baslik"><strong>Yeni Stok Hareketi</strong><span>Geçmiş korunur; yanlış hareketler silinmez, iptal edilir.</span></div>
+        <div class="urun-stok-form-grid">
+          <div class="odeme-form-alan"><label for="stok-hareket-urun">ÜRÜN</label><select id="stok-hareket-urun" required></select></div>
+          <div class="odeme-form-alan"><label for="stok-hareket-tarih">İŞLEM TARİHİ</label><input id="stok-hareket-tarih" type="date" required/></div>
+          <div class="odeme-form-alan"><label for="stok-hareket-tur">HAREKET TÜRÜ</label><select id="stok-hareket-tur"><option value="giris">Stok Girişi</option><option value="cikis">Stok Çıkışı</option></select></div>
+          <div class="odeme-form-alan"><label for="stok-hareket-miktar">MİKTAR</label><input id="stok-hareket-miktar" type="number" min="0.001" step="0.001" placeholder="0" required/></div>
+          <div class="odeme-form-alan"><label for="stok-hareket-belge">BELGE NO</label><input id="stok-hareket-belge" type="text" maxlength="120" placeholder="İsteğe bağlı"/></div>
+          <div class="odeme-form-alan"><label for="stok-hareket-aciklama">AÇIKLAMA</label><input id="stok-hareket-aciklama" type="text" maxlength="500" placeholder="Hareketin kısa açıklaması"/></div>
+        </div>
+        <div class="urun-stok-form-islem">
+          <span class="urun-stok-form-mesaj" id="stok-hareket-form-mesaj" role="status"></span>
+          <button class="cari-kart-vazgec" type="button" onclick="urunStokFormlariniKapat()">Vazgeç</button>
+          <button class="odeme-kaydet-btn" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Hareketi Kaydet</button>
+        </div>
+      </form>
+
+      <div class="urun-stok-ozetler">
+        <div class="urun-stok-ozet" style="--stok-renk:#67cdfa"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i><div><span>AKTİF KART</span><strong id="urun-stok-toplam-kart">0</strong></div></div>
+        <div class="urun-stok-ozet" style="--stok-renk:#4ade80"><i class="fa-solid fa-coins" aria-hidden="true"></i><div><span>STOK MALİYET DEĞERİ</span><strong id="urun-stok-mevcut-deger">0 ₺</strong></div></div>
+        <div class="urun-stok-ozet" style="--stok-renk:#ff6b77"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><div><span>KRİTİK STOK</span><strong id="urun-stok-kritik">0</strong></div></div>
+        <div class="urun-stok-ozet" style="--stok-renk:#d8ccff"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i><div><span>HİZMET KARTI</span><strong id="urun-stok-hizmet">0</strong></div></div>
+      </div>
+      <div class="urun-stok-filtreler">
+        <input id="urun-stok-arama" type="search" placeholder="Kod, ürün veya hizmet ara" oninput="urunStokMerkeziniGoster()"/>
+        <select id="urun-stok-gorunum" onchange="urunStokMerkeziniGoster()"><option value="kartlar">Tüm kartlar</option><option value="kritik">Kritik stoklar</option><option value="hareketler">Stok hareketleri</option></select>
+      </div>
+      <div class="urun-stok-tablo-wrap" id="urun-stok-tablo-wrap"></div>
     </section>
   </div>
 
@@ -2393,6 +2549,15 @@
       </details>
 
       <details class="modul-grup" open>
+        <summary><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>Ürün &amp; Stok</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="urun-kartlari" onclick="modulNavigasyon('urun-kartlari',this)"><i class="fa-solid fa-box" aria-hidden="true"></i><span>Ürün / Hizmet Kartları</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="stok-hareketleri" onclick="modulNavigasyon('stok-hareketleri',this)"><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i><span>Stok Hareketleri</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="kritik-stok" onclick="modulNavigasyon('kritik-stok',this)"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Kritik Stok</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup" open>
         <summary><i class="fa-solid fa-address-book" aria-hidden="true"></i>Cari Yönetimi</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="cari-hesaplar" onclick="modulNavigasyon('cari-hesaplar',this)"><i class="fa-solid fa-building" aria-hidden="true"></i><span>Cari Hesaplar &amp; Ekstre</span></button>
@@ -2721,7 +2886,7 @@
     <div class="footer-ic">
       <div class="footer-baslik"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i> Veri Saklama Bilgisi</div>
       <ul class="footer-maddeler">
-        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari kart, kasa/banka, hesap transferi, ödeme, çek ve gelir/gider fişi verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
+        <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari kart, ürün/hizmet, stok hareketi, kasa/banka, hesap transferi, ödeme, çek ve gelir/gider fişi verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
         <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı kesilirse değişiklikler bu cihazda güvenle bekler ve bağlantı geldiğinde yeniden gönderilir.</span></li>
@@ -2744,6 +2909,8 @@
     const FINANS_HESAP_ANAHTAR = "krom-takip-kasa-banka-hesaplari";
     const ISLETME_HAREKET_ANAHTAR = "krom-takip-gelir-gider-fisleri";
     const HESAP_TRANSFER_ANAHTAR = "krom-takip-hesap-transferleri";
+    const URUN_KART_ANAHTAR = "krom-takip-urun-hizmet-kartlari";
+    const STOK_HAREKET_ANAHTAR = "krom-takip-stok-hareketleri";
     const ESKI_ODEME_GECIS_ANAHTAR = "krom-takip-eski-odeme-gecisi";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
@@ -3046,7 +3213,9 @@
         cariler:cariKartlariniYukle(),
         hesaplar:finansHesaplariniYukle(),
         isletmeHareketler:isletmeHareketleriniYukle(),
-        hesapTransferleri:hesapTransferleriniYukle()
+        hesapTransferleri:hesapTransferleriniYukle(),
+        urunler:urunKartlariniYukle(),
+        stokHareketler:stokHareketleriniYukle()
       };
     }
 
@@ -3085,6 +3254,16 @@
         })),
         hesapTransferleri:hesapTransferleriniNormallestir(kaynak.hesapTransferleri).map(transfer => ({
           ...transfer, tutar:tutarSayiyaCevir(transfer.tutar).toFixed(2)
+        })),
+        urunler:urunKartlariniNormallestir(kaynak.urunler).map(kart => ({
+          ...kart,
+          alisFiyati:tutarSayiyaCevir(kart.alisFiyati).toFixed(2),
+          satisFiyati:tutarSayiyaCevir(kart.satisFiyati).toFixed(2),
+          acilisStogu:tutarSayiyaCevir(kart.acilisStogu).toFixed(3),
+          kritikStok:tutarSayiyaCevir(kart.kritikStok).toFixed(3)
+        })),
+        stokHareketler:stokHareketleriniNormallestir(kaynak.stokHareketler).map(hareket => ({
+          ...hareket, miktar:tutarSayiyaCevir(hareket.miktar).toFixed(3)
         }))
       });
     }
@@ -3105,7 +3284,9 @@
         cariler:Array.isArray(ham.cariler) ? ham.cariler : null,
         hesaplar:Array.isArray(ham.hesaplar) ? ham.hesaplar : null,
         isletmeHareketler:Array.isArray(ham.isletmeHareketler) ? ham.isletmeHareketler : null,
-        hesapTransferleri:Array.isArray(ham.hesapTransferleri) ? ham.hesapTransferleri : null
+        hesapTransferleri:Array.isArray(ham.hesapTransferleri) ? ham.hesapTransferleri : null,
+        urunler:Array.isArray(ham.urunler) ? ham.urunler : null,
+        stokHareketler:Array.isArray(ham.stokHareketler) ? ham.stokHareketler : null
       };
     }
 
@@ -3578,7 +3759,9 @@
             cariler:cariKartlariniNormallestir(durum.cariler),
             hesaplar:finansHesaplariniNormallestir(durum.hesaplar),
             isletmeHareketler:isletmeHareketleriniNormallestir(durum.isletmeHareketler),
-            hesapTransferleri:hesapTransferleriniNormallestir(durum.hesapTransferleri)
+            hesapTransferleri:hesapTransferleriniNormallestir(durum.hesapTransferleri),
+            urunler:urunKartlariniNormallestir(durum.urunler),
+            stokHareketler:stokHareketleriniNormallestir(durum.stokHareketler)
           });
           bulutSurumunuKaydet(Number(yanit.revision));
           bulutCakismaUyarildi = false;
@@ -3798,6 +3981,8 @@
         if (Array.isArray(uzakDurum.hesaplar)) localStorage.setItem(FINANS_HESAP_ANAHTAR, JSON.stringify(finansHesaplariniNormallestir(uzakDurum.hesaplar)));
         if (Array.isArray(uzakDurum.isletmeHareketler)) localStorage.setItem(ISLETME_HAREKET_ANAHTAR, JSON.stringify(isletmeHareketleriniNormallestir(uzakDurum.isletmeHareketler)));
         if (Array.isArray(uzakDurum.hesapTransferleri)) localStorage.setItem(HESAP_TRANSFER_ANAHTAR, JSON.stringify(hesapTransferleriniNormallestir(uzakDurum.hesapTransferleri)));
+        if (Array.isArray(uzakDurum.urunler)) localStorage.setItem(URUN_KART_ANAHTAR, JSON.stringify(urunKartlariniNormallestir(uzakDurum.urunler)));
+        if (Array.isArray(uzakDurum.stokHareketler)) localStorage.setItem(STOK_HAREKET_ANAHTAR, JSON.stringify(stokHareketleriniNormallestir(uzakDurum.stokHareketler)));
         finansHesabiSecenekleriniGuncelle();
         gelirGiderHesapSecenekleriniGuncelle();
         if (document.getElementById("finans-hesaplari-overlay")?.classList.contains("aktif")) finansHesaplariniGoster();
@@ -3805,6 +3990,7 @@
         if (document.getElementById("hesap-transfer-overlay")?.classList.contains("aktif")) hesapTransferleriniGoster();
         if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
         if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
+        if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
 
         if (Array.isArray(data) && data.length > 0) {
           // Sheets sütun adları: id, "Fatura No", "Cari/Firma", "Tarih", "Vade Günü", "Tutar", "Ödeme Durumu"
@@ -4181,6 +4367,123 @@
 
     function hesapTransferiAktifMi(transfer) {
       return Boolean(transfer && transfer.durum !== "İptal");
+    }
+
+    function urunTurunuNormallestir(deger) {
+      return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "hizmet" ? "hizmet" : "urun";
+    }
+
+    function urunKartiniNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const kod = String(ham.kod || ham.urunKodu || "").trim().replace(/\s+/g,"-").toLocaleUpperCase("tr-TR").slice(0,50);
+      const ad = String(ham.ad || ham.urunAdi || ham.hizmetAdi || "").trim().replace(/\s+/g," ").slice(0,160);
+      if (!kod || !ad) return null;
+      const tur = urunTurunuNormallestir(ham.tur || ham.kartTuru);
+      const izinliBirimler = ["Adet","Kg","Metre","Litre","Paket","Kutu","Hizmet"];
+      let birim = String(ham.birim || (tur === "hizmet" ? "Hizmet" : "Adet")).trim();
+      if (!izinliBirimler.includes(birim)) birim = tur === "hizmet" ? "Hizmet" : "Adet";
+      if (tur === "hizmet") birim = "Hizmet";
+      const kdvHam = Number(ham.kdvOrani);
+      const kdvOrani = [0,1,10,20].includes(kdvHam) ? kdvHam : 20;
+      return {
+        id:String(ham.id || ham.urunId || `urun-${sira+1}`).trim().slice(0,160),
+        kod,
+        ad,
+        tur,
+        birim,
+        alisFiyati:Math.max(0,tutarSayiyaCevir(ham.alisFiyati)),
+        satisFiyati:Math.max(0,tutarSayiyaCevir(ham.satisFiyati)),
+        kdvOrani,
+        acilisStogu:tur === "urun" ? Math.max(0,tutarSayiyaCevir(ham.acilisStogu)) : 0,
+        kritikStok:tur === "urun" ? Math.max(0,tutarSayiyaCevir(ham.kritikStok)) : 0,
+        durum:String(ham.durum || "Aktif") === "Pasif" ? "Pasif" : "Aktif",
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
+        guncellemeZamani:String(ham.guncellemeZamani || "").trim().slice(0,80)
+      };
+    }
+
+    function urunKartlariniNormallestir(hamListe) {
+      const gorulenId = new Set();
+      const gorulenKod = new Set();
+      return (Array.isArray(hamListe) ? hamListe : [])
+        .map((ham,sira)=>urunKartiniNormallestir(ham,sira))
+        .filter(kart=>{
+          if (!kart || gorulenId.has(kart.id) || gorulenKod.has(kart.kod)) return false;
+          gorulenId.add(kart.id);
+          gorulenKod.add(kart.kod);
+          return true;
+        })
+        .sort((a,b)=>a.ad.localeCompare(b.ad,"tr") || a.kod.localeCompare(b.kod,"tr"));
+    }
+
+    function urunKartlariniYukle() {
+      try { return urunKartlariniNormallestir(JSON.parse(localStorage.getItem(URUN_KART_ANAHTAR) || "[]")); }
+      catch { return []; }
+    }
+
+    function stokHareketTurunuNormallestir(deger) {
+      return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "cikis" || String(deger || "").trim().toLocaleLowerCase("tr-TR") === "çıkış" ? "cikis" : "giris";
+    }
+
+    function stokHareketiniNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const tarih = String(ham.tarih || ham.islemTarihi || "").split("T")[0];
+      const urunId = String(ham.urunId || ham.kartId || "").trim().slice(0,160);
+      const miktar = Math.max(0,tutarSayiyaCevir(ham.miktar));
+      const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
+      if (!tarihGecerliMi(tarih) || !urunId || !(miktar>0)) return null;
+      return {
+        id:String(ham.id || ham.hareketId || `stok-${tarih}-${sira+1}`).trim().slice(0,160),
+        tarih,
+        urunId,
+        tur:stokHareketTurunuNormallestir(ham.tur || ham.hareketTuru),
+        miktar,
+        belgeNo:String(ham.belgeNo || ham.referans || "").trim().replace(/\s+/g," ").slice(0,120),
+        aciklama:String(ham.aciklama || "").trim().replace(/\s+/g," ").slice(0,500),
+        durum,
+        kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
+        iptalZamani:durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0,80) : ""
+      };
+    }
+
+    function stokHareketleriniNormallestir(hamListe) {
+      const gorulen = new Set();
+      return (Array.isArray(hamListe) ? hamListe : [])
+        .map((ham,sira)=>stokHareketiniNormallestir(ham,sira))
+        .filter(hareket=>hareket && !gorulen.has(hareket.id) && gorulen.add(hareket.id))
+        .sort((a,b)=>b.tarih.localeCompare(a.tarih) || b.kayitZamani.localeCompare(a.kayitZamani) || b.id.localeCompare(a.id));
+    }
+
+    function stokHareketleriniYukle() {
+      try { return stokHareketleriniNormallestir(JSON.parse(localStorage.getItem(STOK_HAREKET_ANAHTAR) || "[]")); }
+      catch { return []; }
+    }
+
+    function stokHareketiAktifMi(hareket) {
+      return Boolean(hareket && hareket.durum !== "İptal");
+    }
+
+    function urunStokMiktariniHesapla(urun, hareketler=stokHareketleriniYukle()) {
+      if (!urun || urunTurunuNormallestir(urun.tur) !== "urun") return 0;
+      const hareketToplami = (Array.isArray(hareketler) ? hareketler : [])
+        .filter(hareket=>stokHareketiAktifMi(hareket) && String(hareket.urunId) === String(urun.id))
+        .reduce((toplam,hareket)=>toplam+(stokHareketTurunuNormallestir(hareket.tur) === "giris" ? hareket.miktar : -hareket.miktar),0);
+      return Math.round((tutarSayiyaCevir(urun.acilisStogu)+hareketToplami)*1000)/1000;
+    }
+
+    function urunStokOzetleriniHesapla(urunler=urunKartlariniYukle(), hareketler=stokHareketleriniYukle()) {
+      const kartlar = urunKartlariniNormallestir(urunler);
+      const stoklar = new Map(kartlar.map(kart=>[kart.id,urunStokMiktariniHesapla(kart,hareketler)]));
+      const aktifler = kartlar.filter(kart=>kart.durum === "Aktif");
+      const kritikler = aktifler.filter(kart=>kart.tur === "urun" && stoklar.get(kart.id) <= kart.kritikStok);
+      return {
+        kartlar,
+        stoklar,
+        aktifKart:aktifler.length,
+        hizmet:aktifler.filter(kart=>kart.tur === "hizmet").length,
+        kritik:kritikler.length,
+        maliyetDegeri:aktifler.filter(kart=>kart.tur === "urun").reduce((toplam,kart)=>toplam+Math.max(0,stoklar.get(kart.id))*kart.alisFiyati,0)
+      };
     }
 
     function finansHesapTurunuNormallestir(deger) {
@@ -5548,7 +5851,9 @@
         cariler:durum.cariler,
         ...(Array.isArray(durum.hesaplar) ? { hesaplar:durum.hesaplar } : {}),
         ...(Array.isArray(durum.isletmeHareketler) ? { isletmeHareketler:durum.isletmeHareketler } : {}),
-        ...(Array.isArray(durum.hesapTransferleri) ? { hesapTransferleri:durum.hesapTransferleri } : {})
+        ...(Array.isArray(durum.hesapTransferleri) ? { hesapTransferleri:durum.hesapTransferleri } : {}),
+        ...(Array.isArray(durum.urunler) ? { urunler:durum.urunler } : {}),
+        ...(Array.isArray(durum.stokHareketler) ? { stokHareketler:durum.stokHareketler } : {})
       });
       const hesaplananKod = jsonYedekKontrolKodu(hamDurum);
       const beklenenKod = String(veri.kontrol?.kod || "").trim().toUpperCase();
@@ -5562,7 +5867,9 @@
         cariler:cariKartlariniNormallestir(durum.cariler),
         hesaplar:finansHesaplariniNormallestir(durum.hesaplar),
         isletmeHareketler:isletmeHareketleriniNormallestir(durum.isletmeHareketler),
-        hesapTransferleri:hesapTransferleriniNormallestir(durum.hesapTransferleri)
+        hesapTransferleri:hesapTransferleriniNormallestir(durum.hesapTransferleri),
+        urunler:urunKartlariniNormallestir(durum.urunler),
+        stokHareketler:stokHareketleriniNormallestir(durum.stokHareketler)
       };
       const sayilar = {
         fatura:guvenliDurum.items.length,
@@ -5571,7 +5878,9 @@
         cariKart:guvenliDurum.cariler.length,
         finansHesap:guvenliDurum.hesaplar.length,
         isletmeHareket:guvenliDurum.isletmeHareketler.length,
-        hesapTransfer:guvenliDurum.hesapTransferleri.length
+        hesapTransfer:guvenliDurum.hesapTransferleri.length,
+        urun:guvenliDurum.urunler.length,
+        stokHareket:guvenliDurum.stokHareketler.length
       };
       const ayiklanan = Math.max(durum.items.length - sayilar.fatura,0)
         + Math.max(durum.cariHareketler.length - sayilar.cariHareket,0)
@@ -5579,7 +5888,9 @@
         + Math.max(durum.cariler.length - sayilar.cariKart,0)
         + Math.max((Array.isArray(durum.hesaplar) ? durum.hesaplar.length : 0) - sayilar.finansHesap,0)
         + Math.max((Array.isArray(durum.isletmeHareketler) ? durum.isletmeHareketler.length : 0) - sayilar.isletmeHareket,0)
-        + Math.max((Array.isArray(durum.hesapTransferleri) ? durum.hesapTransferleri.length : 0) - sayilar.hesapTransfer,0);
+        + Math.max((Array.isArray(durum.hesapTransferleri) ? durum.hesapTransferleri.length : 0) - sayilar.hesapTransfer,0)
+        + Math.max((Array.isArray(durum.urunler) ? durum.urunler.length : 0) - sayilar.urun,0)
+        + Math.max((Array.isArray(durum.stokHareketler) ? durum.stokHareketler.length : 0) - sayilar.stokHareket,0);
       return {
         dosyaAdi:String(dosyaAdi || "yedek.json"),
         kayitZamani:String(veri.kayitZamani || ""),
@@ -5643,7 +5954,9 @@
         cariler:cariKartlariniNormallestir(mevcutDurum?.cariler),
         hesaplar:finansHesaplariniNormallestir(mevcutDurum?.hesaplar),
         isletmeHareketler:isletmeHareketleriniNormallestir(mevcutDurum?.isletmeHareketler),
-        hesapTransferleri:hesapTransferleriniNormallestir(mevcutDurum?.hesapTransferleri)
+        hesapTransferleri:hesapTransferleriniNormallestir(mevcutDurum?.hesapTransferleri),
+        urunler:urunKartlariniNormallestir(mevcutDurum?.urunler),
+        stokHareketler:stokHareketleriniNormallestir(mevcutDurum?.stokHareketler)
       };
       const hedef = {
         items:faturalariTekillestir(yedekDurum?.items).liste,
@@ -5652,7 +5965,9 @@
         cariler:cariKartlariniNormallestir(yedekDurum?.cariler),
         hesaplar:finansHesaplariniNormallestir(yedekDurum?.hesaplar),
         isletmeHareketler:isletmeHareketleriniNormallestir(yedekDurum?.isletmeHareketler),
-        hesapTransferleri:hesapTransferleriniNormallestir(yedekDurum?.hesapTransferleri)
+        hesapTransferleri:hesapTransferleriniNormallestir(yedekDurum?.hesapTransferleri),
+        urunler:urunKartlariniNormallestir(yedekDurum?.urunler),
+        stokHareketler:stokHareketleriniNormallestir(yedekDurum?.stokHareketler)
       };
       return [
         { ad:"Faturalar", ...yedekListeFarki(mevcut.items, hedef.items) },
@@ -5660,6 +5975,8 @@
         { ad:"Kasa / Banka", ...yedekListeFarki(mevcut.hesaplar, hedef.hesaplar) },
         { ad:"Hesap transferleri", ...yedekListeFarki(mevcut.hesapTransferleri, hedef.hesapTransferleri) },
         { ad:"Gelir / Gider", ...yedekListeFarki(mevcut.isletmeHareketler, hedef.isletmeHareketler) },
+        { ad:"Ürün / Hizmet kartları", ...yedekListeFarki(mevcut.urunler, hedef.urunler) },
+        { ad:"Stok hareketleri", ...yedekListeFarki(mevcut.stokHareketler, hedef.stokHareketler) },
         { ad:"Ödemeler", ...yedekListeFarki(mevcut.cariHareketler, hedef.cariHareketler) },
         { ad:"Çekler", ...yedekListeFarki(mevcut.cekler, hedef.cekler) }
       ];
@@ -5929,7 +6246,9 @@
         cariler:cariKartlariniNormallestir(durum?.cariler),
         hesaplar:finansHesaplariniNormallestir(durum?.hesaplar),
         isletmeHareketler:isletmeHareketleriniNormallestir(durum?.isletmeHareketler),
-        hesapTransferleri:hesapTransferleriniNormallestir(durum?.hesapTransferleri)
+        hesapTransferleri:hesapTransferleriniNormallestir(durum?.hesapTransferleri),
+        urunler:urunKartlariniNormallestir(durum?.urunler),
+        stokHareketler:stokHareketleriniNormallestir(durum?.stokHareketler)
       };
       localStorage.setItem(ANAHTAR, JSON.stringify(guvenliDurum.items));
       localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(guvenliDurum.cariHareketler));
@@ -5938,6 +6257,8 @@
       localStorage.setItem(FINANS_HESAP_ANAHTAR, JSON.stringify(guvenliDurum.hesaplar));
       localStorage.setItem(ISLETME_HAREKET_ANAHTAR, JSON.stringify(guvenliDurum.isletmeHareketler));
       localStorage.setItem(HESAP_TRANSFER_ANAHTAR, JSON.stringify(guvenliDurum.hesapTransferleri));
+      localStorage.setItem(URUN_KART_ANAHTAR, JSON.stringify(guvenliDurum.urunler));
+      localStorage.setItem(STOK_HAREKET_ANAHTAR, JSON.stringify(guvenliDurum.stokHareketler));
       finansHesabiSecenekleriniGuncelle();
       gelirGiderHesapSecenekleriniGuncelle();
       cariSecenekleriniGuncelle();
@@ -5949,6 +6270,7 @@
       if (document.getElementById("hesap-transfer-overlay")?.classList.contains("aktif")) hesapTransferleriniGoster();
       if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
       if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
+      if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       return guvenliDurum;
     }
 
@@ -6065,7 +6387,7 @@
       const guvenliDurum = uygulamaDurumuOlustur(guvenliListe);
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler[yedekler.length - 1];
-      const sonDurum = sonYedek?.durum || (sonYedek ? { items:sonYedek.liste, cariHareketler:[], cekler:[], cariler:[], hesaplar:[], isletmeHareketler:[], hesapTransferleri:[] } : null);
+      const sonDurum = sonYedek?.durum || (sonYedek ? { items:sonYedek.liste, cariHareketler:[], cekler:[], cariler:[], hesaplar:[], isletmeHareketler:[], hesapTransferleri:[], urunler:[], stokHareketler:[] } : null);
       if (!sonDurum || listeSurumImzasi(sonDurum) !== listeSurumImzasi(guvenliDurum)) {
         yedekler.push({
           kayitZamani: new Date().toISOString(),
@@ -6094,7 +6416,7 @@
       const yedekler = yedekleriYukle();
       const sonYedek = yedekler.pop();
       if (!sonYedek) return;
-      const geriDurum = sonYedek.durum || { items:sonYedek.liste, cariHareketler:cariHareketleriYukle(), cekler:cekleriYukle(), cariler:cariKartlariniYukle(), hesaplar:finansHesaplariniYukle(), isletmeHareketler:isletmeHareketleriniYukle(), hesapTransferleri:hesapTransferleriniYukle() };
+      const geriDurum = sonYedek.durum || { items:sonYedek.liste, cariHareketler:cariHareketleriYukle(), cekler:cekleriYukle(), cariler:cariKartlariniYukle(), hesaplar:finansHesaplariniYukle(), isletmeHareketler:isletmeHareketleriniYukle(), hesapTransferleri:hesapTransferleriniYukle(), urunler:urunKartlariniYukle(), stokHareketler:stokHareketleriniYukle() };
       const geriYuklenecek = faturalariTekillestir(geriDurum.items).liste;
       if (yedekler.length) localStorage.setItem(YEDEK_ANAHTAR, JSON.stringify(yedekler));
       else localStorage.removeItem(YEDEK_ANAHTAR);
@@ -6105,6 +6427,8 @@
       localStorage.setItem(FINANS_HESAP_ANAHTAR, JSON.stringify(finansHesaplariniNormallestir(geriDurum.hesaplar)));
       localStorage.setItem(ISLETME_HAREKET_ANAHTAR, JSON.stringify(isletmeHareketleriniNormallestir(geriDurum.isletmeHareketler)));
       localStorage.setItem(HESAP_TRANSFER_ANAHTAR, JSON.stringify(hesapTransferleriniNormallestir(geriDurum.hesapTransferleri)));
+      localStorage.setItem(URUN_KART_ANAHTAR, JSON.stringify(urunKartlariniNormallestir(geriDurum.urunler)));
+      localStorage.setItem(STOK_HAREKET_ANAHTAR, JSON.stringify(stokHareketleriniNormallestir(geriDurum.stokHareketler)));
       buludaKaydet(geriYuklenecek);
       cariSecenekleriniGuncelle();
       finansHesabiSecenekleriniGuncelle();
@@ -6114,6 +6438,7 @@
       if (document.getElementById("finans-hesaplari-overlay")?.classList.contains("aktif")) finansHesaplariniGoster();
       if (document.getElementById("hesap-transfer-overlay")?.classList.contains("aktif")) hesapTransferleriniGoster();
       if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
+      if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       yedekDugmesiniGuncelle();
       syncGoster(`${sonYedek.neden || "Son değişiklik"} geri alındı`, "#4ade80");
     }
@@ -8647,6 +8972,256 @@
       topluIslemPaneliniGuncelle(liste);
     }
 
+    // ── ÜRÜN, HİZMET VE STOK YÖNETİMİ ──────────────────────────────────────
+    function stokMiktariniFormatla(deger) {
+      return tutarSayiyaCevir(deger).toLocaleString("tr-TR",{minimumFractionDigits:0,maximumFractionDigits:3});
+    }
+
+    function urunStokSecenekleriniGuncelle(seciliId="") {
+      const alan = document.getElementById("stok-hareket-urun");
+      if (!alan) return;
+      const urunler = urunKartlariniYukle().filter(kart=>kart.tur === "urun" && kart.durum === "Aktif");
+      alan.innerHTML = `<option value="">Ürün seçin</option>${urunler.map(kart=>`<option value="${htmlGuvenli(kart.id)}">${htmlGuvenli(kart.kod)} · ${htmlGuvenli(kart.ad)} · ${stokMiktariniFormatla(urunStokMiktariniHesapla(kart))} ${htmlGuvenli(kart.birim)}</option>`).join("")}`;
+      alan.value = urunler.some(kart=>kart.id === seciliId) ? seciliId : "";
+    }
+
+    function urunKartTurunuGuncelle() {
+      const hizmetMi = document.getElementById("urun-kart-tur")?.value === "hizmet";
+      const acilis = document.getElementById("urun-kart-acilis");
+      const kritik = document.getElementById("urun-kart-kritik");
+      const birim = document.getElementById("urun-kart-birim");
+      const mevcutId = document.getElementById("urun-kart-id")?.value || "";
+      if (acilis) {
+        acilis.disabled = Boolean(mevcutId) || hizmetMi;
+        if (hizmetMi) acilis.value = "0";
+      }
+      if (kritik) {
+        kritik.disabled = hizmetMi;
+        if (hizmetMi) kritik.value = "0";
+      }
+      if (birim) {
+        birim.disabled = hizmetMi;
+        if (hizmetMi) birim.value = "Hizmet";
+        else if (birim.value === "Hizmet") birim.value = "Adet";
+      }
+    }
+
+    function urunStokFormlariniKapat() {
+      ["urun-kart-formu","stok-hareket-formu"].forEach(id=>{ const form=document.getElementById(id); if(form) form.hidden=true; });
+      ["urun-kart-form-mesaj","stok-hareket-form-mesaj"].forEach(id=>{ const mesaj=document.getElementById(id); if(mesaj) mesaj.textContent=""; });
+    }
+
+    function urunKartFormunuAc(kimlik="") {
+      if (!yoneticiGerekli()) return;
+      const kart = urunKartlariniYukle().find(item=>item.id === kimlik) || null;
+      const hareketiVar = Boolean(kart && stokHareketleriniYukle().some(hareket=>hareket.urunId === kart.id));
+      urunStokFormlariniKapat();
+      document.getElementById("urun-kart-id").value = kart?.id || "";
+      document.getElementById("urun-kart-tur").value = kart?.tur || "urun";
+      document.getElementById("urun-kart-tur").disabled = hareketiVar;
+      document.getElementById("urun-kart-kod").value = kart?.kod || "";
+      document.getElementById("urun-kart-ad").value = kart?.ad || "";
+      document.getElementById("urun-kart-birim").value = kart?.birim || "Adet";
+      document.getElementById("urun-kart-alis").value = kart?.alisFiyati ?? 0;
+      document.getElementById("urun-kart-satis").value = kart?.satisFiyati ?? 0;
+      document.getElementById("urun-kart-kdv").value = String(kart?.kdvOrani ?? 20);
+      document.getElementById("urun-kart-acilis").value = kart?.acilisStogu ?? 0;
+      document.getElementById("urun-kart-kritik").value = kart?.kritikStok ?? 0;
+      document.getElementById("urun-kart-durum").value = kart?.durum || "Aktif";
+      document.getElementById("urun-kart-form-baslik").textContent = kart ? "Ürün / Hizmet Kartını Düzenle" : "Yeni Ürün / Hizmet Kartı";
+      document.getElementById("urun-kart-form-notu").textContent = kart
+        ? (hareketiVar ? "Hareket geçmişi bulunduğu için kart türü ve açılış stoku değiştirilemez." : "Açılış stoku yalnızca yeni kartta belirlenir.")
+        : "Kart kodu benzersiz olmalıdır.";
+      document.getElementById("urun-kart-form-mesaj").textContent = "";
+      document.getElementById("urun-kart-formu").hidden = false;
+      urunKartTurunuGuncelle();
+      setTimeout(()=>document.getElementById("urun-kart-kod")?.focus(),0);
+    }
+
+    function stokHareketFormunuAc() {
+      if (!yoneticiGerekli()) return;
+      const urunler = urunKartlariniYukle().filter(kart=>kart.tur === "urun" && kart.durum === "Aktif");
+      if (!urunler.length) { alert("Stok hareketi için önce aktif bir ürün kartı oluşturun."); return; }
+      urunStokFormlariniKapat();
+      urunStokSecenekleriniGuncelle(urunler[0].id);
+      document.getElementById("stok-hareket-tarih").value = bugununTarihi();
+      document.getElementById("stok-hareket-tur").value = "giris";
+      document.getElementById("stok-hareket-miktar").value = "";
+      document.getElementById("stok-hareket-belge").value = "";
+      document.getElementById("stok-hareket-aciklama").value = "";
+      document.getElementById("stok-hareket-form-mesaj").textContent = "";
+      document.getElementById("stok-hareket-formu").hidden = false;
+      setTimeout(()=>document.getElementById("stok-hareket-miktar")?.focus(),0);
+    }
+
+    function urunKartlariniKaydet(kartlar, mesaj) {
+      if (!yoneticiGerekli()) return false;
+      const guvenliKartlar = urunKartlariniNormallestir(kartlar);
+      otomatikYedekOlustur(faturaYukle(), mesaj || "Ürün/hizmet kartı değiştirildi");
+      localStorage.setItem(URUN_KART_ANAHTAR,JSON.stringify(guvenliKartlar));
+      buludaKaydet(faturaYukle(),{auditAction:mesaj || "Ürün/hizmet kartı değiştirildi"});
+      urunStokSecenekleriniGuncelle();
+      urunStokMerkeziniGoster();
+      syncGoster(mesaj || "Ürün/hizmet kartı kaydedildi","#4ade80");
+      return true;
+    }
+
+    function urunKartKaydet(event) {
+      event?.preventDefault?.();
+      if (!yoneticiGerekli()) return;
+      const id = document.getElementById("urun-kart-id")?.value || "";
+      const kartlar = urunKartlariniYukle();
+      const mevcut = kartlar.find(kart=>kart.id === id) || null;
+      const kod = String(document.getElementById("urun-kart-kod")?.value || "").trim().replace(/\s+/g,"-").toLocaleUpperCase("tr-TR");
+      const ad = String(document.getElementById("urun-kart-ad")?.value || "").trim().replace(/\s+/g," ");
+      const tur = mevcut && stokHareketleriniYukle().some(hareket=>hareket.urunId === mevcut.id) ? mevcut.tur : urunTurunuNormallestir(document.getElementById("urun-kart-tur")?.value);
+      const mesaj = document.getElementById("urun-kart-form-mesaj");
+      mesaj.style.color = "#ff7a85";
+      if (!kod || !ad) { mesaj.textContent="Kart kodu ve kart adı zorunludur."; return; }
+      if (kartlar.some(kart=>kart.id !== id && kart.kod === kod)) { mesaj.textContent="Bu kart koduyla başka bir ürün veya hizmet var."; return; }
+      const simdi = new Date().toISOString();
+      const yeniKart = urunKartiniNormallestir({
+        id:mevcut?.id || cariHareketKimligiOlustur("urun"), kod, ad, tur,
+        birim:document.getElementById("urun-kart-birim")?.value,
+        alisFiyati:document.getElementById("urun-kart-alis")?.value,
+        satisFiyati:document.getElementById("urun-kart-satis")?.value,
+        kdvOrani:Number(document.getElementById("urun-kart-kdv")?.value),
+        acilisStogu:mevcut?.acilisStogu ?? document.getElementById("urun-kart-acilis")?.value,
+        kritikStok:document.getElementById("urun-kart-kritik")?.value,
+        durum:document.getElementById("urun-kart-durum")?.value,
+        kayitZamani:mevcut?.kayitZamani || simdi,
+        guncellemeZamani:simdi
+      });
+      if (!yeniKart) { mesaj.textContent="Kart bilgileri doğrulanamadı."; return; }
+      const yeniListe = mevcut ? kartlar.map(kart=>kart.id === mevcut.id ? yeniKart : kart) : [...kartlar,yeniKart];
+      urunKartlariniKaydet(yeniListe,mevcut ? `${yeniKart.kod} kartı güncellendi` : `${yeniKart.kod} kartı oluşturuldu`);
+      urunStokFormlariniKapat();
+    }
+
+    function urunKartDurumunuDegistir(kimlik) {
+      if (!yoneticiGerekli()) return;
+      const kartlar = urunKartlariniYukle();
+      const kart = kartlar.find(item=>item.id === kimlik);
+      if (!kart) return;
+      const yeniDurum = kart.durum === "Aktif" ? "Pasif" : "Aktif";
+      if (!confirm(`${kart.kod} · ${kart.ad} kartı ${yeniDurum.toLocaleLowerCase("tr-TR")} duruma alınsın mı?`)) return;
+      urunKartlariniKaydet(kartlar.map(item=>item.id === kimlik ? {...item,durum:yeniDurum,guncellemeZamani:new Date().toISOString()} : item),`${kart.kod} kartı ${yeniDurum.toLocaleLowerCase("tr-TR")} duruma alındı`);
+    }
+
+    function stokHareketleriniKaydet(hareketler, mesaj) {
+      if (!yoneticiGerekli()) return false;
+      const guvenliHareketler = stokHareketleriniNormallestir(hareketler);
+      const eksiyeDusenUrun = urunKartlariniYukle().find(urun=>urun.tur === "urun" && urunStokMiktariniHesapla(urun,guvenliHareketler) < -0.0005);
+      if (eksiyeDusenUrun) {
+        alert(`${eksiyeDusenUrun.kod} kodlu ürünün stok miktarı eksiye düşemez. İşlem kaydedilmedi.`);
+        return false;
+      }
+      otomatikYedekOlustur(faturaYukle(),mesaj || "Stok hareketi değiştirildi");
+      localStorage.setItem(STOK_HAREKET_ANAHTAR,JSON.stringify(guvenliHareketler));
+      buludaKaydet(faturaYukle(),{auditAction:mesaj || "Stok hareketi değiştirildi"});
+      urunStokSecenekleriniGuncelle();
+      urunStokMerkeziniGoster();
+      syncGoster(mesaj || "Stok hareketi kaydedildi","#4ade80");
+      return true;
+    }
+
+    function stokHareketKaydet(event) {
+      event?.preventDefault?.();
+      if (!yoneticiGerekli()) return;
+      const urunId = document.getElementById("stok-hareket-urun")?.value || "";
+      const tarih = document.getElementById("stok-hareket-tarih")?.value || "";
+      const tur = stokHareketTurunuNormallestir(document.getElementById("stok-hareket-tur")?.value);
+      const miktar = tutarSayiyaCevir(document.getElementById("stok-hareket-miktar")?.value);
+      const mesaj = document.getElementById("stok-hareket-form-mesaj");
+      mesaj.style.color = "#ff7a85";
+      const urun = urunKartlariniYukle().find(kart=>kart.id === urunId && kart.tur === "urun" && kart.durum === "Aktif");
+      if (!urun) { mesaj.textContent="Aktif bir ürün seçin."; return; }
+      if (!tarihGecerliMi(tarih)) { mesaj.textContent="Geçerli bir işlem tarihi seçin."; return; }
+      if (!(miktar>0)) { mesaj.textContent="Sıfırdan büyük bir miktar yazın."; return; }
+      const mevcutStok = urunStokMiktariniHesapla(urun);
+      if (tur === "cikis" && miktar > mevcutStok) { mesaj.textContent=`Çıkış miktarı mevcut ${stokMiktariniFormatla(mevcutStok)} ${urun.birim} stoktan fazla olamaz.`; return; }
+      const hareket = stokHareketiniNormallestir({
+        id:cariHareketKimligiOlustur("stok"), tarih, urunId, tur, miktar,
+        belgeNo:document.getElementById("stok-hareket-belge")?.value,
+        aciklama:document.getElementById("stok-hareket-aciklama")?.value,
+        durum:"Aktif", kayitZamani:new Date().toISOString()
+      });
+      if (!hareket) { mesaj.textContent="Stok hareketi doğrulanamadı."; return; }
+      stokHareketleriniKaydet([...stokHareketleriniYukle(),hareket],`${urun.kod} için stok ${tur === "giris" ? "girişi" : "çıkışı"} kaydedildi`);
+      urunStokFormlariniKapat();
+    }
+
+    function stokHareketDurumunuDegistir(kimlik) {
+      if (!yoneticiGerekli()) return;
+      const hareketler = stokHareketleriniYukle();
+      const hareket = hareketler.find(item=>item.id === kimlik);
+      const urun = urunKartlariniYukle().find(kart=>kart.id === hareket?.urunId);
+      if (!hareket || !urun) return;
+      const yenidenEtkin = hareket.durum === "İptal";
+      if (yenidenEtkin && hareket.tur === "cikis" && hareket.miktar > urunStokMiktariniHesapla(urun,hareketler)) {
+        alert("Bu çıkış yeniden etkinleştirilirse stok eksiye düşeceği için işlem yapılamadı.");
+        return;
+      }
+      if (!yenidenEtkin && hareket.tur === "giris" && urunStokMiktariniHesapla(urun,hareketler) - hareket.miktar < -0.0005) {
+        alert("Bu giriş iptal edilirse stok eksiye düşeceği için işlem yapılamadı. Önce bu stoğa bağlı çıkışları iptal edin.");
+        return;
+      }
+      if (!confirm(`${urun.kod} stok hareketi ${yenidenEtkin ? "yeniden etkinleştirilsin" : "iptal edilsin"} mi?`)) return;
+      const yeniDurum = yenidenEtkin ? "Aktif" : "İptal";
+      stokHareketleriniKaydet(hareketler.map(item=>item.id === kimlik ? {...item,durum:yeniDurum,iptalZamani:yeniDurum === "İptal" ? new Date().toISOString() : ""} : item),`${urun.kod} stok hareketi ${yenidenEtkin ? "yeniden etkinleştirildi" : "iptal edildi"}`);
+    }
+
+    function urunStokMerkeziniGoster() {
+      const tablo = document.getElementById("urun-stok-tablo-wrap");
+      if (!tablo) return;
+      const urunler = urunKartlariniYukle();
+      const hareketler = stokHareketleriniYukle();
+      const ozet = urunStokOzetleriniHesapla(urunler,hareketler);
+      document.getElementById("urun-stok-toplam-kart").textContent = String(ozet.aktifKart);
+      document.getElementById("urun-stok-mevcut-deger").textContent = formatPara(ozet.maliyetDegeri);
+      document.getElementById("urun-stok-kritik").textContent = String(ozet.kritik);
+      document.getElementById("urun-stok-hizmet").textContent = String(ozet.hizmet);
+      const arama = String(document.getElementById("urun-stok-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
+      const gorunum = document.getElementById("urun-stok-gorunum")?.value || "kartlar";
+      if (gorunum === "hareketler") {
+        const liste = hareketler.filter(hareket=>{
+          const urun = urunler.find(kart=>kart.id === hareket.urunId);
+          return !arama || [urun?.kod,urun?.ad,hareket.belgeNo,hareket.aciklama].join(" ").toLocaleUpperCase("tr-TR").includes(arama);
+        });
+        tablo.innerHTML = liste.length ? `<table class="urun-stok-tablo"><thead><tr><th>TARİH</th><th>KOD</th><th>ÜRÜN</th><th>HAREKET</th><th>MİKTAR</th><th>BELGE NO</th><th>AÇIKLAMA</th><th>DURUM</th>${yoneticiMi() ? "<th>İŞLEM</th>" : ""}</tr></thead><tbody>${liste.map(hareket=>{
+          const urun = urunler.find(kart=>kart.id === hareket.urunId);
+          const iptal = hareket.durum === "İptal";
+          return `<tr class="${iptal ? "iptal" : ""}"><td>${htmlGuvenli(formatTarih(tarihOlusturYerel(hareket.tarih)))}</td><td><span class="urun-kod">${htmlGuvenli(urun?.kod || "—")}</span></td><td>${htmlGuvenli(urun?.ad || "Kart bulunamadı")}</td><td><span class="urun-tur-rozet ${hareket.tur}">${hareket.tur === "giris" ? "Giriş" : "Çıkış"}</span></td><td><strong>${hareket.tur === "giris" ? "+" : "−"}${stokMiktariniFormatla(hareket.miktar)}</strong> ${htmlGuvenli(urun?.birim || "")}</td><td>${htmlGuvenli(hareket.belgeNo || "—")}</td><td>${htmlGuvenli(hareket.aciklama || "—")}</td><td>${htmlGuvenli(hareket.durum)}</td>${yoneticiMi() ? `<td><div class="urun-stok-islem"><button type="button" onclick="stokHareketDurumunuDegistir('${htmlGuvenli(hareket.id)}')" title="${iptal ? "Yeniden etkinleştir" : "İptal et"}"><i class="fa-solid fa-${iptal ? "rotate-left" : "ban"}" aria-hidden="true"></i></button></div></td>` : ""}</tr>`;
+        }).join("")}</tbody></table>` : '<div class="urun-stok-bos"><i class="fa-solid fa-right-left" aria-hidden="true"></i><br>Filtreye uygun stok hareketi bulunamadı.</div>';
+        return;
+      }
+      const kartlar = urunler.filter(kart=>{
+        const stok = ozet.stoklar.get(kart.id) || 0;
+        if (gorunum === "kritik" && !(kart.durum === "Aktif" && kart.tur === "urun" && stok <= kart.kritikStok)) return false;
+        return !arama || [kart.kod,kart.ad,kart.tur,kart.birim].join(" ").toLocaleUpperCase("tr-TR").includes(arama);
+      });
+      tablo.innerHTML = kartlar.length ? `<table class="urun-stok-tablo"><thead><tr><th>KOD</th><th>ÜRÜN / HİZMET</th><th>TÜR</th><th>BİRİM</th><th>ALIŞ</th><th>SATIŞ</th><th>KDV</th><th>MEVCUT</th><th>KRİTİK</th><th>DURUM</th>${yoneticiMi() ? "<th>İŞLEM</th>" : ""}</tr></thead><tbody>${kartlar.map(kart=>{
+        const stok = ozet.stoklar.get(kart.id) || 0;
+        const kritik = kart.tur === "urun" && kart.durum === "Aktif" && stok <= kart.kritikStok;
+        return `<tr class="${kart.durum === "Pasif" ? "pasif" : ""}"><td><span class="urun-kod">${htmlGuvenli(kart.kod)}</span></td><td><span class="urun-ad">${htmlGuvenli(kart.ad)}</span></td><td><span class="urun-tur-rozet ${kart.tur}">${kart.tur === "urun" ? "Ürün" : "Hizmet"}</span></td><td>${htmlGuvenli(kart.birim)}</td><td>${formatPara(kart.alisFiyati)}</td><td>${formatPara(kart.satisFiyati)}</td><td>%${kart.kdvOrani}</td><td><span class="stok-miktar ${kritik ? "kritik" : ""}">${kart.tur === "urun" ? `${stokMiktariniFormatla(stok)} ${htmlGuvenli(kart.birim)}` : "—"}</span></td><td>${kart.tur === "urun" ? `${stokMiktariniFormatla(kart.kritikStok)} ${htmlGuvenli(kart.birim)}` : "—"}</td><td><span class="stok-durum-rozet ${kart.durum === "Aktif" ? "aktif" : "pasif"}">${htmlGuvenli(kart.durum)}</span></td>${yoneticiMi() ? `<td><div class="urun-stok-islem"><button type="button" onclick="urunKartFormunuAc('${htmlGuvenli(kart.id)}')" title="Kartı düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button type="button" onclick="urunKartDurumunuDegistir('${htmlGuvenli(kart.id)}')" title="${kart.durum === "Aktif" ? "Pasife al" : "Aktifleştir"}"><i class="fa-solid fa-${kart.durum === "Aktif" ? "pause" : "play"}" aria-hidden="true"></i></button></div></td>` : ""}</tr>`;
+      }).join("")}</tbody></table>` : `<div class="urun-stok-bos"><i class="fa-solid fa-box-open" aria-hidden="true"></i><br>${urunler.length ? "Filtreye uygun kart bulunamadı." : "Henüz ürün veya hizmet kartı oluşturulmadı."}</div>`;
+    }
+
+    function urunStokMerkeziniAc(gorunum="kartlar") {
+      urunStokFormlariniKapat();
+      const arama = document.getElementById("urun-stok-arama");
+      const secim = document.getElementById("urun-stok-gorunum");
+      if (arama) arama.value = "";
+      if (secim) secim.value = ["kartlar","kritik","hareketler"].includes(gorunum) ? gorunum : "kartlar";
+      urunStokMerkeziniGoster();
+      document.getElementById("urun-stok-overlay")?.classList.add("aktif");
+    }
+
+    function urunStokMerkeziniKapat() {
+      urunStokFormlariniKapat();
+      document.getElementById("urun-stok-overlay")?.classList.remove("aktif");
+    }
+
     // ── MODÜL MENÜSÜ ────────────────────────────────────────────────────────
     function modulPaneliniAc() {
       document.body.classList.add("modul-panel-acik");
@@ -8696,6 +9271,9 @@
         case "hizli-istatistikler": modulHedefineGit(".hizli-panel"); break;
         case "yeni-alis": yeniFaturayiTuruneGoreAc("alis"); break;
         case "yeni-satis": yeniFaturayiTuruneGoreAc("satis"); break;
+        case "urun-kartlari": urunStokMerkeziniAc("kartlar"); break;
+        case "stok-hareketleri": urunStokMerkeziniAc("hareketler"); break;
+        case "kritik-stok": urunStokMerkeziniAc("kritik"); break;
         case "cari-hesaplar": cariHesaplariAc(); break;
         case "cari-islem": odemeYonetiminiAc(); break;
         case "finans-hesaplari": finansHesaplariniAc(); break;
@@ -8755,6 +9333,9 @@
       document.getElementById("cari-hesaplar-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cari-hesaplar-overlay") cariHesaplariKapat();
       });
+      document.getElementById("urun-stok-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "urun-stok-overlay") urunStokMerkeziniKapat();
+      });
       document.getElementById("finans-hesaplari-overlay")?.addEventListener("click", e => {
         if (e.target.id === "finans-hesaplari-overlay") finansHesaplariniKapat();
       });
@@ -8795,6 +9376,7 @@
           topluSilmeKapat();
           odemeYonetiminiKapat();
           cariHesaplariKapat();
+          urunStokMerkeziniKapat();
           finansHesaplariniKapat();
           hesapTransferleriniKapat();
           hesapHareketDokumunuKapat();
