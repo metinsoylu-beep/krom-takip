@@ -19,6 +19,7 @@ const context = {
   String,
   Map,
   Set,
+  cariAdiAnahtari: cari => String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ",
   tutarSayiyaCevir,
   tarihOlusturYerel: deger => {
     const [yil, ay, gun] = String(deger || "").split("-").map(Number);
@@ -107,11 +108,42 @@ assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-5.*vade tarihi veriliş t
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /CHK-4.*Firma D.*Firma F/i, "Aynı çek numarasının bağlı olduğu cariler açıklanmalı");
 assert.match(cekTarihiRaporu.mesajlar.join("\n"), /Firma G.*çek numarası ve banka eksik/i, "Eksik çek bilgileri açıklanmalı");
 
+const cariDenetimFaturalari = [
+  { id:21, cari:"", no:"F-21", tarih:"2026-09-01", vadeGun:30, tutar:100 },
+  { id:22, cari:"Kartsız Ltd", no:"F-22", tarih:"2026-09-01", vadeGun:30, tutar:200 },
+  { id:23, cari:"Kartlı Ltd", no:"F-23", tarih:"2026-09-01", vadeGun:30, tutar:300 }
+];
+const cariDenetimRaporu = context.veriKontrolRaporuOlustur(
+  cariDenetimFaturalari,
+  cariDenetimFaturalari,
+  null,
+  [
+    { id:"hareket-eksik", cari:"Belirtilmedi", tarih:"2026-09-01", tutar:25, durum:"Aktif" },
+    { id:"hareket-kartsiz", cari:"Kartsız Ltd", tarih:"2026-09-01", tutar:25, durum:"Aktif" }
+  ],
+  [
+    { id:"cek-eksik", cari:"", cekNo:"CHK-21", banka:"Test Bank", tarih:"2026-09-01", vadeTarihi:"2026-10-01", tutar:50, durum:"Verildi" }
+  ],
+  new Date(2026, 8, 3, 12, 0, 0, 0),
+  [
+    { id:"gecici-kart", cari:"Kartsız Ltd", kayitZamani:"", guncellemeZamani:"" },
+    { id:"gercek-kart", cari:"Kartlı Ltd", kayitZamani:"2026-09-01T10:00:00.000Z", guncellemeZamani:"" }
+  ]
+);
+assert.equal(cariDenetimRaporu.eksikCariSayisi, 3, "Fatura, ödeme ve çekte eksik cari ayrı ayrı bulunmalı");
+assert.equal(cariDenetimRaporu.kartsizCariSayisi, 1, "Geçici kartı olan cari tamamlanmamış sayılmalı");
+assert.match(cariDenetimRaporu.mesajlar.join("\n"), /Kartsız Ltd.*2 kayıtta.*tamamlanmış cari kartı yok/i, "Kartsız cari kullanımı tek uyarıda gruplanmalı");
+assert.equal(cariDenetimRaporu.duzeltilebilirSorunlar.filter(sorun => sorun.islem === "cari-kart").length, 1, "Kartsız cari için kart tamamlama eylemi sunulmalı");
+
 assert.match(index, /id="kontrol-cek-tarihi"/, "Çek tarihleri kontrol sayacı bulunmalı");
+assert.match(index, /id="kontrol-eksik-cari"/, "Eksik cari kontrol sayacı bulunmalı");
+assert.match(index, /id="kontrol-kartsiz-cari"/, "Kartsız cari kontrol sayacı bulunmalı");
 assert.match(index, /id="kontrol-eksik-cek"/, "Eksik çek bilgisi kontrol sayacı bulunmalı");
 assert.match(index, /id="kontrol-ayni-cek-no"/, "Aynı çek numarası kontrol sayacı bulunmalı");
 assert.match(index, /className = "veri-kontrol-duzelt yalnizca-yonetici"/, "Çek tarihi uyarısında yönetici düzeltme düğmesi bulunmalı");
 assert.match(index, /function veriKontrolCekiniDuzelt\(kimlik\)/, "Düzeltme düğmesi ilgili çek formunu açmalı");
+assert.match(index, /function veriKontrolKaydiniDuzelt\(kaynak, kimlik\)/, "Eksik carili kayıt doğrudan düzenlenebilmeli");
+assert.match(index, /function veriKontrolCariKartiniTamamla\(cari\)/, "Kartsız cari doğrudan kart formuna yönlenmeli");
 assert.match(index, /cariHareketDuzenlemeyiBaslat\("cek", kimlik\)/, "Sorunlu çek doğrudan düzenlenebilmeli");
 assert.match(index, /kayit\.durum !== "İptal"/, "Bekleyen ve ödenen sorunlu çekler düzeltmeye açılabilmeli");
 assert.match(index, /Bu merkez yalnızca denetler; hiçbir kaydı otomatik değiştirmez\./);

@@ -1986,6 +1986,8 @@
             <div class="veri-kontrol-detay" id="veri-kontrol-detay" hidden>
               <div class="veri-kontrol-sayaclar">
                 <div class="veri-kontrol-sayac" id="kontrol-gecersiz-kart"><span>HATALI / EKSİK</span><strong id="kontrol-gecersiz">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-eksik-cari-kart"><span>CARİSİ EKSİK</span><strong id="kontrol-eksik-cari">0</strong></div>
+                <div class="veri-kontrol-sayac" id="kontrol-kartsiz-cari-kart"><span>KARTSIZ CARİ</span><strong id="kontrol-kartsiz-cari">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-yinelenen-kart"><span>YİNELENEN KAYIT</span><strong id="kontrol-yinelenen">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-no-kart"><span>AYNI FATURA NO</span><strong id="kontrol-ayni-no">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-eksik-cek-kart"><span>EKSİK ÇEK BİLGİSİ</span><strong id="kontrol-eksik-cek">0</strong></div>
@@ -3068,12 +3070,19 @@
       return temizNo ? `${temizCari}|${temizNo}` : "";
     }
 
-    function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null, hareketListesi=null, cekListesi=null, referans=new Date()) {
+    function cariAdiEksikMi(cari) {
+      const temiz = String(cari || "").trim();
+      return !temiz || cariAdiAnahtari(temiz) === "BELİRTİLMEDİ";
+    }
+
+    function veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri=null, hareketListesi=null, cekListesi=null, referans=new Date(), cariKartListesi=null) {
       const hamKayitlar = Array.isArray(hamListe) ? hamListe : [];
       const gecerliKayitlar = Array.isArray(liste) ? liste : [];
       const hareketler = Array.isArray(hareketListesi) ? hareketListesi : cariHareketleriYukle();
       const cekler = Array.isArray(cekListesi) ? cekListesi : cekleriYukle();
       const gecersizAciklamalar = [];
+      const eksikCariSorunlari = [];
+      const kartsizCariSorunlari = [];
       const eksikCekBilgisiSorunlari = [];
       const cekTarihiSorunlari = [];
       const ayniCekNumarasiSorunlari = [];
@@ -3081,6 +3090,41 @@
       const gorulenId = new Map();
       const gorulenImza = new Map();
       const numaraGruplari = new Map();
+
+      if (Array.isArray(cariKartListesi)) {
+        const gercekCariKartlari = new Set(cariKartListesi
+          .filter(kart => kart && (
+            kart.kayitZamani || kart.guncellemeZamani || kart.vergiNo || kart.telefon || kart.eposta ||
+            kart.acilisTarihi || tutarSayiyaCevir(kart.acilisBorc) > 0 || tutarSayiyaCevir(kart.acilisAlacak) > 0
+          ))
+          .map(kart => cariAdiAnahtari(kart.cari)));
+        const cariKullanimlari = new Map();
+        const cariKaydiniDenetle = (kaynak, kayit, etiket) => {
+          if (!kayit || kayit.durum === "İptal") return;
+          const cari = String(kayit.cari || "").trim();
+          if (cariAdiEksikMi(cari)) {
+            eksikCariSorunlari.push({
+              kaynak,
+              id:kayit.id,
+              metin:`“${String(etiket || "Kayıt").slice(0,60)}” kaydında cari/firma belirtilmemiş`
+            });
+            return;
+          }
+          const anahtar = cariAdiAnahtari(cari);
+          if (gercekCariKartlari.has(anahtar)) return;
+          const kullanim = cariKullanimlari.get(anahtar) || { cari, adet:0 };
+          kullanim.adet += 1;
+          cariKullanimlari.set(anahtar, kullanim);
+        };
+
+        gecerliKayitlar.forEach(inv => cariKaydiniDenetle("fatura", inv, inv.no || "Numarasız fatura"));
+        hareketler.forEach(hareket => cariKaydiniDenetle("hareket", hareket, hareket.referans || hareket.aciklama || "Ödeme"));
+        cekler.forEach(cek => cariKaydiniDenetle("cek", cek, cek.cekNo || "Numarasız çek"));
+        cariKullanimlari.forEach(kullanim => kartsizCariSorunlari.push({
+          cari:kullanim.cari,
+          metin:`“${kullanim.cari.slice(0,60)}” ${kullanim.adet} kayıtta kullanılıyor ancak tamamlanmış cari kartı yok`
+        }));
+      }
 
       hamKayitlar.forEach((ham, sira) => {
         const satir = sira + 1;
@@ -3199,6 +3243,8 @@
          ozetMetinleri.kalan === beklenenOzet.kalan);
 
       const mesajlar = gecersizAciklamalar.map(metin => `Kontrol gerekli: ${metin}`);
+      eksikCariSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
+      kartsizCariSorunlari.forEach(sorun => mesajlar.push(`Kontrol gerekli: ${sorun.metin}`));
       if (yinelenenSatirlar.size) {
         mesajlar.push(`${yinelenenSatirlar.size} yinelenen kayıt tespit edildi. Kayıtlar otomatik değiştirilmedi.`);
       }
@@ -3214,11 +3260,15 @@
         mesajlar.push("Tablo toplamları ile özet kartları uyuşmuyor. Sayfayı yenileyip tekrar kontrol edin.");
       }
 
-      const uyariSayisi = gecersizAciklamalar.length + yinelenenSatirlar.size + eksikCekBilgisiSorunlari.length +
+      const uyariSayisi = gecersizAciklamalar.length + eksikCariSorunlari.length + kartsizCariSorunlari.length + yinelenenSatirlar.size + eksikCekBilgisiSorunlari.length +
         ayniNumaraGruplari.length + ayniCekNumarasiSorunlari.length + cekTarihiSorunlari.length + (toplamlarDogru ? 0 : 1);
       return {
         kayitSayisi: gecerliKayitlar.length,
         gecersizSayisi: gecersizAciklamalar.length,
+        eksikCariSayisi: eksikCariSorunlari.length,
+        eksikCariSorunlari,
+        kartsizCariSayisi:kartsizCariSorunlari.length,
+        kartsizCariSorunlari,
         yinelenenSayisi: yinelenenSatirlar.size,
         ayniNumaraSayisi: ayniNumaraGruplari.length,
         eksikCekBilgisiSayisi: eksikCekBilgisiSorunlari.length,
@@ -3228,6 +3278,12 @@
         cekTarihiSorunuSayisi: cekTarihiSorunlari.length,
         cekTarihiSorunlari,
         cekKayitSorunlari:[...eksikCekBilgisiSorunlari, ...ayniCekNumarasiSorunlari, ...cekTarihiSorunlari],
+        duzeltilebilirSorunlar:[
+          ...eksikCariSorunlari.map(sorun => ({ ...sorun, islem:"kayit", mesaj:`Kontrol gerekli: ${sorun.metin}` })),
+          ...kartsizCariSorunlari.map(sorun => ({ ...sorun, islem:"cari-kart", mesaj:`Kontrol gerekli: ${sorun.metin}` })),
+          ...[...eksikCekBilgisiSorunlari, ...ayniCekNumarasiSorunlari, ...cekTarihiSorunlari]
+            .map(sorun => ({ ...sorun, kaynak:"cek", islem:"kayit", mesaj:`Kontrol gerekli: ${sorun.metin}` }))
+        ],
         toplamlarDogru,
         uyariSayisi,
         mesajlar
@@ -3245,7 +3301,7 @@
         odenen: document.getElementById("oz-odenen")?.textContent || "",
         kalan: document.getElementById("oz-kalan")?.textContent || ""
       };
-      const rapor = veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri);
+      const rapor = veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri, null, null, new Date(), cariKartlariniYukle());
       const uyariVar = rapor.uyariSayisi > 0;
       const panel = document.getElementById("veri-kontrol-panel");
       panel.classList.toggle("uyari", uyariVar);
@@ -3260,6 +3316,8 @@
         : "SAĞLIKLI";
 
       veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-eksik-cari-kart", "kontrol-eksik-cari", rapor.eksikCariSayisi, rapor.eksikCariSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-kartsiz-cari-kart", "kontrol-kartsiz-cari", rapor.kartsizCariSayisi, rapor.kartsizCariSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-yinelenen-kart", "kontrol-yinelenen", rapor.yinelenenSayisi, rapor.yinelenenSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-no-kart", "kontrol-ayni-no", rapor.ayniNumaraSayisi, rapor.ayniNumaraSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-eksik-cek-kart", "kontrol-eksik-cek", rapor.eksikCekBilgisiSayisi, rapor.eksikCekBilgisiSayisi > 0);
@@ -3269,7 +3327,8 @@
 
       const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
       sorunListesi.replaceChildren();
-      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Fatura numaraları, çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
+      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
+      const kullanilanDuzeltilebilirler = new Set();
       gosterilecekler.forEach(metin => {
         const satir = document.createElement("li");
         if (!uyariVar) satir.className = "basarili";
@@ -3279,14 +3338,23 @@
         const yazi = document.createElement("span");
         yazi.textContent = metin;
         satir.append(ikon, yazi);
-        const cekSorunu = rapor.cekKayitSorunlari.find(sorun => `Kontrol gerekli: ${sorun.metin}` === metin);
-        if (cekSorunu && yoneticiMi()) {
+        const duzeltilebilirSira = rapor.duzeltilebilirSorunlar.findIndex((sorun, sira) =>
+          !kullanilanDuzeltilebilirler.has(sira) && sorun.mesaj === metin
+        );
+        const duzeltilebilirSorun = duzeltilebilirSira >= 0 ? rapor.duzeltilebilirSorunlar[duzeltilebilirSira] : null;
+        if (duzeltilebilirSorun && yoneticiMi()) {
+          kullanilanDuzeltilebilirler.add(duzeltilebilirSira);
           const duzelt = document.createElement("button");
           duzelt.type = "button";
           duzelt.className = "veri-kontrol-duzelt yalnizca-yonetici";
-          duzelt.innerHTML = '<i class="fa-solid fa-pen" aria-hidden="true"></i> Düzelt';
-          duzelt.setAttribute("aria-label", `${cekSorunu.metin} kaydını düzelt`);
-          duzelt.addEventListener("click", () => veriKontrolCekiniDuzelt(cekSorunu.id));
+          duzelt.innerHTML = duzeltilebilirSorun.islem === "cari-kart"
+            ? '<i class="fa-solid fa-address-card" aria-hidden="true"></i> Kartı Tamamla'
+            : '<i class="fa-solid fa-pen" aria-hidden="true"></i> Düzelt';
+          duzelt.setAttribute("aria-label", `${duzeltilebilirSorun.metin} sorununu düzelt`);
+          duzelt.addEventListener("click", () => {
+            if (duzeltilebilirSorun.islem === "cari-kart") veriKontrolCariKartiniTamamla(duzeltilebilirSorun.cari);
+            else veriKontrolKaydiniDuzelt(duzeltilebilirSorun.kaynak, duzeltilebilirSorun.id);
+          });
           satir.appendChild(duzelt);
         }
         sorunListesi.appendChild(satir);
@@ -3320,6 +3388,30 @@
         return;
       }
       cariHareketDuzenlemeyiBaslat("cek", kimlik);
+    }
+
+    function veriKontrolKaydiniDuzelt(kaynak, kimlik) {
+      if (!yoneticiGerekli()) return;
+      if (kaynak === "cek") {
+        veriKontrolCekiniDuzelt(kimlik);
+        return;
+      }
+      if (kaynak === "hareket") {
+        const hareket = cariHareketleriYukle().find(kayit => String(kayit.id) === String(kimlik) && kayit.durum !== "İptal");
+        if (hareket) cariHareketDuzenlemeyiBaslat("hareket", hareket.id);
+        else syncGoster("Ödeme kaydı değişmiş veya artık bulunamıyor", "#f59e0b");
+        return;
+      }
+      const fatura = faturaYukle().find(kayit => String(kayit.id) === String(kimlik));
+      if (fatura) duzenleAc(fatura.id);
+      else syncGoster("Fatura kaydı değişmiş veya artık bulunamıyor", "#f59e0b");
+    }
+
+    function veriKontrolCariKartiniTamamla(cari) {
+      if (!yoneticiGerekli()) return;
+      const kart = cariKartlariniYukle().find(kayit => cariAdiAnahtari(kayit.cari) === cariAdiAnahtari(cari));
+      cariHesaplariAc();
+      cariKartFormunuAc(kart?.id || "", cari);
     }
 
     function depolamaSayisiniFormatla(deger) {
@@ -5679,11 +5771,11 @@
       }
     }
 
-    function cariKartFormunuAc(kimlik="") {
+    function cariKartFormunuAc(kimlik="", varsayilanCari="") {
       if (!yoneticiGerekli()) return;
       const kart = cariKartlariniYukle().find(item=>item.id===kimlik) || null;
       document.getElementById("cari-kart-id").value = kart?.id || "";
-      document.getElementById("cari-kart-adi").value = kart?.cari || "";
+      document.getElementById("cari-kart-adi").value = kart?.cari || String(varsayilanCari || "").trim();
       document.getElementById("cari-kart-vergi").value = kart?.vergiNo || "";
       document.getElementById("cari-kart-telefon").value = kart?.telefon || "";
       document.getElementById("cari-kart-eposta").value = kart?.eposta || "";
