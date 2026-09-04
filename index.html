@@ -856,10 +856,12 @@
     .cakisma-yedegi-satir small { display: block; margin-top: 4px; color: #8193a6; font-size: 8px; line-height: 1.4; }
     .cakisma-yedegi-surum strong { color: #f6c95c; }
     .cakisma-yedegi-islemler { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
-    .cakisma-yedegi-indir, .cakisma-yedegi-sil {
+    .cakisma-yedegi-karsilastir, .cakisma-yedegi-indir, .cakisma-yedegi-sil {
       min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       padding: 7px 10px; border-radius: 7px; font: 700 9px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
     }
+    .cakisma-yedegi-karsilastir { color: #f6c95c; border: 1px solid #f3be3e66; background: #f3be3e12; }
+    .cakisma-yedegi-karsilastir:hover { background: #f3be3e24; }
     .cakisma-yedegi-indir { color: #93c5fd; border: 1px solid #60a5fa66; background: #60a5fa12; }
     .cakisma-yedegi-indir:hover { background: #60a5fa24; }
     .cakisma-yedegi-sil { color: #ff7a85; border: 1px solid #ff526055; background: #ff526010; }
@@ -2580,6 +2582,7 @@
           <div class="cakisma-yedegi-surum"><span>SÜRÜM ÇAKIŞMASI</span><strong>Cihaz ${htmlGuvenli(String(yedek.cihazSurumu ?? "—"))} → Bulut ${htmlGuvenli(String(yedek.bulutSurumu ?? "—"))}</strong><small>${htmlGuvenli(yedek.neden || "Başka cihazda daha yeni veri bulundu")}</small></div>
           <div class="cakisma-yedegi-icerik"><span>KOPYA İÇERİĞİ</span><strong>${sayilar.fatura} fatura · ${sayilar.cari} cari · ${sayilar.odeme} ödeme · ${sayilar.cek} çek</strong><small>Geri yükleme öncesinde fark analizi gösterilir.</small></div>
           <div class="cakisma-yedegi-islemler">
+            <button class="cakisma-yedegi-karsilastir" type="button" onclick="cakismaYedeginiKarsilastir(${sira})"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Karşılaştır</button>
             <button class="cakisma-yedegi-indir" type="button" onclick="cakismaYedeginiIndir(${sira})"><i class="fa-solid fa-download" aria-hidden="true"></i> İndir</button>
             <button class="cakisma-yedegi-sil" type="button" onclick="cakismaYedeginiSil(${sira})"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Sil</button>
           </div>
@@ -2595,6 +2598,49 @@
 
     function cakismaYedekleriniKapat() {
       document.getElementById("cakisma-yedekleri-overlay")?.classList.remove("aktif");
+    }
+
+    async function cakismaYedeginiKarsilastir(sira) {
+      if (!yoneticiGerekli()) return false;
+      const guvenliSira = Number(sira);
+      const yedek = cakismaYedekleriniOku()[guvenliSira];
+      if (!Number.isInteger(guvenliSira) || guvenliSira < 0 || !yedek) {
+        syncGoster("Karşılaştırılacak eşitleme güvenlik kopyası bulunamadı", "#f59e0b");
+        return false;
+      }
+
+      const mevcutDurum = uygulamaDurumuOlustur();
+      let yereldeUygulandi = false;
+      try {
+        const dogrulanmis = jsonYedekVerisiniDogrula({
+          format:"arlinoks-merkezi-yedek-v1",
+          kayitZamani:yedek.kayitZamani,
+          revision:Number(yedek.cihazSurumu) || 0,
+          durum:yedek.yerelDurum
+        }, "Eşitleme güvenlik kopyası");
+        const tarih = bulutYedegiTarihiniFormatla(yedek.kayitZamani);
+        cakismaYedekleriniKapat();
+        const onaylandi = await yedekGeriYuklemeOnayiAl(dogrulanmis.durum, `${tarih} tarihli eşitleme kopyası`);
+        if (!onaylandi) {
+          cakismaYedekleriniAc();
+          return false;
+        }
+
+        otomatikYedekOlustur(mevcutDurum.items, "Eşitleme kopyası geri yüklenmeden önce");
+        const geriYuklenenDurum = uygulamaDurumunuYereldeUygula(dogrulanmis.durum);
+        yereldeUygulandi = true;
+        const kaydedildi = YEREL_GELISTIRME
+          ? true
+          : await bulutKaydiniGonder(geriYuklenenDurum, { auditAction:"Eşitleme kurtarma kopyası geri yüklendi" });
+        if (!kaydedildi) throw new Error("Eşitleme kopyası geri yüklenemedi; mevcut veriler korundu.");
+        syncGoster(`${tarih} tarihli eşitleme kopyası geri yüklendi · Güvenlik kopyası korunuyor`, "#4ade80");
+        return true;
+      } catch (hata) {
+        if (yereldeUygulandi) uygulamaDurumunuYereldeUygula(mevcutDurum);
+        alert(hata?.message || "Eşitleme güvenlik kopyası karşılaştırılamadı.");
+        cakismaYedekleriniAc();
+        return false;
+      }
     }
 
     function cakismaYedeginiSil(sira) {
