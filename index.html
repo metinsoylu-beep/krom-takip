@@ -985,6 +985,8 @@
     .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
     .veri-kontrol-sorunlar li.veri-kontrol-cakisma i { color: #ff6b77; }
     .veri-kontrol-sorunlar li.veri-kontrol-bekleyen.engelli i { color: #ff6b77; }
+    .veri-kontrol-sorunlar li.veri-kontrol-bekleyen.bellek-riski { color: #fecaca; }
+    .veri-kontrol-sorunlar li.veri-kontrol-bekleyen.bellek-riski i { color: #ef4444; }
     .veri-kontrol-sorunlar li > span { flex: 1; min-width: 0; }
     .veri-kontrol-duzelt {
       flex: 0 0 auto; min-height: 26px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px;
@@ -2222,6 +2224,7 @@
     let sekmelerArasiEsitlemeZamanlayici = null;
     let bulutKaydiCalisiyor = false;
     let bulutSonKuyrukHatasi = null;
+    let bekleyenBulutKaydiKalici = true;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
     let cariHareketKayitKilidi = false;
@@ -2275,6 +2278,14 @@
       });
     }
 
+    function bekleyenBulutKaydiCikisUyarisi(olay) {
+      if (!bekleyenBulutKaydi || bekleyenBulutKaydiKalici) return;
+      olay.preventDefault();
+      olay.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", bekleyenBulutKaydiCikisUyarisi);
+
     window.addEventListener("online", () => {
       bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
       if (bekleyenBulutKaydi && yoneticiMi()) {
@@ -2321,11 +2332,15 @@
           try { digerSekmeninSildigiKayit = bekleyenBulutKaydiniDogrula(JSON.parse(olay.oldValue || "null")); } catch (_) {}
           if (!bulutKaydiCalisiyor && (!bekleyenBulutKaydi || !digerSekmeninSildigiKayit || bekleyenBulutKaydi.id === digerSekmeninSildigiKayit.id)) {
             bekleyenBulutKaydi = null;
+            bekleyenBulutKaydiKalici = true;
           }
           bekleyenBulutKontrolunuGuncelle();
           return;
         }
-        if (!bekleyenBulutKaydi) bekleyenBulutKaydi = digerSekmeninKaydi;
+        if (!bekleyenBulutKaydi) {
+          bekleyenBulutKaydi = digerSekmeninKaydi;
+          bekleyenBulutKaydiKalici = true;
+        }
         bekleyenBulutKontrolunuGuncelle();
         if (yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
           if (bekleyenBulutKaydiEngelliMi(digerSekmeninKaydi)) {
@@ -2856,11 +2871,15 @@
     function bekleyenBulutKaydiniSakla(kayit) {
       const guvenliKayit = bekleyenBulutKaydiniDogrula(kayit);
       if (!guvenliKayit) return false;
+      const bellekEslesiyor = !bekleyenBulutKaydi || bekleyenBulutKaydi.id === guvenliKayit.id;
       try {
         localStorage.setItem(BULUT_BEKLEYEN_ANAHTAR, JSON.stringify(guvenliKayit));
+        if (bellekEslesiyor) bekleyenBulutKaydiKalici = true;
         bekleyenBulutKontrolunuGuncelle();
         return true;
       } catch {
+        if (bellekEslesiyor) bekleyenBulutKaydiKalici = false;
+        bekleyenBulutKontrolunuGuncelle();
         return false;
       }
     }
@@ -2886,7 +2905,10 @@
       const bellekEslesiyor = Boolean(bellekKaydi && (!kimlik || bellekKaydi.id === kimlik));
       const depoEslesiyor = Boolean(depoKaydi && (!kimlik || depoKaydi.id === kimlik));
       if (kimlik && !bellekEslesiyor && !depoEslesiyor) return false;
-      if (!kimlik || bellekEslesiyor) bekleyenBulutKaydi = null;
+      if (!kimlik || bellekEslesiyor) {
+        bekleyenBulutKaydi = null;
+        bekleyenBulutKaydiKalici = true;
+      }
       if (!kimlik || depoEslesiyor) localStorage.removeItem(BULUT_BEKLEYEN_ANAHTAR);
       clearTimeout(bulutTekrarDenemeZamanlayici);
       bekleyenBulutKontrolunuGuncelle();
@@ -4080,15 +4102,18 @@
       const kullanilanDuzeltilebilirler = new Set();
       if (bekleyenKayit) {
         const gonderimEngelli = bekleyenBulutKaydiEngelliMi(bekleyenKayit);
+        const yalnizcaBellekte = !bekleyenBulutKaydiKalici;
         const satir = document.createElement("li");
-        satir.className = `veri-kontrol-bekleyen${gonderimEngelli ? " engelli" : ""}`;
+        satir.className = `veri-kontrol-bekleyen${gonderimEngelli ? " engelli" : ""}${yalnizcaBellekte ? " bellek-riski" : ""}`;
         const ikon = document.createElement("i");
-        ikon.className = gonderimEngelli ? "fa-solid fa-circle-exclamation" : "fa-solid fa-cloud-arrow-up";
+        ikon.className = yalnizcaBellekte || gonderimEngelli ? "fa-solid fa-circle-exclamation" : "fa-solid fa-cloud-arrow-up";
         ikon.setAttribute("aria-hidden", "true");
         const yazi = document.createElement("span");
-        yazi.textContent = gonderimEngelli
-          ? `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} kullanıcı kontrolü bekliyor. Neden: ${bekleyenBulutEngelMesaji(bekleyenKayit)} İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`
-          : `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} buluta gönderilmeyi bekliyor. İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`;
+        yazi.textContent = yalnizcaBellekte
+          ? `Dikkat: Bekleyen değişiklik yalnızca bu açık sayfada tutuluyor. Sayfayı kapatmadan gönderin veya güvenlik kopyasını indirin. İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`
+          : gonderimEngelli
+            ? `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} kullanıcı kontrolü bekliyor. Neden: ${bekleyenBulutEngelMesaji(bekleyenKayit)} İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`
+            : `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} buluta gönderilmeyi bekliyor. İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`;
         const islemler = document.createElement("div");
         islemler.className = "veri-kontrol-islemler";
         const gonder = document.createElement("button");
