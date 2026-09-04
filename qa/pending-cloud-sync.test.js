@@ -9,16 +9,41 @@ assert.ok(baslangic >= 0 && bitis > baslangic, "Kalıcı bulut kuyruğu işlevle
 
 const depo = new Map();
 let sira = 0;
+let indirilenBlob = null;
+let indirmeTiklandi = false;
+class TestBlob {
+  constructor(parcalar, secenekler={}) {
+    this.parcalar = parcalar;
+    this.type = secenekler.type || "";
+    this.size = parcalar.map(parca => String(parca)).join("").length;
+  }
+}
+const baglanti = { href:"", download:"", click:() => { indirmeTiklandi = true; }, remove() {} };
 const context = {
   Date,
   JSON,
   Number,
   String,
   Set,
+  Array,
+  Blob:TestBlob,
   BULUT_BEKLEYEN_ANAHTAR:"bekleyen-bulut-kaydi",
   bulutTekrarDenemeZamanlayici:null,
   bekleyenBulutKaydi:null,
   istekKimligiOlustur:() => `istek-${++sira}`,
+  yoneticiGerekli:() => true,
+  jsonYedekKontrolKodu:() => "B1C2D3E4",
+  oturumKullanici:{ email:"yonetici@example.com" },
+  syncGoster() {},
+  URL:{
+    createObjectURL:blob => { indirilenBlob = blob; return "blob:test"; },
+    revokeObjectURL() {}
+  },
+  document:{
+    getElementById:() => null,
+    createElement:etiket => { assert.equal(etiket, "a"); return baglanti; },
+    body:{ appendChild() {} }
+  },
   listeSurumImzasi:durum => JSON.stringify({
     items:durum?.items || [],
     cariHareketler:durum?.cariHareketler || [],
@@ -44,6 +69,14 @@ assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { ...yerelDurum, revisio
 assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { items:[], cariHareketler:[], cekler:[], cariler:[], revision:4 }), "gonder", "Bulut değişmediyse bekleyen kayıt yeniden gönderilmeli");
 assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { items:[], cariHareketler:[], cekler:[], cariler:[], revision:5 }), "cakisma", "Başka cihaz değişikliği varsa üzerine yazılmamalı");
 assert.equal(context.bekleyenBulutKaydiniDogrula({ ...bekleyen, baseRevision:null }).baseRevision, null, "Bilinmeyen sürüm yanlışlıkla sıfırıncı sürüm sayılmamalı");
+assert.equal(context.bekleyenBulutKaydiYasMetni(bekleyen, new Date("2026-09-04T12:15:00.000Z")), "2 saattir", "Bekleyen kaydın yaşı anlaşılır biçimde gösterilmeli");
+assert.equal(context.bekleyenBulutKaydiniIndir(), true, "Bekleyen bulut gönderimi JSON olarak indirilebilmeli");
+assert.equal(indirmeTiklandi, true, "Bekleyen gönderimin indirmesi başlatılmalı");
+assert.match(baglanti.download, /^arlinoks-bekleyen-gonderim-.*\.json$/, "İndirilen dosya bekleyen gönderim olarak adlandırılmalı");
+const indirilen = JSON.parse(indirilenBlob.parcalar.join(""));
+assert.equal(indirilen.format, "arlinoks-merkezi-yedek-v1", "Bekleyen gönderim mevcut güvenli geri yükleme biçimini kullanmalı");
+assert.equal(indirilen.durum.items[0].id, 1, "Bekleyen muhasebe durumu eksiksiz indirilmeli");
+assert.equal(indirilen.kontrol.kod, "B1C2D3E4", "İndirilen kopyada bütünlük kontrol kodu bulunmalı");
 assert.equal(context.bekleyenBulutKaydiniTemizle("baska-kayit"), false, "Yeni kuyruğu eski gönderim temizlememeli");
 assert.equal(context.bekleyenBulutKaydiniTemizle("kuyruk-1"), true, "Tamamlanan kuyruk güvenle temizlenmeli");
 assert.equal(depo.has("bekleyen-bulut-kaydi"), false);
@@ -52,6 +85,9 @@ assert.match(index, /window\.addEventListener\("online"/, "Bağlantı geri geldi
 assert.match(index, /setTimeout\(bulutKayitKuyrugunuCalistir, 30000\)/, "Geçici sunucu hataları kontrollü aralıkla yeniden denenmeli");
 assert.match(index, /bekleyenBulutKaydiniUzakDurumlaKontrolEt\(uzakDurum\)/, "Bulut verisi yereli ezmeden önce bekleyen kayıt kontrol edilmeli");
 assert.match(index, /Değişiklik bu cihazda güvenle bekliyor/, "Kullanıcı bekleyen kayıt hakkında bilgilendirilmeli");
+assert.match(index, /id="kontrol-bekleyen"/, "Veri Kontrol Merkezi bekleyen gönderim sayacını göstermeli");
+assert.match(index, /function bekleyenBulutKaydiniIndir\(\)/, "Bekleyen gönderim güvenlik kopyası olarak indirilebilmeli");
+assert.match(index, /Kopyayı İndir/, "Bekleyen gönderim için görünür indirme eylemi bulunmalı");
 
 const kuyrukBaslangici = index.indexOf("async function bulutKayitKuyrugunuCalistir");
 const kuyrukBitisi = index.indexOf("function buludaKaydet", kuyrukBaslangici);

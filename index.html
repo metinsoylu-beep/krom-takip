@@ -2095,6 +2095,7 @@
                 <div class="veri-kontrol-sayac" id="kontrol-eksik-cek-kart"><span>EKSİK ÇEK BİLGİSİ</span><strong id="kontrol-eksik-cek">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-cek-no-kart"><span>AYNI ÇEK NO</span><strong id="kontrol-ayni-cek-no">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK TARİHLERİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
+                <div class="veri-kontrol-sayac yalnizca-yonetici" id="kontrol-bekleyen-kart"><span>BEKLEYEN GÖNDERİM</span><strong id="kontrol-bekleyen">0</strong></div>
                 <div class="veri-kontrol-sayac yalnizca-yonetici" id="kontrol-cakisma-kart"><span>EŞİTLEME KOPYASI</span><strong id="kontrol-cakisma">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
               </div>
@@ -2305,9 +2306,11 @@
           if (!bulutKaydiCalisiyor && (!bekleyenBulutKaydi || !digerSekmeninSildigiKayit || bekleyenBulutKaydi.id === digerSekmeninSildigiKayit.id)) {
             bekleyenBulutKaydi = null;
           }
+          bekleyenBulutKontrolunuGuncelle();
           return;
         }
         if (!bekleyenBulutKaydi) bekleyenBulutKaydi = digerSekmeninKaydi;
+        bekleyenBulutKontrolunuGuncelle();
         if (yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
           clearTimeout(bulutTekrarDenemeZamanlayici);
           syncGoster("Başka sekmede bekleyen değişiklik algılandı · Buluta gönderiliyor…", "#60a5fa");
@@ -2726,11 +2729,73 @@
       }
     }
 
+    function bekleyenBulutKaydiYasMetni(kayit, simdi=new Date()) {
+      const tarih = new Date(kayit?.kayitZamani);
+      const simdiTarihi = simdi instanceof Date ? simdi : new Date(simdi);
+      if (Number.isNaN(tarih.getTime()) || Number.isNaN(simdiTarihi.getTime())) return "süresi bilinmiyor";
+      const dakika = Math.max(0, Math.floor((simdiTarihi.getTime() - tarih.getTime()) / 60000));
+      if (dakika < 1) return "az önce";
+      if (dakika < 60) return `${dakika} dakikadır`;
+      const saat = Math.floor(dakika / 60);
+      if (saat < 24) return `${saat} saattir`;
+      return `${Math.floor(saat / 24)} gündür`;
+    }
+
+    function bekleyenBulutKaydiniIndir() {
+      if (!yoneticiGerekli()) return false;
+      const kayit = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      if (!kayit?.durum) {
+        syncGoster("İndirilecek bekleyen bulut gönderimi bulunamadı", "#f59e0b");
+        return false;
+      }
+      const durumMetni = JSON.stringify(kayit.durum);
+      const tarih = new Date(kayit.kayitZamani);
+      const tarihMetni = Number.isNaN(tarih.getTime()) ? "tarihsiz" : tarih.toISOString().replace(/[:.]/g, "-");
+      const icerik = JSON.stringify({
+        format:"arlinoks-merkezi-yedek-v1",
+        yedekId:`bekleyen-${kayit.id}`,
+        kayitZamani:kayit.kayitZamani,
+        kullanici:oturumKullanici?.email || "bu-cihaz",
+        revision:Number(kayit.baseRevision) || 0,
+        aciklama:`Buluta gönderilmeyi bekleyen değişiklik · ${kayit.auditAction || "Veri değişikliği"}`,
+        kontrol:{
+          kod:jsonYedekKontrolKodu(durumMetni),
+          boyutBayt:new Blob([durumMetni], { type:"application/json" }).size,
+          kayitSayilari:{
+            fatura:Array.isArray(kayit.durum.items) ? kayit.durum.items.length : 0,
+            cariHareket:Array.isArray(kayit.durum.cariHareketler) ? kayit.durum.cariHareketler.length : 0,
+            cek:Array.isArray(kayit.durum.cekler) ? kayit.durum.cekler.length : 0,
+            cariKart:Array.isArray(kayit.durum.cariler) ? kayit.durum.cariler.length : 0
+          }
+        },
+        durum:kayit.durum
+      }, null, 2);
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"application/json;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-bekleyen-gonderim-${tarihMetni}.json`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      URL.revokeObjectURL(adres);
+      syncGoster("Bekleyen bulut gönderiminin güvenlik kopyası indirildi", "#4ade80");
+      return true;
+    }
+
+    function bekleyenBulutKontrolunuGuncelle() {
+      try {
+        if (typeof document !== "undefined" && document.getElementById("veri-kontrol-panel")) {
+          veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
+        }
+      } catch (_) {}
+    }
+
     function bekleyenBulutKaydiniSakla(kayit) {
       const guvenliKayit = bekleyenBulutKaydiniDogrula(kayit);
       if (!guvenliKayit) return false;
       try {
         localStorage.setItem(BULUT_BEKLEYEN_ANAHTAR, JSON.stringify(guvenliKayit));
+        bekleyenBulutKontrolunuGuncelle();
         return true;
       } catch {
         return false;
@@ -2746,6 +2811,7 @@
       if (!kimlik || bellekEslesiyor) bekleyenBulutKaydi = null;
       if (!kimlik || depoEslesiyor) localStorage.removeItem(BULUT_BEKLEYEN_ANAHTAR);
       clearTimeout(bulutTekrarDenemeZamanlayici);
+      bekleyenBulutKontrolunuGuncelle();
       return true;
     }
 
@@ -3839,9 +3905,11 @@
         kalan: document.getElementById("oz-kalan")?.textContent || ""
       };
       const rapor = veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri, null, null, new Date(), cariKartlariniYukle());
+      const bekleyenKayit = yoneticiMi() ? (bekleyenBulutKaydi || bekleyenBulutKaydiniOku()) : null;
+      const bekleyenSayisi = bekleyenKayit ? 1 : 0;
       const cakismaYedekleri = yoneticiMi() ? cakismaYedekleriniOku() : [];
       const cakismaSayisi = cakismaYedekleri.length;
-      const toplamUyariSayisi = rapor.uyariSayisi + cakismaSayisi;
+      const toplamUyariSayisi = rapor.uyariSayisi + bekleyenSayisi + cakismaSayisi;
       const uyariVar = toplamUyariSayisi > 0;
       const panel = document.getElementById("veri-kontrol-panel");
       panel.classList.toggle("uyari", uyariVar);
@@ -3863,6 +3931,7 @@
       veriKontrolSayaciniGuncelle("kontrol-eksik-cek-kart", "kontrol-eksik-cek", rapor.eksikCekBilgisiSayisi, rapor.eksikCekBilgisiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-cek-no-kart", "kontrol-ayni-cek-no", rapor.ayniCekNumarasiSayisi, rapor.ayniCekNumarasiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-cek-tarihi-kart", "kontrol-cek-tarihi", rapor.cekTarihiSorunuSayisi, rapor.cekTarihiSorunuSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-bekleyen-kart", "kontrol-bekleyen", bekleyenSayisi, bekleyenSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-cakisma-kart", "kontrol-cakisma", cakismaSayisi, cakismaSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);
 
@@ -3872,8 +3941,24 @@
       const mesajGorunumu = veriKontrolMesajlariniSinirla(rapor.mesajlar, veriKontrolTumUyarilarAcik);
       const gosterilecekler = rapor.uyariSayisi > 0
         ? mesajGorunumu.mesajlar
-        : (cakismaSayisi ? [] : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."]);
+        : (bekleyenSayisi || cakismaSayisi ? [] : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."]);
       const kullanilanDuzeltilebilirler = new Set();
+      if (bekleyenKayit) {
+        const satir = document.createElement("li");
+        satir.className = "veri-kontrol-bekleyen";
+        const ikon = document.createElement("i");
+        ikon.className = "fa-solid fa-cloud-arrow-up";
+        ikon.setAttribute("aria-hidden", "true");
+        const yazi = document.createElement("span");
+        yazi.textContent = `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} buluta gönderilmeyi bekliyor. İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`;
+        const indir = document.createElement("button");
+        indir.type = "button";
+        indir.className = "veri-kontrol-duzelt yalnizca-yonetici";
+        indir.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i> Kopyayı İndir';
+        indir.addEventListener("click", bekleyenBulutKaydiniIndir);
+        satir.append(ikon, yazi, indir);
+        sorunListesi.appendChild(satir);
+      }
       if (cakismaSayisi) {
         const sonYedek = cakismaYedekleri[0];
         const tarih = new Date(sonYedek.kayitZamani);

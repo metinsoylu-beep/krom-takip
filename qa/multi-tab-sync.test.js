@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const index = fs.readFileSync("index.html", "utf8");
+assert.match(index, /bekleyenBulutKontrolunuGuncelle\(\);[\s\S]*if \(yoneticiMi\(\)/, "Başka sekmedeki bekleyen gönderim Veri Kontrol Merkezi'ni yenilemeli");
 const yardimciBaslangici = index.indexOf("function bekleyenBulutKaydiniDogrula");
 const yardimciBitisi = index.indexOf("function bekleyenBulutKaydiKarari", yardimciBaslangici);
 assert.ok(yardimciBaslangici >= 0 && yardimciBitisi > yardimciBaslangici, "Bekleyen kayıt yardımcıları bulunamadı");
@@ -63,6 +64,7 @@ const dinleyiciBaslangici = index.indexOf('window.addEventListener("storage"');
 const dinleyiciBitisi = index.indexOf("// ── SYNC", dinleyiciBaslangici);
 let depolamaDinleyicisi = null;
 const planlananGecikmeler = [];
+let kontrolYenilemeSayisi = 0;
 const dinleyiciContext = {
   window:{ addEventListener:(tur,islem) => { if (tur === "storage") depolamaDinleyicisi = islem; } },
   BULUT_BEKLEYEN_ANAHTAR:"bekleyen",
@@ -78,6 +80,7 @@ const dinleyiciContext = {
   JSON,
   Number,
   bekleyenBulutKaydiniDogrula:kayit => Array.isArray(kayit?.durum?.items) ? kayit : null,
+  bekleyenBulutKontrolunuGuncelle:() => { kontrolYenilemeSayisi += 1; },
   yoneticiMi:() => true,
   clearTimeout() {},
   setTimeout:(islem,gecikme) => { planlananGecikmeler.push(gecikme); return planlananGecikmeler.length; },
@@ -99,6 +102,7 @@ dinleyiciContext.bekleyenBulutKaydi = null;
 depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify(kayitB), oldValue:null });
 assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-b", "Boş sekme diğer sekmenin bekleyen kaydını devralmalı");
 assert.ok(planlananGecikmeler.includes(500), "Devralınan kayıt kısa gecikmeyle gönderilmeli");
+assert.ok(kontrolYenilemeSayisi >= 3, "Bekleyen kaydın eklenmesi ve temizlenmesi diğer sekmelerin kontrol merkezini yenilemeli");
 
 depolamaDinleyicisi({ key:"surum", newValue:"8", oldValue:"7" });
 assert.equal(dinleyiciContext.bulutSurumu, 8, "Diğer sekmenin yeni bulut sürümü belleğe alınmalı");
