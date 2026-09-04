@@ -3,6 +3,9 @@ const PAYMENT_SHEET_NAME = "Ödemeler";
 const MOVEMENT_SHEET_NAME = "Cari Hareketler";
 const CHECK_SHEET_NAME = "Çekler";
 const CUSTOMER_SHEET_NAME = "Cariler";
+const FINANCE_ACCOUNT_SHEET_NAME = "Kasa Banka Hesapları";
+const BUSINESS_MOVEMENT_SHEET_NAME = "Gelir Gider Fişleri";
+const ACCOUNT_TRANSFER_SHEET_NAME = "Hesap Transferleri";
 const AUDIT_SHEET_NAME = "İşlem Geçmişi";
 const AUDIT_MAX_RECORDS = 500;
 const CLOUD_BACKUP_SHEET_NAME = "Bulut Yedekleri";
@@ -23,6 +26,7 @@ const VERI_BASLIK = [
   "id",
   "Fatura No",
   "Cari/Firma",
+  "Fatura Türü",
   "Tarih",
   "Vade Günü",
   "Vade Tarihi",
@@ -45,6 +49,8 @@ const CARI_HAREKET_BASLIK = [
   "Hareket ID",
   "Cari/Firma",
   "İşlem Tarihi",
+  "İşlem Türü",
+  "Hesap ID",
   "Tutar",
   "Yöntem",
   "Referans",
@@ -64,6 +70,7 @@ const CEK_BASLIK = [
   "Tutar",
   "Çek No",
   "Banka",
+  "Hesap ID",
   "Durum",
   "Referans",
   "Açıklama",
@@ -84,6 +91,45 @@ const CARI_BASLIK = [
   "Açılış Alacak",
   "Kayıt Zamanı",
   "Güncelleme Zamanı"
+];
+const FINANS_HESAP_BASLIK = [
+  "Hesap ID",
+  "Hesap Adı",
+  "Hesap Türü",
+  "Banka Adı",
+  "IBAN",
+  "Para Birimi",
+  "Açılış Bakiyesi",
+  "Durum",
+  "Kayıt Zamanı",
+  "Güncelleme Zamanı"
+];
+const ISLETME_HAREKET_BASLIK = [
+  "Fiş ID",
+  "İşlem Tarihi",
+  "Fiş Türü",
+  "Hesap ID",
+  "Kategori",
+  "Tutar",
+  "Belge/Fiş No",
+  "Açıklama",
+  "Durum",
+  "Kayıt Zamanı",
+  "Güncelleme Zamanı",
+  "İptal Zamanı"
+];
+const HESAP_TRANSFER_BASLIK = [
+  "Transfer ID",
+  "İşlem Tarihi",
+  "Kaynak Hesap ID",
+  "Hedef Hesap ID",
+  "Tutar",
+  "Referans",
+  "Açıklama",
+  "Durum",
+  "Kayıt Zamanı",
+  "Güncelleme Zamanı",
+  "İptal Zamanı"
 ];
 const AUDIT_BASLIK = [
   "Kayıt Zamanı",
@@ -203,7 +249,7 @@ function bulutYedekSatiriMetasi(satir) {
     boyutBayt: ham.length * 2,
     kontrolKodu: ham ? bulutYedegiKontrolKodu(ham) : "",
     saglam: false,
-    kayitSayilari: { fatura:0, cariHareket:0, cek:0, cariKart:0, toplam:0 }
+    kayitSayilari: { fatura:0, cariHareket:0, cek:0, cariKart:0, finansHesap:0, isletmeHareket:0, hesapTransfer:0, toplam:0 }
   };
   if (!ham) return temel;
   try {
@@ -213,9 +259,12 @@ function bulutYedekSatiriMetasi(satir) {
       fatura: faturalariTekillestir(durum.items).length,
       cariHareket: cariHareketleriNormallestir(durum.cariHareketler).length,
       cek: cekleriNormallestir(durum.cekler).length,
-      cariKart: cariKartlariniNormallestir(durum.cariler).length
+      cariKart: cariKartlariniNormallestir(durum.cariler).length,
+      finansHesap: finansHesaplariniNormallestir(durum.hesaplar).length,
+      isletmeHareket: isletmeHareketleriniNormallestir(durum.isletmeHareketler).length,
+      hesapTransfer: hesapTransferleriniNormallestir(durum.hesapTransferleri).length
     };
-    sayilar.toplam = sayilar.fatura + sayilar.cariHareket + sayilar.cek + sayilar.cariKart;
+    sayilar.toplam = sayilar.fatura + sayilar.cariHareket + sayilar.cek + sayilar.cariKart + sayilar.finansHesap + sayilar.isletmeHareket + sayilar.hesapTransfer;
     temel.saglam = true;
     temel.kayitSayilari = sayilar;
     temel.durum = durum;
@@ -280,7 +329,10 @@ function bulutYedegiKaydet(durum, kayit) {
     items: faturalariTekillestir(durum && durum.items),
     cariHareketler: cariHareketleriNormallestir(durum && durum.cariHareketler),
     cekler: cekleriNormallestir(durum && durum.cekler),
-    cariler: cariKartlariniNormallestir(durum && durum.cariler)
+    cariler: cariKartlariniNormallestir(durum && durum.cariler),
+    hesaplar: finansHesaplariniNormallestir(durum && durum.hesaplar),
+    isletmeHareketler: isletmeHareketleriniNormallestir(durum && durum.isletmeHareketler),
+    hesapTransferleri: hesapTransferleriniNormallestir(durum && durum.hesapTransferleri)
   };
 
   const json = JSON.stringify(guvenliDurum);
@@ -389,7 +441,10 @@ function bulutYedeginiOku(yedekId) {
       items: faturalariTekillestir(durum.items),
       cariHareketler: cariHareketleriNormallestir(durum.cariHareketler),
       cekler: cekleriNormallestir(durum.cekler),
-      cariler: cariKartlariniNormallestir(durum.cariler)
+      cariler: cariKartlariniNormallestir(durum.cariler),
+      hesaplar: finansHesaplariniNormallestir(durum.hesaplar),
+      isletmeHareketler: isletmeHareketleriniNormallestir(durum.isletmeHareketler),
+      hesapTransferleri: hesapTransferleriniNormallestir(durum.hesapTransferleri)
     }
   };
 }
@@ -421,7 +476,10 @@ function veriDegisiklikOzetiniOlustur(eskiDurum, yeniDurum) {
     ["Fatura", eskiDurum.items, yeniDurum.items],
     ["Cari hareket", eskiDurum.cariHareketler, yeniDurum.cariHareketler],
     ["Çek", eskiDurum.cekler, yeniDurum.cekler],
-    ["Cari kart", eskiDurum.cariler, yeniDurum.cariler]
+    ["Cari kart", eskiDurum.cariler, yeniDurum.cariler],
+    ["Kasa/Banka hesabı", eskiDurum.hesaplar, yeniDurum.hesaplar],
+    ["Gelir/Gider fişi", eskiDurum.isletmeHareketler, yeniDurum.isletmeHareketler],
+    ["Hesap transferi", eskiDurum.hesapTransferleri, yeniDurum.hesapTransferleri]
   ];
   const parcalar = [];
   gruplar.forEach(function(grup) {
@@ -684,6 +742,15 @@ function tutarSayisi(deger) {
   return isFinite(sayi) ? sayi : 0;
 }
 
+function faturaTurunuNormallestir(deger) {
+  const tur = String(deger || "").trim().toLocaleLowerCase("tr-TR");
+  return tur === "satis" || tur === "satış" || tur === "satış faturası" ? "satis" : "alis";
+}
+
+function cariHareketTurunuNormallestir(deger) {
+  return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "tahsilat" ? "tahsilat" : "odeme";
+}
+
 function odendiMi(deger) {
   return deger === true ||
     deger === "true" ||
@@ -757,6 +824,7 @@ function faturaOdemeOzetiniUygula(item, eskiOdendi) {
 
 function faturaImzasi(item) {
   return [
+    faturaTurunuNormallestir(item.faturaTuru),
     String(item.cari || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " "),
     String(item.no || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " "),
     tarihMetni(item.tarih),
@@ -779,6 +847,7 @@ function faturalariTekillestir(items) {
       id: isFinite(idSayi) && idSayi > 0 ? idSayi : Date.now() + sira,
       no: String(ham.no || "").trim(),
       cari: String(ham.cari || "").trim(),
+      faturaTuru: faturaTurunuNormallestir(ham.faturaTuru || ham.tur),
       tarih: tarihMetni(ham.tarih),
       vadeGun: parseInt(ham.vadeGun, 10) || 90,
       tutar: tutarSayisi(ham.tutar),
@@ -856,6 +925,8 @@ function cariHareketiniNormallestir(ham, sira) {
     cari: cari.slice(0, 120),
     tarih: tarih,
     tutar: tutar,
+    islemTuru: cariHareketTurunuNormallestir(ham.islemTuru || ham.hareketTuru),
+    hesapId: String(ham.hesapId || ham.finansHesapId || "").trim().slice(0, 160),
     yontem: String(ham.yontem || "Diğer").trim().slice(0, 80),
     referans: String(ham.referans || "").trim().slice(0, 160),
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
@@ -902,6 +973,7 @@ function cekiNormallestir(ham, sira) {
     tutar: tutar,
     cekNo: String(ham.cekNo || "").trim().slice(0, 120),
     banka: String(ham.banka || "").trim().slice(0, 120),
+    hesapId: String(ham.hesapId || ham.finansHesapId || "").trim().slice(0, 160),
     durum: durum,
     odemeTarihi: odemeTarihi,
     referans: String(ham.referans || "").trim().slice(0, 160),
@@ -924,6 +996,124 @@ function cekleriNormallestir(hamListe) {
   });
   return sonuc.sort(function(a, b) {
     return a.tarih.localeCompare(b.tarih) || a.kayitZamani.localeCompare(b.kayitZamani) || a.id.localeCompare(b.id);
+  });
+}
+
+function finansHesapTurunuNormallestir(deger) {
+  return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "banka" ? "banka" : "kasa";
+}
+
+function finansHesabiniNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const ad = String(ham.ad || ham.hesapAdi || "").trim().replace(/\s+/g, " ").slice(0, 120);
+  if (!ad) return null;
+  const tur = finansHesapTurunuNormallestir(ham.tur || ham.hesapTuru);
+  return {
+    id: String(ham.id || ham.hesapId || ("hesap-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    ad: ad,
+    tur: tur,
+    bankaAdi: tur === "banka" ? String(ham.bankaAdi || ham.banka || "").trim().replace(/\s+/g, " ").slice(0, 120) : "",
+    iban: tur === "banka" ? String(ham.iban || "").trim().replace(/\s+/g, "").toLocaleUpperCase("tr-TR").slice(0, 34) : "",
+    paraBirimi: "TRY",
+    acilisBakiyesi: tutarSayisi(ham.acilisBakiyesi),
+    durum: String(ham.durum || "Aktif") === "Pasif" ? "Pasif" : "Aktif",
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    guncellemeZamani: String(ham.guncellemeZamani || "").trim().slice(0, 80)
+  };
+}
+
+function finansHesaplariniNormallestir(hamListe) {
+  const gorulenId = {};
+  const gorulenAd = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const hesap = finansHesabiniNormallestir(ham, sira);
+    if (!hesap) return;
+    const adAnahtari = hesap.ad.toLocaleUpperCase("tr-TR");
+    if (gorulenId[hesap.id] || gorulenAd[adAnahtari]) return;
+    gorulenId[hesap.id] = true;
+    gorulenAd[adAnahtari] = true;
+    sonuc.push(hesap);
+  });
+  return sonuc.sort(function(a, b) { return a.ad.localeCompare(b.ad, "tr"); });
+}
+
+function isletmeHareketTurunuNormallestir(deger) {
+  return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "gelir" ? "gelir" : "gider";
+}
+
+function isletmeHareketiniNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const tarih = tarihMetni(ham.tarih || ham.islemTarihi);
+  const tutar = tutarSayisi(ham.tutar);
+  const hesapId = String(ham.hesapId || ham.finansHesapId || "").trim().slice(0, 160);
+  const kategori = String(ham.kategori || "Diğer").trim().replace(/\s+/g, " ").slice(0, 80);
+  const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
+  if (!isoTarihGecerliMi(tarih) || !(tutar > 0) || !hesapId || !kategori) return null;
+  return {
+    id: String(ham.id || ham.hareketId || ("fis-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    tarih: tarih,
+    tur: isletmeHareketTurunuNormallestir(ham.tur || ham.islemTuru),
+    hesapId: hesapId,
+    kategori: kategori,
+    tutar: tutar,
+    belgeNo: String(ham.belgeNo || ham.referans || "").trim().slice(0, 120),
+    aciklama: String(ham.aciklama || "").trim().replace(/\s+/g, " ").slice(0, 500),
+    durum: durum,
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    guncellemeZamani: String(ham.guncellemeZamani || "").trim().slice(0, 80),
+    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : ""
+  };
+}
+
+function isletmeHareketleriniNormallestir(hamListe) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const hareket = isletmeHareketiniNormallestir(ham, sira);
+    if (!hareket || gorulen[hareket.id]) return;
+    gorulen[hareket.id] = true;
+    sonuc.push(hareket);
+  });
+  return sonuc.sort(function(a, b) {
+    return b.tarih.localeCompare(a.tarih) || b.kayitZamani.localeCompare(a.kayitZamani) || b.id.localeCompare(a.id);
+  });
+}
+
+function hesapTransferiniNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const tarih = tarihMetni(ham.tarih || ham.islemTarihi);
+  const kaynakHesapId = String(ham.kaynakHesapId || ham.kaynak || "").trim().slice(0, 160);
+  const hedefHesapId = String(ham.hedefHesapId || ham.hedef || "").trim().slice(0, 160);
+  const tutar = tutarSayisi(ham.tutar);
+  const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
+  if (!isoTarihGecerliMi(tarih) || !kaynakHesapId || !hedefHesapId || kaynakHesapId === hedefHesapId || !(tutar > 0)) return null;
+  return {
+    id: String(ham.id || ham.transferId || ("transfer-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    tarih: tarih,
+    kaynakHesapId: kaynakHesapId,
+    hedefHesapId: hedefHesapId,
+    tutar: tutar,
+    referans: String(ham.referans || ham.belgeNo || "").trim().replace(/\s+/g, " ").slice(0, 120),
+    aciklama: String(ham.aciklama || "").trim().replace(/\s+/g, " ").slice(0, 500),
+    durum: durum,
+    kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
+    guncellemeZamani: String(ham.guncellemeZamani || "").trim().slice(0, 80),
+    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : ""
+  };
+}
+
+function hesapTransferleriniNormallestir(hamListe) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const transfer = hesapTransferiniNormallestir(ham, sira);
+    if (!transfer || gorulen[transfer.id]) return;
+    gorulen[transfer.id] = true;
+    sonuc.push(transfer);
+  });
+  return sonuc.sort(function(a, b) {
+    return b.tarih.localeCompare(a.tarih) || b.kayitZamani.localeCompare(a.kayitZamani) || b.id.localeCompare(a.id);
   });
 }
 
@@ -1028,10 +1218,13 @@ function cariHareketImzasi(kaynak, kayit) {
       tarihMetni(kayit && kayit.vadeTarihi),
       metinAnahtari(kayit && kayit.cekNo),
       metinAnahtari(kayit && kayit.banka),
+      String(kayit && kayit.hesapId || ""),
       metinAnahtari(kayit && kayit.referans)
     ]).join("|");
   }
   return ortak.concat([
+    cariHareketTurunuNormallestir(kayit && kayit.islemTuru),
+    String(kayit && kayit.hesapId || ""),
     metinAnahtari(kayit && kayit.yontem),
     metinAnahtari(kayit && kayit.referans)
   ]).join("|");
@@ -1107,6 +1300,65 @@ function yeniBenzerCariHareketleriniBul(kaynak, oncekiListe, yeniListe, izinVeri
     });
   });
   return engellenenler;
+}
+
+function yeniGecersizFinansBaglantilariniBul(oncekiDurum, hareketler, cekler, hesaplar, isletmeHareketler, hesapTransferleri) {
+  const hesapHaritasi = {};
+  finansHesaplariniNormallestir(hesaplar).forEach(function(hesap) { hesapHaritasi[hesap.id] = hesap; });
+  const eskiHesapHaritasi = {};
+  finansHesaplariniNormallestir(oncekiDurum && oncekiDurum.hesaplar).forEach(function(hesap) { eskiHesapHaritasi[hesap.id] = hesap; });
+  const eskiHareketler = {};
+  const eskiCekler = {};
+  const eskiIsletmeHareketler = {};
+  const eskiHesapTransferleri = {};
+  (Array.isArray(oncekiDurum && oncekiDurum.cariHareketler) ? oncekiDurum.cariHareketler : []).forEach(function(kayit) { eskiHareketler[String(kayit.id || "")] = kayit; });
+  (Array.isArray(oncekiDurum && oncekiDurum.cekler) ? oncekiDurum.cekler : []).forEach(function(kayit) { eskiCekler[String(kayit.id || "")] = kayit; });
+  (Array.isArray(oncekiDurum && oncekiDurum.isletmeHareketler) ? oncekiDurum.isletmeHareketler : []).forEach(function(kayit) { eskiIsletmeHareketler[String(kayit.id || "")] = kayit; });
+  (Array.isArray(oncekiDurum && oncekiDurum.hesapTransferleri) ? oncekiDurum.hesapTransferleri : []).forEach(function(kayit) { eskiHesapTransferleri[String(kayit.id || "")] = kayit; });
+  const sorunlar = [];
+  Object.keys(eskiHesapHaritasi).forEach(function(hesapId) {
+    if (hesapHaritasi[hesapId]) return;
+    const kullaniliyor = (Array.isArray(hareketler) ? hareketler : []).some(function(hareket) { return String(hareket.hesapId || "") === hesapId; }) ||
+      (Array.isArray(cekler) ? cekler : []).some(function(cek) { return String(cek.hesapId || "") === hesapId; }) ||
+      (Array.isArray(isletmeHareketler) ? isletmeHareketler : []).some(function(hareket) { return String(hareket.hesapId || "") === hesapId; }) ||
+      (Array.isArray(hesapTransferleri) ? hesapTransferleri : []).some(function(transfer) { return String(transfer.kaynakHesapId || "") === hesapId || String(transfer.hedefHesapId || "") === hesapId; });
+    if (kullaniliyor) sorunlar.push({ id:hesapId, mesaj:"Muhasebe hareketi bulunan kasa/banka hesabı silinemez; hesabı Pasif duruma alın." });
+  });
+  (Array.isArray(hareketler) ? hareketler : []).forEach(function(hareket) {
+    const eski = eskiHareketler[String(hareket.id || "")];
+    const hesapDegisti = !eski || String(eski.hesapId || "") !== String(hareket.hesapId || "");
+    if (!hesapDegisti) return;
+    const hesap = hesapHaritasi[String(hareket.hesapId || "")];
+    if (!hesap || hesap.durum !== "Aktif") sorunlar.push({ id:hareket.id, mesaj:"Yeni ödeme veya tahsilat için aktif bir kasa/banka hesabı seçin." });
+  });
+  (Array.isArray(cekler) ? cekler : []).forEach(function(cek) {
+    const eski = eskiCekler[String(cek.id || "")];
+    const hesapDegisti = !eski || String(eski.hesapId || "") !== String(cek.hesapId || "");
+    const yeniOdendi = cek.durum === "Ödendi" && (!eski || eski.durum !== "Ödendi");
+    if (!hesapDegisti && !yeniOdendi) return;
+    const hesap = hesapHaritasi[String(cek.hesapId || "")];
+    if (!hesap || hesap.durum !== "Aktif" || hesap.tur !== "banka") sorunlar.push({ id:cek.id, mesaj:"Yeni veya ödenen çek için aktif bir banka hesabı seçin." });
+  });
+  (Array.isArray(isletmeHareketler) ? isletmeHareketler : []).forEach(function(hareket) {
+    const eski = eskiIsletmeHareketler[String(hareket.id || "")];
+    const hesapDegisti = !eski || String(eski.hesapId || "") !== String(hareket.hesapId || "");
+    const yenidenEtkin = hareket.durum === "Aktif" && eski && eski.durum === "İptal";
+    if (!hesapDegisti && !yenidenEtkin) return;
+    const hesap = hesapHaritasi[String(hareket.hesapId || "")];
+    if (!hesap || hesap.durum !== "Aktif") sorunlar.push({ id:hareket.id, mesaj:"Yeni veya yeniden etkinleştirilen gelir/gider fişi için aktif bir kasa/banka hesabı seçin." });
+  });
+  (Array.isArray(hesapTransferleri) ? hesapTransferleri : []).forEach(function(transfer) {
+    const eski = eskiHesapTransferleri[String(transfer.id || "")];
+    const hesapDegisti = !eski || String(eski.kaynakHesapId || "") !== String(transfer.kaynakHesapId || "") || String(eski.hedefHesapId || "") !== String(transfer.hedefHesapId || "");
+    const yenidenEtkin = transfer.durum === "Aktif" && eski && eski.durum === "İptal";
+    if (!hesapDegisti && !yenidenEtkin) return;
+    const kaynak = hesapHaritasi[String(transfer.kaynakHesapId || "")];
+    const hedef = hesapHaritasi[String(transfer.hedefHesapId || "")];
+    if (!kaynak || !hedef || kaynak.id === hedef.id || kaynak.durum !== "Aktif" || hedef.durum !== "Aktif") {
+      sorunlar.push({ id:transfer.id, mesaj:"Yeni veya yeniden etkinleştirilen transfer için birbirinden farklı iki aktif kasa/banka hesabı seçin." });
+    }
+  });
+  return sorunlar;
 }
 
 function cariAdiAnahtari(cari) {
@@ -1210,6 +1462,81 @@ function cariKartVerileriniOku() {
   }));
 }
 
+function finansHesapVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FINANCE_ACCOUNT_SHEET_NAME);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Hesap ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return finansHesaplariniNormallestir(data.slice(baslikSatiri + 1).map(function(row) {
+    return {
+      id: row[konum("Hesap ID")],
+      ad: row[konum("Hesap Adı")],
+      tur: row[konum("Hesap Türü")],
+      bankaAdi: row[konum("Banka Adı")],
+      iban: row[konum("IBAN")],
+      paraBirimi: row[konum("Para Birimi")],
+      acilisBakiyesi: row[konum("Açılış Bakiyesi")],
+      durum: row[konum("Durum")],
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      guncellemeZamani: row[konum("Güncelleme Zamanı")]
+    };
+  }));
+}
+
+function isletmeHareketVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BUSINESS_MOVEMENT_SHEET_NAME);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Fiş ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return isletmeHareketleriniNormallestir(data.slice(baslikSatiri + 1).map(function(row) {
+    return {
+      id: row[konum("Fiş ID")],
+      tarih: row[konum("İşlem Tarihi")],
+      tur: row[konum("Fiş Türü")],
+      hesapId: row[konum("Hesap ID")],
+      kategori: row[konum("Kategori")],
+      tutar: row[konum("Tutar")],
+      belgeNo: row[konum("Belge/Fiş No")],
+      aciklama: row[konum("Açıklama")],
+      durum: row[konum("Durum")],
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      guncellemeZamani: row[konum("Güncelleme Zamanı")],
+      iptalZamani: row[konum("İptal Zamanı")]
+    };
+  }));
+}
+
+function hesapTransferVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ACCOUNT_TRANSFER_SHEET_NAME);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Transfer ID"; });
+  if (baslikSatiri < 0) return [];
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  return hesapTransferleriniNormallestir(data.slice(baslikSatiri + 1).map(function(row) {
+    return {
+      id: row[konum("Transfer ID")],
+      tarih: row[konum("İşlem Tarihi")],
+      kaynakHesapId: row[konum("Kaynak Hesap ID")],
+      hedefHesapId: row[konum("Hedef Hesap ID")],
+      tutar: row[konum("Tutar")],
+      referans: row[konum("Referans")],
+      aciklama: row[konum("Açıklama")],
+      durum: row[konum("Durum")],
+      kayitZamani: row[konum("Kayıt Zamanı")],
+      guncellemeZamani: row[konum("Güncelleme Zamanı")],
+      iptalZamani: row[konum("İptal Zamanı")]
+    };
+  }));
+}
+
 function cariHareketVerileriniOku() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(MOVEMENT_SHEET_NAME);
   if (!sheet) return null;
@@ -1223,6 +1550,8 @@ function cariHareketVerileriniOku() {
       id: row[konum("Hareket ID")],
       cari: row[konum("Cari/Firma")],
       tarih: row[konum("İşlem Tarihi")],
+      islemTuru: row[konum("İşlem Türü")],
+      hesapId: row[konum("Hesap ID")],
       tutar: row[konum("Tutar")],
       yontem: row[konum("Yöntem")],
       referans: row[konum("Referans")],
@@ -1254,6 +1583,7 @@ function cekVerileriniOku() {
       tutar: row[konum("Tutar")],
       cekNo: row[konum("Çek No")],
       banka: row[konum("Banka")],
+      hesapId: row[konum("Hesap ID")],
       durum: row[konum("Durum")],
       referans: row[konum("Referans")],
       aciklama: row[konum("Açıklama")],
@@ -1275,6 +1605,7 @@ function eskiOdemeleriCariHareketlereDonustur(items) {
         cari: item.cari || "Belirtilmedi",
         tarih: odeme.tarih || item.odemeTarihi || item.tarih,
         tutar: odeme.tutar || item.tutar,
+        islemTuru: "odeme",
         yontem: odeme.yontem || "Eski ödeme kaydı",
         referans: odeme.referans || "",
         aciklama: odeme.aciklama || "Eski fatura ödeme kaydından cari harekete aktarıldı.",
@@ -1342,6 +1673,7 @@ function faturaVerileriniOku() {
             id: id,
             no: String(hucreOku(row, ["Fatura No", "no"], 1) || ""),
             cari: String(hucreOku(row, ["Cari/Firma", "Cari", "cari"], -1) || ""),
+            faturaTuru: faturaTurunuNormallestir(hucreOku(row, ["Fatura Türü", "faturaTuru"], -1)),
             tarih: tarihMetni(hucreOku(row, ["Tarih", "tarih"], 2)),
             vadeGun: parseInt(String(hucreOku(row, ["Vade Günü", "vadeGun"], 3)).replace(/[^0-9]/g, ""), 10) || 90,
             tutar: String(hucreOku(row, ["Tutar", "tutar"], 5) || "0"),
@@ -1366,13 +1698,19 @@ function faturaVerileriniOku() {
     : (kayitliCariHareketler || []);
   const cekler = cekVerileriniOku();
   const cariler = cariKartlariniTamamla(cariKartVerileriniOku() || [], items, cariHareketler, cekler);
+  const hesaplar = finansHesapVerileriniOku() || [];
+  const isletmeHareketler = isletmeHareketVerileriniOku() || [];
+  const hesapTransferleri = hesapTransferVerileriniOku() || [];
   return {
     revision: bulutSurumuOku(properties),
     lastRequestId: properties.getProperty(SON_ISTEK_ANAHTAR) || "",
     items: items,
     cariHareketler: cariHareketler,
     cekler: cekler,
-    cariler: cariler
+    cariler: cariler,
+    hesaplar: hesaplar,
+    isletmeHareketler: isletmeHareketler,
+    hesapTransferleri: hesapTransferleri
   };
 }
 
@@ -1545,7 +1883,10 @@ function doPost(e) {
         items: durum.items,
         cariHareketler: durum.cariHareketler,
         cekler: durum.cekler,
-        cariler: durum.cariler
+        cariler: durum.cariler,
+        hesaplar: durum.hesaplar,
+        isletmeHareketler: durum.isletmeHareketler,
+        hesapTransferleri: durum.hesapTransferleri
       });
     }
 
@@ -1599,6 +1940,27 @@ function doPost(e) {
       cariHareketler,
       cekler
     );
+    const mevcutHesaplar = finansHesapVerileriniOku() || [];
+    const hesaplar = Object.prototype.hasOwnProperty.call(payload, "hesaplar")
+      ? finansHesaplariniNormallestir(payload.hesaplar)
+      : mevcutHesaplar;
+    const mevcutIsletmeHareketler = isletmeHareketVerileriniOku() || [];
+    const isletmeHareketler = Object.prototype.hasOwnProperty.call(payload, "isletmeHareketler")
+      ? isletmeHareketleriniNormallestir(payload.isletmeHareketler)
+      : mevcutIsletmeHareketler;
+    const mevcutHesapTransferleri = hesapTransferVerileriniOku() || [];
+    const hesapTransferleri = Object.prototype.hasOwnProperty.call(payload, "hesapTransferleri")
+      ? hesapTransferleriniNormallestir(payload.hesapTransferleri)
+      : mevcutHesapTransferleri;
+    if (Object.prototype.hasOwnProperty.call(payload, "hesapTransferleri") && (!Array.isArray(payload.hesapTransferleri) || hesapTransferleri.length !== payload.hesapTransferleri.length)) {
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_ACCOUNT_TRANSFER",
+        revision:bulutSurumuOku(properties),
+        requestId:requestId,
+        message:"Hesap transferinde tarih, tutar, kaynak veya hedef bilgisi geçersiz. Kaynak ve hedef hesap aynı olamaz."
+      });
+    }
     const mevcutSurum = bulutSurumuOku(properties);
     const sonRequestId = properties.getProperty(SON_ISTEK_ANAHTAR) || "";
 
@@ -1701,8 +2063,21 @@ function doPost(e) {
         duplicateType:benzerOdemeler.length ? "payment" : "check",
         duplicateIds:benzerOdemeler.concat(benzerCekler).map(function(kayit) { return kayit.id; }),
         message:benzerOdemeler.length
-          ? "Google Sheets'te aynı bilgilerle aktif bir ödeme kaydı zaten var."
+          ? "Google Sheets'te aynı bilgilerle aktif bir ödeme veya tahsilat kaydı zaten var."
           : "Google Sheets'te aynı bilgilerle aktif bir çek kaydı zaten var."
+      });
+    }
+
+    const gecersizFinansBaglantilari = Object.prototype.hasOwnProperty.call(payload, "hesaplar") || Object.prototype.hasOwnProperty.call(payload, "isletmeHareketler") || Object.prototype.hasOwnProperty.call(payload, "hesapTransferleri")
+      ? yeniGecersizFinansBaglantilariniBul(oncekiDurum, cariHareketler, cekler, hesaplar, isletmeHareketler, hesapTransferleri)
+      : [];
+    if (gecersizFinansBaglantilari.length) {
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_FINANCE_ACCOUNT",
+        revision:mevcutSurum,
+        requestId:requestId,
+        message:gecersizFinansBaglantilari[0].mesaj
       });
     }
 
@@ -1732,29 +2107,37 @@ function doPost(e) {
     const movementSheet = ss.getSheetByName(MOVEMENT_SHEET_NAME) || ss.insertSheet(MOVEMENT_SHEET_NAME);
     const checkSheet = ss.getSheetByName(CHECK_SHEET_NAME) || ss.insertSheet(CHECK_SHEET_NAME);
     const customerSheet = ss.getSheetByName(CUSTOMER_SHEET_NAME) || ss.insertSheet(CUSTOMER_SHEET_NAME);
+    const financeAccountSheet = ss.getSheetByName(FINANCE_ACCOUNT_SHEET_NAME) || ss.insertSheet(FINANCE_ACCOUNT_SHEET_NAME);
+    const businessMovementSheet = ss.getSheetByName(BUSINESS_MOVEMENT_SHEET_NAME) || ss.insertSheet(BUSINESS_MOVEMENT_SHEET_NAME);
+    const accountTransferSheet = ss.getSheetByName(ACCOUNT_TRANSFER_SHEET_NAME) || ss.insertSheet(ACCOUNT_TRANSFER_SHEET_NAME);
 
-    const faturaToplami = items.reduce(function(deger, item) { return deger + item.tutar; }, 0);
+    const alisFaturaToplami = items.filter(function(item) { return faturaTurunuNormallestir(item.faturaTuru) === "alis"; })
+      .reduce(function(deger, item) { return deger + item.tutar; }, 0);
+    const satisFaturaToplami = items.filter(function(item) { return faturaTurunuNormallestir(item.faturaTuru) === "satis"; })
+      .reduce(function(deger, item) { return deger + item.tutar; }, 0);
     const acilisBorcToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisBorc; }, 0);
     const acilisAlacakToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisAlacak; }, 0);
-    const odemeToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal"; })
+    const odemeToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal" && cariHareketTurunuNormallestir(hareket.islemTuru) === "odeme"; })
+      .reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
+    const tahsilatToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal" && cariHareketTurunuNormallestir(hareket.islemTuru) === "tahsilat"; })
       .reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
     const cekToplami = cekler.filter(function(cek) { return cek.durum !== "İptal"; })
       .reduce(function(deger, cek) { return deger + cek.tutar; }, 0);
-    const toplamBorc = faturaToplami + acilisBorcToplami;
-    const toplamAlacak = odemeToplami + cekToplami + acilisAlacakToplami;
+    const toplamBorc = alisFaturaToplami + tahsilatToplami + acilisBorcToplami;
+    const toplamAlacak = satisFaturaToplami + odemeToplami + cekToplami + acilisAlacakToplami;
     const netBakiye = toplamBorc - toplamAlacak;
     const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
 
     const satirlar = [
-      ["💰 TOPLAM BORÇ", "✅ TOPLAM ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", ""],
+      ["💰 TOPLAM BORÇ", "✅ TOPLAM ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", "", ""],
       [
         toplamBorc.toLocaleString("tr-TR") + " ₺",
         toplamAlacak.toLocaleString("tr-TR") + " ₺",
         Math.abs(netBakiye).toLocaleString("tr-TR") + " ₺",
         new Date().toLocaleString("tr-TR"),
-        "", "", "", "", "", ""
+        "", "", "", "", "", "", ""
       ],
-      ["", "", "", "", "", "", "", "", "", ""],
+      ["", "", "", "", "", "", "", "", "", "", ""],
       VERI_BASLIK
     ];
 
@@ -1763,6 +2146,7 @@ function doPost(e) {
         item.id,
         item.no,
         item.cari,
+        item.faturaTuru === "satis" ? "Satış" : "Alış",
         item.tarih,
         item.vadeGun + " gün",
         Utilities.formatDate(vadeTarihi(item.tarih, item.vadeGun), Session.getScriptTimeZone() || "Europe/Istanbul", "dd.MM.yyyy"),
@@ -1779,6 +2163,8 @@ function doPost(e) {
         hareket.id,
         hareket.cari,
         hareket.tarih,
+        hareket.islemTuru === "tahsilat" ? "Tahsilat" : "Ödeme",
+        hareket.hesapId || "",
         hareket.tutar,
         hareket.yontem,
         hareket.referans,
@@ -1801,6 +2187,7 @@ function doPost(e) {
         cek.tutar,
         cek.cekNo,
         cek.banka,
+        cek.hesapId || "",
         cek.durum,
         cek.referans,
         cek.aciklama,
@@ -1824,6 +2211,54 @@ function doPost(e) {
         cari.acilisAlacak,
         cari.kayitZamani,
         cari.guncellemeZamani
+      ]);
+    });
+    const finansHesapSatirlari = [FINANS_HESAP_BASLIK];
+    hesaplar.forEach(function(hesap) {
+      finansHesapSatirlari.push([
+        hesap.id,
+        hesap.ad,
+        hesap.tur === "banka" ? "Banka" : "Kasa",
+        hesap.bankaAdi,
+        hesap.iban,
+        hesap.paraBirimi,
+        hesap.acilisBakiyesi,
+        hesap.durum,
+        hesap.kayitZamani,
+        hesap.guncellemeZamani
+      ]);
+    });
+    const isletmeHareketSatirlari = [ISLETME_HAREKET_BASLIK];
+    isletmeHareketler.forEach(function(hareket) {
+      isletmeHareketSatirlari.push([
+        hareket.id,
+        hareket.tarih,
+        hareket.tur === "gelir" ? "Gelir" : "Gider",
+        hareket.hesapId,
+        hareket.kategori,
+        hareket.tutar,
+        hareket.belgeNo,
+        hareket.aciklama,
+        hareket.durum,
+        hareket.kayitZamani,
+        hareket.guncellemeZamani,
+        hareket.iptalZamani
+      ]);
+    });
+    const hesapTransferSatirlari = [HESAP_TRANSFER_BASLIK];
+    hesapTransferleri.forEach(function(transfer) {
+      hesapTransferSatirlari.push([
+        transfer.id,
+        transfer.tarih,
+        transfer.kaynakHesapId,
+        transfer.hedefHesapId,
+        transfer.tutar,
+        transfer.referans,
+        transfer.aciklama,
+        transfer.durum,
+        transfer.kayitZamani,
+        transfer.guncellemeZamani,
+        transfer.iptalZamani
       ]);
     });
 
@@ -1863,6 +2298,24 @@ function doPost(e) {
       .setBackground("#1e3a5f")
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
+    financeAccountSheet.clearContents();
+    financeAccountSheet.getRange(1, 1, finansHesapSatirlari.length, FINANS_HESAP_BASLIK.length).setValues(finansHesapSatirlari);
+    financeAccountSheet.getRange(1, 1, 1, FINANS_HESAP_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+    businessMovementSheet.clearContents();
+    businessMovementSheet.getRange(1, 1, isletmeHareketSatirlari.length, ISLETME_HAREKET_BASLIK.length).setValues(isletmeHareketSatirlari);
+    businessMovementSheet.getRange(1, 1, 1, ISLETME_HAREKET_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
+    accountTransferSheet.clearContents();
+    accountTransferSheet.getRange(1, 1, hesapTransferSatirlari.length, HESAP_TRANSFER_BASLIK.length).setValues(hesapTransferSatirlari);
+    accountTransferSheet.getRange(1, 1, 1, HESAP_TRANSFER_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
 
     const yeniSurum = mevcutSurum + 1;
     const yeniProperties = {};
@@ -1875,7 +2328,10 @@ function doPost(e) {
       items:items,
       cariHareketler:cariHareketler,
       cekler:cekler,
-      cariler:cariler
+      cariler:cariler,
+      hesaplar:hesaplar,
+      isletmeHareketler:isletmeHareketler,
+      hesapTransferleri:hesapTransferleri
     });
     if (degisiklikOzeti) {
       try {
@@ -1900,7 +2356,10 @@ function doPost(e) {
       count: items.length,
       movementCount: cariHareketler.length,
       checkCount: cekler.length,
-      customerCount: cariler.length
+      customerCount: cariler.length,
+      financeAccountCount: hesaplar.length,
+      businessMovementCount: isletmeHareketler.length,
+      accountTransferCount: hesapTransferleri.length
     });
   } catch (err) {
     return jsonCevabi({
