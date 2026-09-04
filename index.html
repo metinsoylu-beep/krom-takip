@@ -2072,7 +2072,7 @@
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Fatura, cari kart, ödeme ve çek verileri Google Sheets'te bulut tabanlı olarak senkronize edilir.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Sayfayı kapatsanız veya bilgisayarı yeniden başlatsanız verileriniz korunur.</span></li>
         <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span>Farklı bir tarayıcı veya cihazdan açıldığında veriler otomatik yüklenir.</span></li>
-        <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı yoksa son yerel veriler gösterilir.</span></li>
+        <li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span>İnternet bağlantısı kesilirse değişiklikler bu cihazda güvenle bekler ve bağlantı geldiğinde yeniden gönderilir.</span></li>
         <li><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> <span>Son 10 değişiklik bu cihazda otomatik yedeklenir ve geri alınabilir.</span></li>
       </ul>
       <div class="footer-alt">
@@ -2092,6 +2092,7 @@
     const ESKI_ODEME_GECIS_ANAHTAR = "krom-takip-eski-odeme-gecisi";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
+    const BULUT_BEKLEYEN_ANAHTAR = "krom-takip-bekleyen-bulut-kaydi";
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
     const YEDEK_SINIR = 10;
     const CANLI_UYGULAMA_URL = "https://metinsoylu-finans.netlify.app/";
@@ -2109,6 +2110,7 @@
     const BULUT_KILIT_ADI = "krom-takip-bulut-kayit";
     let bekleyenBulutKaydi = null;
     let bulutKayitZamanlayici = null;
+    let bulutTekrarDenemeZamanlayici = null;
     let bulutKaydiCalisiyor = false;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
@@ -2162,6 +2164,21 @@
           .catch(() => {});
       });
     }
+
+    window.addEventListener("online", () => {
+      if (!yoneticiMi()) return;
+      bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      if (!bekleyenBulutKaydi) return;
+      clearTimeout(bulutTekrarDenemeZamanlayici);
+      syncGoster("İnternet bağlantısı geldi · Bekleyen değişiklik gönderiliyor…", "#60a5fa");
+      bulutKayitKuyrugunuCalistir();
+    });
+
+    window.addEventListener("offline", () => {
+      if (bekleyenBulutKaydi || bekleyenBulutKaydiniOku()) {
+        syncGoster("İnternet bağlantısı yok · Değişiklik bu cihazda güvenle bekliyor", "#f59e0b");
+      }
+    });
 
     // ── SYNC ──────────────────────────────────────────────────────────────────
     function syncGoster(mesaj, renk) {
@@ -2298,6 +2315,84 @@
       }
     }
 
+    function bekleyenBulutKaydiniDogrula(hamKayit) {
+      if (!hamKayit || typeof hamKayit !== "object" || !Array.isArray(hamKayit.durum?.items)) return null;
+      const baseRevision = hamKayit.baseRevision === null || hamKayit.baseRevision === ""
+        ? Number.NaN
+        : Number(hamKayit.baseRevision);
+      return {
+        id:String(hamKayit.id || "").trim() || istekKimligiOlustur(),
+        kayitZamani:String(hamKayit.kayitZamani || "").trim() || new Date().toISOString(),
+        baseRevision:Number.isInteger(baseRevision) && baseRevision >= 0 ? baseRevision : null,
+        auditAction:String(hamKayit.auditAction || "Veri değişikliği").slice(0,120),
+        allowDuplicateRecordIds:Array.isArray(hamKayit.allowDuplicateRecordIds)
+          ? Array.from(new Set(hamKayit.allowDuplicateRecordIds.map(kimlik => String(kimlik || "").slice(0,160)).filter(Boolean))).slice(0,20)
+          : [],
+        durum:hamKayit.durum
+      };
+    }
+
+    function bekleyenBulutKaydiniOku() {
+      try {
+        return bekleyenBulutKaydiniDogrula(JSON.parse(localStorage.getItem(BULUT_BEKLEYEN_ANAHTAR) || "null"));
+      } catch {
+        return null;
+      }
+    }
+
+    function bekleyenBulutKaydiniSakla(kayit) {
+      const guvenliKayit = bekleyenBulutKaydiniDogrula(kayit);
+      if (!guvenliKayit) return false;
+      try {
+        localStorage.setItem(BULUT_BEKLEYEN_ANAHTAR, JSON.stringify(guvenliKayit));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function bekleyenBulutKaydiniTemizle(kimlik="") {
+      const mevcut = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      if (kimlik && mevcut && mevcut.id !== kimlik) return false;
+      bekleyenBulutKaydi = null;
+      localStorage.removeItem(BULUT_BEKLEYEN_ANAHTAR);
+      clearTimeout(bulutTekrarDenemeZamanlayici);
+      return true;
+    }
+
+    function bekleyenBulutKaydiKarari(kayit, uzakDurum) {
+      const bekleyen = bekleyenBulutKaydiniDogrula(kayit);
+      if (!bekleyen || !uzakDurum) return "yok";
+      if (listeSurumImzasi(bekleyen.durum) === listeSurumImzasi(uzakDurum)) return "tamamlandi";
+      const uzakSurum = Number(uzakDurum.revision);
+      return Number.isInteger(uzakSurum) && bekleyen.baseRevision === uzakSurum ? "gonder" : "cakisma";
+    }
+
+    function bekleyenBulutKaydiniUzakDurumlaKontrolEt(uzakDurum) {
+      if (!yoneticiMi()) return false;
+      const kayit = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      const karar = bekleyenBulutKaydiKarari(kayit, uzakDurum);
+      if (karar === "yok") return false;
+      if (karar === "tamamlandi") {
+        bekleyenBulutKaydiniTemizle(kayit.id);
+        return false;
+      }
+      if (karar === "cakisma") {
+        bulutCakismasiniKaydet(kayit.durum, uzakDurum, {
+          syncMesaji:"Çevrimdışı değişiklik ile bulut kaydı çakıştı · Yerel değişiklik yedeklendi",
+          uyariMesaji:"Bu cihaz çevrimdışıyken başka bir cihazda da değişiklik yapılmış. Verilerin üzerine yazılmadı; bu cihazdaki değişiklik güvenlik kopyası olarak saklandı."
+        });
+        bekleyenBulutKaydiniTemizle(kayit.id);
+        return false;
+      }
+      bekleyenBulutKaydi = kayit;
+      bulutSurumunuKaydet(Number(uzakDurum.revision));
+      uygulamaDurumunuYereldeUygula(kayit.durum);
+      syncGoster("Bekleyen yerel değişiklik korunuyor · Buluta yeniden gönderiliyor…", "#f59e0b");
+      setTimeout(bulutKayitKuyrugunuCalistir, 0);
+      return true;
+    }
+
     async function bulutKaydiniGonder(durum, secenekler={}) {
       if (!yoneticiGerekli()) return false;
       if (YEREL_GELISTIRME) {
@@ -2309,18 +2404,20 @@
         await bulutKilidiyleCalistir(async () => {
           const uzakOnce = await bulutDurumunuGetir();
           const listelerAyni = listeSurumImzasi(uzakOnce) === listeSurumImzasi(durum);
+          let temelSurum = Number.isInteger(secenekler.baseRevision) ? secenekler.baseRevision : bulutSurumu;
 
           if (uzakOnce.revision !== null) {
-            if (bulutSurumu === null || (uzakOnce.revision !== bulutSurumu && listelerAyni)) {
+            if (temelSurum === null || (uzakOnce.revision !== temelSurum && listelerAyni)) {
+              temelSurum = uzakOnce.revision;
               bulutSurumunuKaydet(uzakOnce.revision);
             }
-            if (uzakOnce.revision !== bulutSurumu) {
+            if (uzakOnce.revision !== temelSurum) {
               bulutCakismasiniKaydet(durum, uzakOnce);
               return;
             }
           }
 
-          const baseRevision = bulutSurumu;
+          const baseRevision = temelSurum;
           const requestId = istekKimligiOlustur();
           const yanit = await apiIstegi({
             action: "save",
@@ -2349,7 +2446,7 @@
         if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED", "FORBIDDEN"].includes(e?.code)) {
           sonGirisHatasi = e.message;
           await firebaseAuth?.signOut();
-          return false;
+          return secenekler.kuyrukKaydi ? "oturum" : false;
         }
         if (e?.code === "STORAGE_CRITICAL") {
           syncGoster("Google Sheets alanı kritik · Değişiklik kaydedilmedi", "#ef4444");
@@ -2402,43 +2499,72 @@
           alert(e.message || "Çekin veriliş ve vade tarihlerini kontrol edin.");
           return false;
         }
-        syncGoster("Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
-        return false;
+        syncGoster(secenekler.kuyrukKaydi
+          ? "Bulut bağlantısı kurulamadı · Değişiklik bu cihazda güvenle bekliyor"
+          : "Bulut kaydı başarısız (yerel kayıt aktif)", "#f59e0b");
+        return secenekler.kuyrukKaydi ? "tekrar" : false;
       }
     }
 
     async function bulutKayitKuyrugunuCalistir() {
       if (bulutKaydiCalisiyor) return;
+      bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      if (!bekleyenBulutKaydi || !yoneticiMi()) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        syncGoster("İnternet bağlantısı yok · Değişiklik bu cihazda güvenle bekliyor", "#f59e0b");
+        return;
+      }
       bulutKaydiCalisiyor = true;
       try {
         while (bekleyenBulutKaydi) {
           const sonKayit = bekleyenBulutKaydi;
-          bekleyenBulutKaydi = null;
-          await bulutKaydiniGonder(sonKayit.durum, {
+          const sonuc = await bulutKaydiniGonder(sonKayit.durum, {
             auditAction:sonKayit.auditAction,
-            allowDuplicateRecordIds:sonKayit.allowDuplicateRecordIds
+            allowDuplicateRecordIds:sonKayit.allowDuplicateRecordIds,
+            baseRevision:sonKayit.baseRevision,
+            kuyrukKaydi:true
           });
+          const ayniKayitBekliyor = bekleyenBulutKaydi?.id === sonKayit.id;
+          if (ayniKayitBekliyor) {
+            if (["tekrar", "oturum"].includes(sonuc)) break;
+            bekleyenBulutKaydiniTemizle(sonKayit.id);
+          } else if (sonuc === true && bekleyenBulutKaydi) {
+            bekleyenBulutKaydi.baseRevision = bulutSurumu;
+            bekleyenBulutKaydiniSakla(bekleyenBulutKaydi);
+          } else if (["tekrar", "oturum"].includes(sonuc)) {
+            break;
+          }
         }
       } finally {
         bulutKaydiCalisiyor = false;
+        clearTimeout(bulutTekrarDenemeZamanlayici);
+        if (bekleyenBulutKaydi && yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
+          bulutTekrarDenemeZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 30000);
+        }
       }
     }
 
     function buludaKaydet(liste=faturaYukle(), secenekler={}) {
       if (!yoneticiMi()) return;
-      const oncekiIzinler = Array.isArray(bekleyenBulutKaydi?.allowDuplicateRecordIds)
-        ? bekleyenBulutKaydi.allowDuplicateRecordIds
+      const oncekiKayit = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      const oncekiIzinler = Array.isArray(oncekiKayit?.allowDuplicateRecordIds)
+        ? oncekiKayit.allowDuplicateRecordIds
         : [];
       const yeniIzinler = Array.isArray(secenekler.allowDuplicateRecordIds)
         ? secenekler.allowDuplicateRecordIds
         : [];
       bekleyenBulutKaydi = {
+        id:istekKimligiOlustur(),
+        kayitZamani:new Date().toISOString(),
+        baseRevision:Number.isInteger(oncekiKayit?.baseRevision) ? oncekiKayit.baseRevision : bulutSurumu,
         durum:uygulamaDurumuOlustur(liste),
         auditAction:String(secenekler.auditAction || "").slice(0,120),
         allowDuplicateRecordIds:Array.from(new Set([...oncekiIzinler,...yeniIzinler]
           .map(kimlik => String(kimlik || "").slice(0,160)).filter(Boolean))).slice(0,20)
       };
+      bekleyenBulutKaydiniSakla(bekleyenBulutKaydi);
       clearTimeout(bulutKayitZamanlayici);
+      clearTimeout(bulutTekrarDenemeZamanlayici);
       bulutKayitZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 350);
     }
 
@@ -2457,6 +2583,7 @@
       try {
         const uzakDurum = ilkDurum || await bulutKilidiyleCalistir(bulutDurumunuGetir);
         const data = uzakDurum.items;
+        if (bekleyenBulutKaydiniUzakDurumlaKontrolEt(uzakDurum)) return;
         if (uzakDurum.revision !== null) bulutSurumunuKaydet(uzakDurum.revision);
         if (Array.isArray(uzakDurum.cariHareketler)) {
           localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(uzakDurum.cariHareketler)));
