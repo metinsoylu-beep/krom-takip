@@ -8,6 +8,7 @@ const BUSINESS_MOVEMENT_SHEET_NAME = "Gelir Gider Fişleri";
 const ACCOUNT_TRANSFER_SHEET_NAME = "Hesap Transferleri";
 const PRODUCT_SHEET_NAME = "Ürün Hizmet Kartları";
 const STOCK_MOVEMENT_SHEET_NAME = "Stok Hareketleri";
+const INVOICE_LINE_SHEET_NAME = "Fatura Kalemleri";
 const AUDIT_SHEET_NAME = "İşlem Geçmişi";
 const AUDIT_MAX_RECORDS = 500;
 const CLOUD_BACKUP_SHEET_NAME = "Bulut Yedekleri";
@@ -158,7 +159,25 @@ const STOK_HAREKET_BASLIK = [
   "Açıklama",
   "Durum",
   "Kayıt Zamanı",
-  "İptal Zamanı"
+  "İptal Zamanı",
+  "Kaynak Türü",
+  "Kaynak Fatura ID",
+  "Kaynak Kalem ID"
+];
+const FATURA_KALEM_BASLIK = [
+  "Fatura ID",
+  "Kalem ID",
+  "Ürün ID",
+  "Kart Kodu",
+  "Ürün/Hizmet Adı",
+  "Kart Türü",
+  "Birim",
+  "Miktar",
+  "Birim Fiyat",
+  "KDV Oranı",
+  "Net Tutar",
+  "KDV Tutarı",
+  "Genel Tutar"
 ];
 const AUDIT_BASLIK = [
   "Kayıt Zamanı",
@@ -870,6 +889,56 @@ function faturaImzasi(item) {
   ].join("|");
 }
 
+function faturaKaleminiNormallestir(ham, sira) {
+  if (!ham || typeof ham !== "object") return null;
+  const urunId = String(ham.urunId || ham.kartId || "").trim().slice(0, 160);
+  const kod = String(ham.kod || ham.urunKodu || "").trim().replace(/\s+/g, "-").toLocaleUpperCase("tr-TR").slice(0, 50);
+  const ad = String(ham.ad || ham.urunAdi || ham.hizmetAdi || "").trim().replace(/\s+/g, " ").slice(0, 160);
+  const tur = urunTurunuNormallestir(ham.tur || ham.kartTuru);
+  const miktar = Math.max(0, tutarSayisi(ham.miktar));
+  const birimFiyat = Math.max(0, tutarSayisi(ham.birimFiyat || ham.fiyat));
+  const kdvHam = Number(ham.kdvOrani);
+  const kdvOrani = [0, 1, 10, 20].indexOf(kdvHam) >= 0 ? kdvHam : 20;
+  if (!urunId || !kod || !ad || !(miktar > 0)) return null;
+  const netTutar = Math.round(miktar * birimFiyat * 100) / 100;
+  const kdvTutari = Math.round(netTutar * kdvOrani) / 100;
+  return {
+    id:String(ham.id || ham.kalemId || ("kalem-" + String((sira || 0) + 1))).trim().slice(0, 160),
+    urunId:urunId,
+    kod:kod,
+    ad:ad,
+    tur:tur,
+    birim:String(ham.birim || (tur === "hizmet" ? "Hizmet" : "Adet")).trim().slice(0, 30),
+    miktar:miktar,
+    birimFiyat:birimFiyat,
+    kdvOrani:kdvOrani,
+    netTutar:netTutar,
+    kdvTutari:kdvTutari,
+    toplamTutar:Math.round((netTutar + kdvTutari) * 100) / 100
+  };
+}
+
+function faturaKalemleriniNormallestir(hamListe) {
+  const gorulen = {};
+  const sonuc = [];
+  (Array.isArray(hamListe) ? hamListe : []).forEach(function(ham, sira) {
+    const kalem = faturaKaleminiNormallestir(ham, sira);
+    if (!kalem || gorulen[kalem.id]) return;
+    gorulen[kalem.id] = true;
+    sonuc.push(kalem);
+  });
+  return sonuc;
+}
+
+function faturaKalemToplamlariniHesapla(kalemler) {
+  return faturaKalemleriniNormallestir(kalemler).reduce(function(toplam, kalem) {
+    toplam.araToplam = Math.round((toplam.araToplam + kalem.netTutar) * 100) / 100;
+    toplam.kdvToplami = Math.round((toplam.kdvToplami + kalem.kdvTutari) * 100) / 100;
+    toplam.genelToplam = Math.round((toplam.genelToplam + kalem.toplamTutar) * 100) / 100;
+    return toplam;
+  }, { araToplam:0, kdvToplami:0, genelToplam:0 });
+}
+
 function faturalariTekillestir(items) {
   const sonuc = [];
   const idKonumlari = {};
@@ -892,8 +961,19 @@ function faturalariTekillestir(items) {
       odemeTarihi: tarihMetni(ham.odemeTarihi),
       takipKapali: takipKapali,
       kapanisTarihi: tarihMetni(ham.kapanisTarihi || (takipKapali ? ham.odemeTarihi : "")),
-      odemeler: []
+      odemeler: [],
+      kalemler:faturaKalemleriniNormallestir(ham.kalemler),
+      araToplam:0,
+      kdvToplami:0
     };
+    const kalemToplamlari = faturaKalemToplamlariniHesapla(item.kalemler);
+    if (item.kalemler.length) {
+      item.araToplam = kalemToplamlari.araToplam;
+      item.kdvToplami = kalemToplamlari.kdvToplami;
+      item.tutar = kalemToplamlari.genelToplam;
+    } else {
+      item.araToplam = item.tutar;
+    }
     if (!item.no || !item.tarih || item.tutar <= 0) return;
     item.odemeler = odemeleriNormallestir(ham.odemeler, item.id);
     faturaOdemeOzetiniUygula(item, eskiOdendi);
@@ -1212,6 +1292,7 @@ function stokHareketiniNormallestir(ham, sira) {
   const urunId = String(ham.urunId || ham.kartId || "").trim().slice(0, 160);
   const miktar = Math.max(0, tutarSayisi(ham.miktar));
   const durum = String(ham.durum || "Aktif") === "İptal" ? "İptal" : "Aktif";
+  const kaynakTuru = String(ham.kaynakTuru || "manuel").trim().toLocaleLowerCase("tr-TR") === "fatura" ? "fatura" : "manuel";
   if (!isoTarihGecerliMi(tarih) || !urunId || !(miktar > 0)) return null;
   return {
     id: String(ham.id || ham.hareketId || ("stok-" + tarih + "-" + String((sira || 0) + 1))).trim().slice(0, 160),
@@ -1223,7 +1304,10 @@ function stokHareketiniNormallestir(ham, sira) {
     aciklama: String(ham.aciklama || "").trim().replace(/\s+/g, " ").slice(0, 500),
     durum: durum,
     kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
-    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : ""
+    iptalZamani: durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0, 80) : "",
+    kaynakTuru:kaynakTuru,
+    kaynakId:kaynakTuru === "fatura" ? String(ham.kaynakId || ham.kaynakFaturaId || "").trim().slice(0, 160) : "",
+    kaynakKalemId:kaynakTuru === "fatura" ? String(ham.kaynakKalemId || "").trim().slice(0, 160) : ""
   };
 }
 
@@ -1273,6 +1357,50 @@ function yeniGecersizStokBaglantilariniBul(oncekiDurum, urunler, stokHareketler)
   });
   Object.keys(toplamlar).forEach(function(id) {
     if (toplamlar[id] < -0.0005) sorunlar.push({ id:id, mesaj:(urunHaritasi[id].kod || "Ürün") + " stok miktarı eksiye düşemez." });
+  });
+  return sorunlar;
+}
+
+function gecersizFaturaKalemBaglantilariniBul(items, urunler, stokHareketler) {
+  const sorunlar = [];
+  const urunHaritasi = {};
+  urunKartlariniNormallestir(urunler).forEach(function(kart) { urunHaritasi[kart.id] = kart; });
+  const aktifKaynakHareketleri = {};
+  stokHareketleriniNormallestir(stokHareketler).forEach(function(hareket) {
+    if (hareket.durum === "İptal" || hareket.kaynakTuru !== "fatura") return;
+    const anahtar = String(hareket.kaynakId) + "|" + String(hareket.kaynakKalemId);
+    if (!aktifKaynakHareketleri[anahtar]) aktifKaynakHareketleri[anahtar] = [];
+    aktifKaynakHareketleri[anahtar].push(hareket);
+  });
+  const beklenenKaynaklar = {};
+
+  faturalariTekillestir(items).forEach(function(fatura) {
+    faturaKalemleriniNormallestir(fatura.kalemler).forEach(function(kalem) {
+      const kart = urunHaritasi[kalem.urunId];
+      const anahtar = String(fatura.id) + "|" + String(kalem.id);
+      beklenenKaynaklar[anahtar] = true;
+      if (!kart) {
+        sorunlar.push({ id:kalem.id, mesaj:(kalem.kod || "Fatura kalemi") + " geçerli bir ürün/hizmet kartına bağlı değil." });
+        return;
+      }
+      if (kart.tur !== kalem.tur) {
+        sorunlar.push({ id:kalem.id, mesaj:(kalem.kod || "Fatura kalemi") + " kart türüyle uyuşmuyor." });
+        return;
+      }
+      const hareketler = aktifKaynakHareketleri[anahtar] || [];
+      if (kalem.tur === "hizmet") {
+        if (hareketler.length) sorunlar.push({ id:kalem.id, mesaj:(kalem.kod || "Hizmet kalemi") + " için stok hareketi oluşturulamaz." });
+        return;
+      }
+      const beklenenTur = faturaTurunuNormallestir(fatura.faturaTuru) === "satis" ? "cikis" : "giris";
+      if (hareketler.length !== 1 || hareketler[0].urunId !== kalem.urunId || hareketler[0].tur !== beklenenTur || Math.abs(hareketler[0].miktar - kalem.miktar) > 0.0005) {
+        sorunlar.push({ id:kalem.id, mesaj:(kalem.kod || "Fatura kalemi") + " için stok hareketi eksik, yinelenmiş veya tutarsız." });
+      }
+    });
+  });
+
+  Object.keys(aktifKaynakHareketleri).forEach(function(anahtar) {
+    if (!beklenenKaynaklar[anahtar]) sorunlar.push({ id:anahtar, mesaj:"Aktif stok hareketinin bağlı olduğu fatura kalemi bulunamadı." });
   });
   return sorunlar;
 }
@@ -1743,9 +1871,43 @@ function stokHareketVerileriniOku() {
       aciklama: row[konum("Açıklama")],
       durum: row[konum("Durum")],
       kayitZamani: row[konum("Kayıt Zamanı")],
-      iptalZamani: row[konum("İptal Zamanı")]
+      iptalZamani: row[konum("İptal Zamanı")],
+      kaynakTuru: row[konum("Kaynak Türü")],
+      kaynakId: row[konum("Kaynak Fatura ID")],
+      kaynakKalemId: row[konum("Kaynak Kalem ID")]
     };
   }));
+}
+
+function faturaKalemVerileriniOku() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INVOICE_LINE_SHEET_NAME);
+  const gruplar = {};
+  if (!sheet) return gruplar;
+  const data = sheet.getDataRange().getValues();
+  const baslikSatiri = data.findIndex(function(row) { return String(row[0] || "").trim() === "Fatura ID"; });
+  if (baslikSatiri < 0) return gruplar;
+  const basliklar = data[baslikSatiri].map(function(hucre) { return String(hucre || "").trim(); });
+  const konum = function(ad) { return basliklar.indexOf(ad); };
+  data.slice(baslikSatiri + 1).forEach(function(row, sira) {
+    const faturaId = String(row[konum("Fatura ID")] || "").trim();
+    if (!faturaId) return;
+    const kalem = faturaKaleminiNormallestir({
+      id:row[konum("Kalem ID")],
+      urunId:row[konum("Ürün ID")],
+      kod:row[konum("Kart Kodu")],
+      ad:row[konum("Ürün/Hizmet Adı")],
+      tur:row[konum("Kart Türü")],
+      birim:row[konum("Birim")],
+      miktar:row[konum("Miktar")],
+      birimFiyat:row[konum("Birim Fiyat")],
+      kdvOrani:row[konum("KDV Oranı")]
+    },sira);
+    if (!kalem) return;
+    if (!gruplar[faturaId]) gruplar[faturaId] = [];
+    gruplar[faturaId].push(kalem);
+  });
+  Object.keys(gruplar).forEach(function(id) { gruplar[id] = faturaKalemleriniNormallestir(gruplar[id]); });
+  return gruplar;
 }
 
 function cariHareketVerileriniOku() {
@@ -1853,6 +2015,7 @@ function durumHesapla(tarih, vadeGun, takipKapali) {
 function faturaVerileriniOku() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const odemeGruplari = odemeVerileriniOku();
+  const kalemGruplari = faturaKalemVerileriniOku();
   let items = [];
 
   if (sheet) {
@@ -1892,7 +2055,8 @@ function faturaVerileriniOku() {
             odemeTarihi: tarihMetni(hucreOku(row, ["Ödeme Tarihi", "odemeTarihi"], -1)),
             takipKapali: takipKapaliMi(takipDurumu) || odendiMi(odemeDurumu),
             kapanisTarihi: tarihMetni(hucreOku(row, ["Kapanış Tarihi", "kapanisTarihi", "Ödeme Tarihi", "odemeTarihi"], -1)),
-            odemeler: odemeGruplari[id] || []
+            odemeler: odemeGruplari[id] || [],
+            kalemler:kalemGruplari[id] || []
           };
         });
       items = faturalariTekillestir(rows);
@@ -2122,17 +2286,32 @@ function doPost(e) {
     kilit.waitLock(30000);
     const oncekiDurum = faturaVerileriniOku();
 
-    // Eski ön yüzlerle dağıtım geçişinde fatura ödeme geçmişini koru.
+    // Eski ön yüzlerle dağıtım geçişinde ödeme geçmişi ve fatura kalemlerini koru.
     const mevcutOdemeGruplari = odemeVerileriniOku();
+    const mevcutKalemGruplari = faturaKalemVerileriniOku();
     const guvenliGelenItems = (Array.isArray(payload.items) ? payload.items : []).map(function(ham) {
-      if (!ham || typeof ham !== "object" || Object.prototype.hasOwnProperty.call(ham, "odemeler")) return ham;
+      if (!ham || typeof ham !== "object") return ham;
       const kopya = {};
       Object.keys(ham).forEach(function(anahtar) { kopya[anahtar] = ham[anahtar]; });
-      kopya.odemeler = mevcutOdemeGruplari[String(ham.id)] || [];
+      if (!Object.prototype.hasOwnProperty.call(ham, "odemeler")) kopya.odemeler = mevcutOdemeGruplari[String(ham.id)] || [];
+      if (!Object.prototype.hasOwnProperty.call(ham, "kalemler")) kopya.kalemler = mevcutKalemGruplari[String(ham.id)] || [];
       return kopya;
     });
     const items = faturalariTekillestir(guvenliGelenItems);
     const properties = PropertiesService.getScriptProperties();
+    const gecersizHamFaturaKalemi = guvenliGelenItems.some(function(fatura) {
+      return fatura && Object.prototype.hasOwnProperty.call(fatura, "kalemler") &&
+        (!Array.isArray(fatura.kalemler) || faturaKalemleriniNormallestir(fatura.kalemler).length !== fatura.kalemler.length);
+    });
+    if (gecersizHamFaturaKalemi) {
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_INVOICE_LINE",
+        revision:bulutSurumuOku(properties),
+        requestId:requestId,
+        message:"Fatura kaleminde ürün, miktar, fiyat veya KDV bilgisi geçersiz."
+      });
+    }
     const gecisTamamlandi = properties.getProperty(ESKI_ODEME_GECISI_ANAHTAR) === "1";
     const eskiCariHareketler = eskiOdemeleriCariHareketlereDonustur(items);
     const mevcutCariHareketlerHam = cariHareketVerileriniOku();
@@ -2337,6 +2516,19 @@ function doPost(e) {
       });
     }
 
+    const gecersizFaturaKalemBaglantilari = Object.prototype.hasOwnProperty.call(payload, "items") || Object.prototype.hasOwnProperty.call(payload, "urunler") || Object.prototype.hasOwnProperty.call(payload, "stokHareketler")
+      ? gecersizFaturaKalemBaglantilariniBul(items, urunler, stokHareketler)
+      : [];
+    if (gecersizFaturaKalemBaglantilari.length) {
+      return jsonCevabi({
+        ok:false,
+        code:"INVALID_INVOICE_LINE",
+        revision:mevcutSurum,
+        requestId:requestId,
+        message:gecersizFaturaKalemBaglantilari[0].mesaj
+      });
+    }
+
     // Ana tabloların üzerine yazmadan önce tüm muhasebe durumunu ayrı bir
     // Google Sheets sayfasında sakla. Yedekleme başarısızsa veri değişikliğini
     // durdur; böylece kurtarma kopyası olmadan toplu üzerine yazma yapılmaz.
@@ -2368,6 +2560,7 @@ function doPost(e) {
     const accountTransferSheet = ss.getSheetByName(ACCOUNT_TRANSFER_SHEET_NAME) || ss.insertSheet(ACCOUNT_TRANSFER_SHEET_NAME);
     const productSheet = ss.getSheetByName(PRODUCT_SHEET_NAME) || ss.insertSheet(PRODUCT_SHEET_NAME);
     const stockMovementSheet = ss.getSheetByName(STOCK_MOVEMENT_SHEET_NAME) || ss.insertSheet(STOCK_MOVEMENT_SHEET_NAME);
+    const invoiceLineSheet = ss.getSheetByName(INVOICE_LINE_SHEET_NAME) || ss.insertSheet(INVOICE_LINE_SHEET_NAME);
 
     const alisFaturaToplami = items.filter(function(item) { return faturaTurunuNormallestir(item.faturaTuru) === "alis"; })
       .reduce(function(deger, item) { return deger + item.tutar; }, 0);
@@ -2549,8 +2742,31 @@ function doPost(e) {
         hareket.aciklama,
         hareket.durum,
         hareket.kayitZamani,
-        hareket.iptalZamani
+        hareket.iptalZamani,
+        hareket.kaynakTuru === "fatura" ? "Fatura" : "Manuel",
+        hareket.kaynakId || "",
+        hareket.kaynakKalemId || ""
       ]);
+    });
+    const faturaKalemSatirlari = [FATURA_KALEM_BASLIK];
+    items.forEach(function(fatura) {
+      faturaKalemleriniNormallestir(fatura.kalemler).forEach(function(kalem) {
+        faturaKalemSatirlari.push([
+          fatura.id,
+          kalem.id,
+          kalem.urunId,
+          kalem.kod,
+          kalem.ad,
+          kalem.tur === "hizmet" ? "Hizmet" : "Ürün",
+          kalem.birim,
+          kalem.miktar,
+          kalem.birimFiyat,
+          kalem.kdvOrani,
+          kalem.netTutar,
+          kalem.kdvTutari,
+          kalem.toplamTutar
+        ]);
+      });
     });
 
     // Kilit altında tek seferde yazılır; eşzamanlı istekler satırları iç içe geçiremez.
@@ -2619,6 +2835,12 @@ function doPost(e) {
       .setBackground("#1e3a5f")
       .setFontColor("#c9a84c")
       .setFontWeight("bold");
+    invoiceLineSheet.clearContents();
+    invoiceLineSheet.getRange(1, 1, faturaKalemSatirlari.length, FATURA_KALEM_BASLIK.length).setValues(faturaKalemSatirlari);
+    invoiceLineSheet.getRange(1, 1, 1, FATURA_KALEM_BASLIK.length)
+      .setBackground("#1e3a5f")
+      .setFontColor("#c9a84c")
+      .setFontWeight("bold");
 
     const yeniSurum = mevcutSurum + 1;
     const yeniProperties = {};
@@ -2666,7 +2888,8 @@ function doPost(e) {
       businessMovementCount: isletmeHareketler.length,
       accountTransferCount: hesapTransferleri.length,
       productCount: urunler.length,
-      stockMovementCount: stokHareketler.length
+      stockMovementCount: stokHareketler.length,
+      invoiceLineCount:faturaKalemSatirlari.length - 1
     });
   } catch (err) {
     return jsonCevabi({

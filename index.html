@@ -1607,6 +1607,46 @@
     .urun-stok-islem button.tehlike:hover { border-color: #ef444488; color: #ff6b77; }
     .urun-stok-bos { padding: 54px 20px; color: #718398; text-align: center; line-height: 1.7; }
 
+    /* ── FATURA KALEMLERİ ─────────────────────────────────────────────────── */
+    .yeni-fatura-panel { width: min(980px,calc(100vw - 32px)); max-height: calc(100vh - 36px); overflow-y: auto; }
+    .fatura-kalem-bolumu {
+      margin-top: 14px; padding: 13px; background: #0a1a2b; border: 1px solid #294159;
+      border-top: 2px solid #38bdf8; border-radius: 8px;
+    }
+    .fatura-kalem-baslik { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .fatura-kalem-baslik strong { color: #e6eef8; font: 700 13px Georgia,serif; }
+    .fatura-kalem-baslik span { color: #71849a; font-size: 9px; text-align: right; }
+    .fatura-kalem-giris {
+      display: grid; grid-template-columns: minmax(220px,1.6fr) minmax(90px,.45fr) minmax(120px,.65fr) minmax(90px,.45fr) auto;
+      gap: 8px; align-items: end;
+    }
+    .fatura-kalem-alan label { display: block; margin-bottom: 5px; color: #8194a9; font-size: 8px; letter-spacing: .35px; }
+    .fatura-kalem-alan input, .fatura-kalem-alan select {
+      width: 100%; min-height: 34px; padding: 7px 9px; border: 1px solid #294159; border-radius: 6px;
+      background: #10243a; color: #e6eef8; font: 600 10px "Segoe UI",Arial,sans-serif; outline: none;
+    }
+    .fatura-kalem-alan input:focus, .fatura-kalem-alan select:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px #38bdf816; }
+    .fatura-kalem-ekle {
+      min-height: 34px; padding: 7px 12px; border: 1px solid #38bdf866; border-radius: 6px;
+      background: #38bdf817; color: #7dd3fc; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer; white-space: nowrap;
+    }
+    .fatura-kalem-ekle:hover { background: #38bdf82b; }
+    .fatura-kalem-mesaj { min-height: 16px; margin: 7px 0 0; color: #ff7a85; font-size: 9px; }
+    .fatura-kalem-listesi { margin-top: 8px; overflow-x: auto; border: 1px solid #1d344c; border-radius: 7px; }
+    .fatura-kalem-tablosu { width: 100%; min-width: 720px; border-collapse: collapse; }
+    .fatura-kalem-tablosu th { padding: 8px 9px; background: #163453; color: #89a1b9; font-size: 8px; text-align: left; }
+    .fatura-kalem-tablosu td { padding: 8px 9px; border-top: 1px solid #1b3147; color: #b9c8d8; font-size: 9px; }
+    .fatura-kalem-tablosu td strong { color: #edf5ff; }
+    .fatura-kalem-sil { width: 27px; height: 27px; border: 1px solid #ff5b6755; border-radius: 5px; background: #ff5b6710; color: #ff7a85; cursor: pointer; }
+    .fatura-kalem-bos { padding: 17px; color: #71849a; font-size: 9px; text-align: center; }
+    .fatura-kalem-toplamlar { display: flex; justify-content: flex-end; gap: 18px; margin-top: 10px; }
+    .fatura-kalem-toplam { min-width: 105px; text-align: right; }
+    .fatura-kalem-toplam span { display: block; color: #71849a; font-size: 8px; }
+    .fatura-kalem-toplam strong { display: block; margin-top: 3px; color: #d9e6f3; font: 700 13px Georgia,serif; }
+    .fatura-kalem-toplam.genel strong { color: #4ade80; font-size: 16px; }
+    #inp-tutar.kalemden-hesaplandi { color: #4ade80; background: #0d2a28; border-color: #2f9b67; }
+    .fatura-kalem-sayisi { display: block; margin-top: 3px; color: #67cdfa; font-size: 8px; font-weight: 600; }
+
     @media (max-width: 1180px) {
       .modul-menu-ac { display: grid; }
       .modul-panel {
@@ -1647,6 +1687,14 @@
       .urun-stok-form-mesaj { margin: 0; }
       .urun-stok-filtreler { padding: 12px; }
       .urun-stok-tablo-wrap { margin: 0 12px 12px; }
+      .yeni-fatura-panel { width: 100%; max-height: 100vh; min-height: 100vh; border-radius: 0; }
+      .fatura-kalem-giris { grid-template-columns: 1fr 1fr; }
+      .fatura-kalem-alan.urun { grid-column: 1 / -1; }
+      .fatura-kalem-ekle { grid-column: 1 / -1; }
+      .fatura-kalem-baslik { display: block; }
+      .fatura-kalem-baslik span { display: block; margin-top: 4px; text-align: left; }
+      .fatura-kalem-toplamlar { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .fatura-kalem-toplam { min-width: 0; }
     }
     body.auth-bekliyor .modul-panel,
     body.auth-bekliyor .modul-panel-perde { display: none !important; }
@@ -2864,12 +2912,32 @@
           </div>
           <div class="form-grid">
             <div class="form-alan form-alan-genis"><label>CARİ / FİRMA ADI</label><input type="text" id="inp-cari" list="cari-kart-listesi" placeholder="Kayıtlı cari seçin" maxlength="120" autocomplete="organization"/><datalist id="cari-kart-listesi"></datalist></div>
-            <div class="form-alan"><label>FATURA TÜRÜ</label><select id="inp-fatura-turu"><option value="alis">Alış Faturası</option><option value="satis">Satış Faturası</option></select></div>
+            <div class="form-alan"><label>FATURA TÜRÜ</label><select id="inp-fatura-turu" onchange="faturaTuruDegisti()"><option value="alis">Alış Faturası</option><option value="satis">Satış Faturası</option></select></div>
             <div class="form-alan"><label>FATURA NO</label><input type="text" id="inp-no" placeholder="FTR-001"/></div>
             <div class="form-alan"><label>FATURA TARİHİ</label><input type="date" id="inp-tarih" oninput="gosterVade()"/></div>
             <div class="form-alan"><label>VADE GÜNÜ <span class="hint">(gün)</span></label><input type="number" id="inp-vade-gun" placeholder="90" min="1" value="90" oninput="gosterVade()"/><div id="vade-hint"></div></div>
-            <div class="form-alan"><label>TUTAR (₺)</label><input type="number" id="inp-tutar" placeholder="15.000"/></div>
+            <div class="form-alan"><label>GENEL TOPLAM (₺)</label><input type="number" id="inp-tutar" min="0.01" step="0.01" placeholder="15.000"/></div>
           </div>
+          <section class="fatura-kalem-bolumu" aria-labelledby="fatura-kalem-baslik">
+            <div class="fatura-kalem-baslik">
+              <strong id="fatura-kalem-baslik"><i class="fa-solid fa-list-check" aria-hidden="true"></i> Fatura Kalemleri</strong>
+              <span>İsteğe bağlıdır. Kalem eklenirse toplam ve stok hareketi otomatik hesaplanır.</span>
+            </div>
+            <div class="fatura-kalem-giris">
+              <div class="fatura-kalem-alan urun"><label for="fatura-kalem-urun">ÜRÜN / HİZMET</label><select id="fatura-kalem-urun" onchange="faturaKalemUrunuDegisti()"><option value="">Kart seçin</option></select></div>
+              <div class="fatura-kalem-alan"><label for="fatura-kalem-miktar">MİKTAR</label><input id="fatura-kalem-miktar" type="number" min="0.001" step="0.001" value="1"/></div>
+              <div class="fatura-kalem-alan"><label for="fatura-kalem-fiyat">BİRİM FİYAT (₺)</label><input id="fatura-kalem-fiyat" type="number" min="0" step="0.01" value="0"/></div>
+              <div class="fatura-kalem-alan"><label for="fatura-kalem-kdv">KDV</label><select id="fatura-kalem-kdv"><option value="0">%0</option><option value="1">%1</option><option value="10">%10</option><option value="20" selected>%20</option></select></div>
+              <button class="fatura-kalem-ekle" type="button" onclick="faturaKalemEkle()"><i class="fa-solid fa-plus" aria-hidden="true"></i> Kalem Ekle</button>
+            </div>
+            <p class="fatura-kalem-mesaj" id="fatura-kalem-mesaj" role="status"></p>
+            <div class="fatura-kalem-listesi" id="fatura-kalem-listesi"><div class="fatura-kalem-bos">Henüz kalem eklenmedi; faturayı mevcut yöntemle toplam tutar girerek de kaydedebilirsiniz.</div></div>
+            <div class="fatura-kalem-toplamlar">
+              <div class="fatura-kalem-toplam"><span>ARA TOPLAM</span><strong id="fatura-ara-toplam">0 ₺</strong></div>
+              <div class="fatura-kalem-toplam"><span>KDV TOPLAMI</span><strong id="fatura-kdv-toplami">0 ₺</strong></div>
+              <div class="fatura-kalem-toplam genel"><span>GENEL TOPLAM</span><strong id="fatura-genel-toplam">0 ₺</strong></div>
+            </div>
+          </section>
           <div id="msg"></div>
           <div class="form-alt">
             <button class="btn-form-iptal" type="button" onclick="yeniFaturaKapat()">İptal</button>
@@ -2941,6 +3009,7 @@
     let bekleyenBulutKaydiKalici = true;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
+    let yeniFaturaKalemleri = [];
     let cariHareketKayitKilidi = false;
     let duzenlenenCariHareket = null;
     const kayitliBulutSurumMetni = localStorage.getItem(BULUT_SURUM_ANAHTAR);
@@ -3232,7 +3301,15 @@
             vadeGun: Number(inv.vadeGun),
             tutar: tutarSayiyaCevir(inv.tutar).toFixed(2),
             takipKapali:faturaTakibiKapali(inv),
-            kapanisTarihi:String(inv.kapanisTarihi || "")
+            kapanisTarihi:String(inv.kapanisTarihi || ""),
+            kalemler:faturaKalemleriniNormallestir(inv.kalemler).map(kalem=>({
+              ...kalem,
+              miktar:tutarSayiyaCevir(kalem.miktar).toFixed(3),
+              birimFiyat:tutarSayiyaCevir(kalem.birimFiyat).toFixed(2),
+              netTutar:tutarSayiyaCevir(kalem.netTutar).toFixed(2),
+              kdvTutari:tutarSayiyaCevir(kalem.kdvTutari).toFixed(2),
+              toplamTutar:tutarSayiyaCevir(kalem.toplamTutar).toFixed(2)
+            }))
           }))
           .sort((a, b) => a.id - b.id),
         cariHareketler:cariHareketleriNormallestir(kaynak.cariHareketler).map(hareket => ({
@@ -4421,6 +4498,53 @@
       catch { return []; }
     }
 
+    function faturaKaleminiNormallestir(ham, sira=0) {
+      if (!ham || typeof ham !== "object") return null;
+      const urunId = String(ham.urunId || ham.kartId || "").trim().slice(0,160);
+      const kod = String(ham.kod || ham.urunKodu || "").trim().replace(/\s+/g,"-").toLocaleUpperCase("tr-TR").slice(0,50);
+      const ad = String(ham.ad || ham.urunAdi || ham.hizmetAdi || "").trim().replace(/\s+/g," ").slice(0,160);
+      const miktar = Math.max(0,tutarSayiyaCevir(ham.miktar));
+      const birimFiyat = Math.max(0,tutarSayiyaCevir(ham.birimFiyat || ham.fiyat));
+      const kdvHam = Number(ham.kdvOrani);
+      const kdvOrani = [0,1,10,20].includes(kdvHam) ? kdvHam : 20;
+      if (!urunId || !kod || !ad || !(miktar>0)) return null;
+      const netTutar = Math.round(miktar*birimFiyat*100)/100;
+      const kdvTutari = Math.round(netTutar*kdvOrani)/100;
+      return {
+        id:String(ham.id || ham.kalemId || `kalem-${sira+1}`).trim().slice(0,160),
+        urunId,
+        kod,
+        ad,
+        tur:urunTurunuNormallestir(ham.tur || ham.kartTuru),
+        birim:String(ham.birim || "Adet").trim().slice(0,40) || "Adet",
+        miktar,
+        birimFiyat,
+        kdvOrani,
+        netTutar,
+        kdvTutari,
+        toplamTutar:Math.round((netTutar+kdvTutari)*100)/100
+      };
+    }
+
+    function faturaKalemleriniNormallestir(hamListe) {
+      const gorulen = new Set();
+      return (Array.isArray(hamListe) ? hamListe : [])
+        .map((ham,sira)=>faturaKaleminiNormallestir(ham,sira))
+        .filter(kalem=>{
+          if (!kalem || gorulen.has(kalem.id)) return false;
+          gorulen.add(kalem.id);
+          return true;
+        });
+    }
+
+    function faturaKalemToplamlariniHesapla(kalemler) {
+      return faturaKalemleriniNormallestir(kalemler).reduce((toplam,kalem)=>({
+        araToplam:Math.round((toplam.araToplam+kalem.netTutar)*100)/100,
+        kdvToplami:Math.round((toplam.kdvToplami+kalem.kdvTutari)*100)/100,
+        genelToplam:Math.round((toplam.genelToplam+kalem.toplamTutar)*100)/100
+      }),{ araToplam:0, kdvToplami:0, genelToplam:0 });
+    }
+
     function stokHareketTurunuNormallestir(deger) {
       return String(deger || "").trim().toLocaleLowerCase("tr-TR") === "cikis" || String(deger || "").trim().toLocaleLowerCase("tr-TR") === "çıkış" ? "cikis" : "giris";
     }
@@ -4440,6 +4564,9 @@
         miktar,
         belgeNo:String(ham.belgeNo || ham.referans || "").trim().replace(/\s+/g," ").slice(0,120),
         aciklama:String(ham.aciklama || "").trim().replace(/\s+/g," ").slice(0,500),
+        kaynakTuru:String(ham.kaynakTuru || "manuel").trim().toLocaleLowerCase("tr-TR") === "fatura" ? "fatura" : "manuel",
+        kaynakId:String(ham.kaynakId || ham.faturaId || "").trim().slice(0,160),
+        kaynakKalemId:String(ham.kaynakKalemId || ham.kalemId || "").trim().slice(0,160),
         durum,
         kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
         iptalZamani:durum === "İptal" ? String(ham.iptalZamani || "").trim().slice(0,80) : ""
@@ -4906,7 +5033,19 @@
           takipKapali,
           kapanisTarihi:String(ham.kapanisTarihi || (takipKapali ? ham.odemeTarihi : "") || "").split("T")[0],
           odemeler: [],
+          kalemler:faturaKalemleriniNormallestir(ham.kalemler),
+          araToplam:0,
+          kdvToplami:0
         };
+        const kalemToplamlari = faturaKalemToplamlariniHesapla(inv.kalemler);
+        if (inv.kalemler.length) {
+          inv.araToplam = kalemToplamlari.araToplam;
+          inv.kdvToplami = kalemToplamlari.kdvToplami;
+          inv.tutar = String(kalemToplamlari.genelToplam);
+        } else {
+          inv.araToplam = tutarSayiyaCevir(inv.tutar);
+          inv.kdvToplami = 0;
+        }
         if (!inv.no || !inv.tarih || tutarSayiyaCevir(inv.tutar) <= 0) return;
         inv.odemeler = odemeleriNormallestir(ham.odemeler, inv.id);
         faturaOdemeOzetiniUygula(inv, eskiOdendi);
@@ -6677,7 +6816,13 @@
       seciliFaturaKimlikleri.clear();
       topluSilmeKimlikleri = [];
       document.getElementById("toplu-sil-overlay")?.classList.remove("aktif");
-      faturaKaydet(yeniListe, `${silinenSayisi} fatura toplu olarak silindi`);
+      const mevcutStokHareketleri = stokHareketleriniYukle();
+      const guncelStokHareketleri = faturaStokHareketleriniIptalEt(mevcutStokHareketleri,silinecekler.map(inv=>inv.id),"Kaynak faturalar toplu silindi");
+      if (JSON.stringify(mevcutStokHareketleri) === JSON.stringify(guncelStokHareketleri)) {
+        faturaKaydet(yeniListe, `${silinenSayisi} fatura toplu olarak silindi`);
+      } else {
+        faturaVeStokKaydet(yeniListe,guncelStokHareketleri,`${silinenSayisi} fatura silindi; bağlı stok hareketleri iptal edildi`);
+      }
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
@@ -8745,17 +8890,28 @@
       if (!inv) return;
       document.getElementById("d-id").value       = inv.id;
       document.getElementById("d-cari").value     = inv.cari || "";
-      document.getElementById("d-fatura-turu").value = faturaTurunuNormallestir(inv.faturaTuru);
+      const kalemliFatura = faturaKalemleriniNormallestir(inv.kalemler).length > 0;
+      const turAlani = document.getElementById("d-fatura-turu");
+      const tutarAlani = document.getElementById("d-tutar");
+      turAlani.value = faturaTurunuNormallestir(inv.faturaTuru);
+      turAlani.disabled = kalemliFatura;
       document.getElementById("d-no").value       = inv.no;
       document.getElementById("d-tarih").value    = inv.tarih;
       document.getElementById("d-vade-gun").value = inv.vadeGun || 90;
-      document.getElementById("d-tutar").value    = inv.tutar;
+      tutarAlani.value = inv.tutar;
+      tutarAlani.readOnly = kalemliFatura;
       document.getElementById("d-takip-durumu").value = faturaTakibiKapali(inv) ? "kapali" : "acik";
-      document.getElementById("d-msg").textContent = "";
+      const mesaj = document.getElementById("d-msg");
+      mesaj.style.color = kalemliFatura ? "#67cdfa" : "#f87171";
+      mesaj.textContent = kalemliFatura ? "Kalemli faturanın türü ve toplamı, stok geçmişini korumak için kilitlidir." : "";
       duzenleVadeGuncelle();
       document.getElementById("duzenle-overlay").classList.add("aktif");
     }
-    function duzenleKapat() { document.getElementById("duzenle-overlay").classList.remove("aktif"); }
+    function duzenleKapat() {
+      document.getElementById("duzenle-overlay").classList.remove("aktif");
+      document.getElementById("d-fatura-turu").disabled = false;
+      document.getElementById("d-tutar").readOnly = false;
+    }
     function duzenleVadeGuncelle() {
       const t = document.getElementById("d-tarih").value;
       const g = document.getElementById("d-vade-gun").value;
@@ -8767,22 +8923,32 @@
       if (!yoneticiGerekli()) return;
       const id    = Number(document.getElementById("d-id").value);
       let cari  = document.getElementById("d-cari").value.trim();
-      const faturaTuru = faturaTurunuNormallestir(document.getElementById("d-fatura-turu").value);
+      const mevcutListe = faturaYukle();
+      const mevcutFatura = mevcutListe.find(i => i.id === id);
+      if (!mevcutFatura) return;
+      const kalemliFatura = faturaKalemleriniNormallestir(mevcutFatura.kalemler).length > 0;
+      const faturaTuru = kalemliFatura ? faturaTurunuNormallestir(mevcutFatura.faturaTuru) : faturaTurunuNormallestir(document.getElementById("d-fatura-turu").value);
       const no    = document.getElementById("d-no").value.trim();
       const tarih = document.getElementById("d-tarih").value;
       const vadeG = document.getElementById("d-vade-gun").value;
-      const tutar = document.getElementById("d-tutar").value.trim();
+      const tutar = kalemliFatura ? String(mevcutFatura.tutar) : document.getElementById("d-tutar").value.trim();
       const takipKapali = document.getElementById("d-takip-durumu").value === "kapali";
       const msg   = document.getElementById("d-msg");
       if (!cari || !no || !tarih || !vadeG || !tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
       cari = cariKartiniGarantiEt(cari)?.cari || cari;
-      const mevcutListe = faturaYukle();
-      const mevcutFatura = mevcutListe.find(i => i.id === id);
-      faturaKaydet(mevcutListe.map(i => i.id===id ? {
+      const guncelListe = mevcutListe.map(i => i.id===id ? {
         ...i, cari, faturaTuru, no, tarih, vadeGun:parseInt(vadeG), tutar,
         takipKapali,
         kapanisTarihi:takipKapali ? (i.kapanisTarihi || bugununTarihi()) : ""
-      } : i), "Fatura düzenlendi");
+      } : i);
+      if (kalemliFatura) {
+        const guncelStokHareketleri = stokHareketleriniYukle().map(hareket=>String(hareket.kaynakId) === String(id) && hareket.kaynakTuru === "fatura"
+          ? {...hareket,tarih,belgeNo:no,aciklama:`${faturaTuruEtiketi(faturaTuru)} faturası · ${hareket.aciklama.split("·").slice(-2).join("·").trim()}`.slice(0,500)}
+          : hareket);
+        faturaVeStokKaydet(guncelListe,guncelStokHareketleri,"Kalemli fatura düzenlendi");
+      } else {
+        faturaKaydet(guncelListe,"Fatura düzenlendi");
+      }
       if (mevcutFatura && cariAdiAnahtari(mevcutFatura.cari) !== cariAdiAnahtari(cari)) {
         const guncelHareketler = cariHareketleriYukle().map(hareket =>
           Number(hareket.kaynakFaturaId) === id ? { ...hareket, cari } : hareket
@@ -8852,6 +9018,156 @@
       });
     }
 
+    // ── FATURA KALEMLERİ VE STOK BAĞLANTISI ─────────────────────────────────
+    function faturaKalemKimligiOlustur() {
+      return `kalem-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    }
+
+    function faturaKalemSecenekleriniGuncelle(seciliId="") {
+      const alan = document.getElementById("fatura-kalem-urun");
+      if (!alan) return;
+      const kartlar = urunKartlariniYukle().filter(kart=>kart.durum === "Aktif");
+      alan.innerHTML = `<option value="">Kart seçin</option>${kartlar.map(kart=>{
+        const stok = kart.tur === "urun" ? ` · Stok ${stokMiktariniFormatla(urunStokMiktariniHesapla(kart))} ${kart.birim}` : " · Hizmet";
+        return `<option value="${htmlGuvenli(kart.id)}">${htmlGuvenli(kart.kod)} · ${htmlGuvenli(kart.ad)}${htmlGuvenli(stok)}</option>`;
+      }).join("")}`;
+      alan.value = kartlar.some(kart=>kart.id === seciliId) ? seciliId : "";
+    }
+
+    function faturaKalemUrunuDegisti() {
+      const kart = urunKartlariniYukle().find(item=>item.id === document.getElementById("fatura-kalem-urun")?.value);
+      if (!kart) return;
+      const tur = faturaTurunuNormallestir(document.getElementById("inp-fatura-turu")?.value);
+      document.getElementById("fatura-kalem-fiyat").value = String(tur === "satis" ? kart.satisFiyati : kart.alisFiyati);
+      document.getElementById("fatura-kalem-kdv").value = String(kart.kdvOrani);
+      document.getElementById("fatura-kalem-miktar").value = "1";
+      document.getElementById("fatura-kalem-mesaj").textContent = "";
+    }
+
+    function faturaTuruDegisti() {
+      faturaKalemUrunuDegisti();
+      yeniFaturaKalemleriniGoster();
+    }
+
+    function yeniFaturaKalemleriniGoster() {
+      const listeAlani = document.getElementById("fatura-kalem-listesi");
+      const tutarAlani = document.getElementById("inp-tutar");
+      if (!listeAlani || !tutarAlani) return;
+      const toplamlar = faturaKalemToplamlariniHesapla(yeniFaturaKalemleri);
+      document.getElementById("fatura-ara-toplam").textContent = formatPara(toplamlar.araToplam);
+      document.getElementById("fatura-kdv-toplami").textContent = formatPara(toplamlar.kdvToplami);
+      document.getElementById("fatura-genel-toplam").textContent = formatPara(toplamlar.genelToplam);
+      const onceOtomatikti = tutarAlani.classList.contains("kalemden-hesaplandi");
+      tutarAlani.readOnly = yeniFaturaKalemleri.length > 0;
+      tutarAlani.classList.toggle("kalemden-hesaplandi",yeniFaturaKalemleri.length > 0);
+      if (yeniFaturaKalemleri.length) tutarAlani.value = toplamlar.genelToplam.toFixed(2);
+      else if (onceOtomatikti) tutarAlani.value = "";
+      listeAlani.innerHTML = yeniFaturaKalemleri.length ? `<table class="fatura-kalem-tablosu"><thead><tr><th>KOD / KART</th><th>TÜR</th><th>MİKTAR</th><th>BİRİM FİYAT</th><th>KDV</th><th>TOPLAM</th><th></th></tr></thead><tbody>${yeniFaturaKalemleri.map(kalem=>`<tr><td><strong>${htmlGuvenli(kalem.kod)}</strong><br>${htmlGuvenli(kalem.ad)}</td><td>${kalem.tur === "hizmet" ? "Hizmet" : "Ürün"}</td><td>${stokMiktariniFormatla(kalem.miktar)} ${htmlGuvenli(kalem.birim)}</td><td>${formatPara(kalem.birimFiyat)}</td><td>%${kalem.kdvOrani}<br>${formatPara(kalem.kdvTutari)}</td><td><strong>${formatPara(kalem.toplamTutar)}</strong></td><td><button class="fatura-kalem-sil" type="button" onclick="faturaKalemSil('${htmlGuvenli(kalem.id)}')" aria-label="${htmlGuvenli(kalem.ad)} kalemini çıkar"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></td></tr>`).join("")}</tbody></table>`
+        : '<div class="fatura-kalem-bos">Henüz kalem eklenmedi; faturayı mevcut yöntemle toplam tutar girerek de kaydedebilirsiniz.</div>';
+    }
+
+    function faturaKalemEkle() {
+      if (!yoneticiGerekli()) return;
+      const mesaj = document.getElementById("fatura-kalem-mesaj");
+      const kart = urunKartlariniYukle().find(item=>item.id === document.getElementById("fatura-kalem-urun")?.value && item.durum === "Aktif");
+      const miktar = tutarSayiyaCevir(document.getElementById("fatura-kalem-miktar")?.value);
+      const birimFiyat = tutarSayiyaCevir(document.getElementById("fatura-kalem-fiyat")?.value);
+      const kdvOrani = Number(document.getElementById("fatura-kalem-kdv")?.value);
+      if (!kart) { mesaj.textContent="Aktif bir ürün veya hizmet kartı seçin."; return; }
+      if (!(miktar>0)) { mesaj.textContent="Sıfırdan büyük bir miktar yazın."; return; }
+      if (birimFiyat<0) { mesaj.textContent="Birim fiyat sıfırdan küçük olamaz."; return; }
+      const faturaTuru = faturaTurunuNormallestir(document.getElementById("inp-fatura-turu")?.value);
+      const ayniUrunMiktari = yeniFaturaKalemleri.filter(kalem=>kalem.tur === "urun" && kalem.urunId === kart.id).reduce((toplam,kalem)=>toplam+kalem.miktar,0);
+      if (faturaTuru === "satis" && kart.tur === "urun" && ayniUrunMiktari+miktar > urunStokMiktariniHesapla(kart)+0.0005) {
+        mesaj.textContent=`Satış miktarı mevcut ${stokMiktariniFormatla(urunStokMiktariniHesapla(kart))} ${kart.birim} stoktan fazla olamaz.`;
+        return;
+      }
+      const kalem = faturaKaleminiNormallestir({
+        id:faturaKalemKimligiOlustur(), urunId:kart.id, kod:kart.kod, ad:kart.ad, tur:kart.tur,
+        birim:kart.birim, miktar, birimFiyat, kdvOrani
+      },yeniFaturaKalemleri.length);
+      if (!kalem) { mesaj.textContent="Fatura kalemi doğrulanamadı."; return; }
+      const ayni = yeniFaturaKalemleri.find(item=>item.urunId === kalem.urunId && item.birimFiyat === kalem.birimFiyat && item.kdvOrani === kalem.kdvOrani);
+      yeniFaturaKalemleri = ayni
+        ? yeniFaturaKalemleri.map(item=>item.id === ayni.id ? faturaKaleminiNormallestir({...item,miktar:item.miktar+kalem.miktar}) : item)
+        : [...yeniFaturaKalemleri,kalem];
+      mesaj.style.color="#4ade80";
+      mesaj.textContent=`${kart.kod} kalemi eklendi.`;
+      yeniFaturaKalemleriniGoster();
+    }
+
+    function faturaKalemSil(kimlik) {
+      yeniFaturaKalemleri = yeniFaturaKalemleri.filter(kalem=>kalem.id !== kimlik);
+      const mesaj = document.getElementById("fatura-kalem-mesaj");
+      if (mesaj) { mesaj.style.color="#f6c95c"; mesaj.textContent="Kalem faturadan çıkarıldı."; }
+      yeniFaturaKalemleriniGoster();
+    }
+
+    function yeniFaturaFormunuTemizle(tur="alis") {
+      yeniFaturaKalemleri = [];
+      document.getElementById("inp-cari").value = "";
+      document.getElementById("inp-fatura-turu").value = faturaTurunuNormallestir(tur);
+      document.getElementById("inp-no").value = "";
+      document.getElementById("inp-tarih").value = "";
+      document.getElementById("inp-vade-gun").value = "90";
+      document.getElementById("inp-tutar").value = "";
+      document.getElementById("vade-hint").textContent = "";
+      document.getElementById("msg").textContent = "";
+      document.getElementById("fatura-kalem-mesaj").textContent = "";
+      faturaKalemSecenekleriniGuncelle();
+      document.getElementById("fatura-kalem-urun").value = "";
+      document.getElementById("fatura-kalem-miktar").value = "1";
+      document.getElementById("fatura-kalem-fiyat").value = "0";
+      document.getElementById("fatura-kalem-kdv").value = "20";
+      yeniFaturaKalemleriniGoster();
+    }
+
+    function faturaKalemlerindenStokHareketleriOlustur(fatura) {
+      const zaman = new Date().toISOString();
+      return faturaKalemleriniNormallestir(fatura?.kalemler)
+        .filter(kalem=>kalem.tur === "urun")
+        .map((kalem,sira)=>stokHareketiniNormallestir({
+          id:`fstk-${fatura.id}-${sira+1}`,
+          tarih:fatura.tarih,
+          urunId:kalem.urunId,
+          tur:faturaTurunuNormallestir(fatura.faturaTuru) === "satis" ? "cikis" : "giris",
+          miktar:kalem.miktar,
+          belgeNo:fatura.no,
+          aciklama:`${faturaTuruEtiketi(fatura.faturaTuru)} faturası · ${kalem.kod} · ${kalem.ad}`,
+          kaynakTuru:"fatura",
+          kaynakId:String(fatura.id),
+          kaynakKalemId:kalem.id,
+          durum:"Aktif",
+          kayitZamani:zaman
+        },sira)).filter(Boolean);
+    }
+
+    function faturaVeStokKaydet(faturalar, hareketler, neden="Fatura ve stok değiştirildi") {
+      if (!yoneticiGerekli()) return false;
+      const guvenliFaturalar = faturalariTekillestir(faturalar).liste;
+      const guvenliHareketler = stokHareketleriniNormallestir(hareketler);
+      const eksiyeDusen = urunKartlariniYukle().find(urun=>urun.tur === "urun" && urunStokMiktariniHesapla(urun,guvenliHareketler) < -0.0005);
+      if (eksiyeDusen) { alert(`${eksiyeDusen.kod} kodlu ürünün stok miktarı eksiye düşemez. Fatura kaydedilmedi.`); return false; }
+      const mevcutFaturalar = faturaYukle();
+      const mevcutHareketler = stokHareketleriniYukle();
+      if (JSON.stringify(mevcutFaturalar) === JSON.stringify(guvenliFaturalar) && JSON.stringify(mevcutHareketler) === JSON.stringify(guvenliHareketler)) return false;
+      otomatikYedekOlustur(mevcutFaturalar,neden);
+      localStorage.setItem(ANAHTAR,JSON.stringify(guvenliFaturalar));
+      localStorage.setItem(STOK_HAREKET_ANAHTAR,JSON.stringify(guvenliHareketler));
+      buludaKaydet(guvenliFaturalar,{auditAction:neden});
+      urunStokSecenekleriniGuncelle();
+      if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
+      return true;
+    }
+
+    function faturaStokHareketleriniIptalEt(hareketler, faturaKimlikleri, neden) {
+      const kimlikler = new Set((Array.isArray(faturaKimlikleri) ? faturaKimlikleri : [faturaKimlikleri]).map(String));
+      const zaman = new Date().toISOString();
+      return stokHareketleriniNormallestir(hareketler).map(hareket=>hareket.kaynakTuru === "fatura" && kimlikler.has(String(hareket.kaynakId)) && hareket.durum !== "İptal"
+        ? {...hareket,durum:"İptal",iptalZamani:zaman,aciklama:`${hareket.aciklama || "Fatura stok hareketi"} · ${neden || "Kaynak fatura silindi"}`.slice(0,500)}
+        : hareket);
+    }
+
     // ── FORM ───────────────────────────────────────────────────────────────────
     function gosterVade() {
       const t = document.getElementById("inp-tarih").value;
@@ -8863,6 +9179,7 @@
     function yeniFaturaAc() {
       if (!yoneticiGerekli()) return;
       cariSecenekleriniGuncelle();
+      yeniFaturaFormunuTemizle();
       document.getElementById("yeni-fatura-overlay")?.classList.add("aktif");
       setTimeout(() => document.getElementById("inp-cari")?.focus(), 60);
     }
@@ -8878,12 +9195,20 @@
       const no      = document.getElementById("inp-no").value.trim();
       const tarih   = document.getElementById("inp-tarih").value;
       const vadeGun = document.getElementById("inp-vade-gun").value;
-      const tutar   = document.getElementById("inp-tutar").value.trim();
+      const kalemler = faturaKalemleriniNormallestir(yeniFaturaKalemleri);
+      const kalemToplamlari = faturaKalemToplamlariniHesapla(kalemler);
+      const tutar = kalemler.length ? String(kalemToplamlari.genelToplam) : document.getElementById("inp-tutar").value.trim();
       const msg     = document.getElementById("msg");
       if (!cari||!no||!tarih||!vadeGun||!tutar) { msg.style.color="#f87171"; msg.textContent="Cari/firma dahil tüm alanları doldurun."; return; }
+      if (!(tutarSayiyaCevir(tutar)>0)) { msg.style.color="#f87171"; msg.textContent="Fatura genel toplamı sıfırdan büyük olmalıdır."; return; }
       cari = cariKartiniGarantiEt(cari)?.cari || cari;
       const liste = faturaYukle();
-      const yeniFatura = { id:Date.now(), cari, faturaTuru, no, tarih, vadeGun:parseInt(vadeGun), tutar };
+      const yeniFatura = {
+        id:Date.now(), cari, faturaTuru, no, tarih, vadeGun:parseInt(vadeGun), tutar,
+        kalemler,
+        araToplam:kalemler.length ? kalemToplamlari.araToplam : tutarSayiyaCevir(tutar),
+        kdvToplami:kalemler.length ? kalemToplamlari.kdvToplami : 0
+      };
       if (liste.some(inv => faturaImzasi(inv) === faturaImzasi(yeniFatura))) {
         msg.style.color="#f59e0b";
         msg.textContent="Bu fatura zaten kayıtlı; ikinci kez eklenmedi.";
@@ -8892,21 +9217,24 @@
       faturaEklemeKilidi = true;
       const kaydetBtn = document.getElementById("fatura-kaydet-btn");
       if (kaydetBtn) { kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor…"; }
-      liste.push(yeniFatura);
-      faturaKaydet(liste, "Fatura eklendi");
-      document.getElementById("inp-cari").value     = "";
-      document.getElementById("inp-fatura-turu").value = "alis";
-      document.getElementById("inp-no").value       = "";
-      document.getElementById("inp-tarih").value    = "";
-      document.getElementById("inp-vade-gun").value = "90";
-      document.getElementById("inp-tutar").value    = "";
-      document.getElementById("vade-hint").textContent = "";
+      const otomatikStokHareketleri = faturaKalemlerindenStokHareketleriOlustur(yeniFatura);
+      const kaydedildi = kalemler.length
+        ? faturaVeStokKaydet([...liste,yeniFatura],[...stokHareketleriniYukle(),...otomatikStokHareketleri],`${faturaTuruEtiketi(faturaTuru)} faturası ve stok hareketi eklendi`)
+        : (faturaKaydet([...liste,yeniFatura],"Fatura eklendi"),true);
+      if (!kaydedildi) {
+        faturaEklemeKilidi = false;
+        if (kaydetBtn) { kaydetBtn.disabled = false; kaydetBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Kaydet'; }
+        msg.style.color="#f87171";
+        msg.textContent="Fatura kaydedilemedi. Ürün stoklarını ve miktarları kontrol edin.";
+        return;
+      }
+      yeniFaturaFormunuTemizle(faturaTuru);
       msg.style.color="#4ade80"; msg.textContent="Fatura eklendi.";
       setTimeout(()=>msg.textContent="",2500);
       setTimeout(() => {
         faturaEklemeKilidi = false;
         if (kaydetBtn) { kaydetBtn.disabled = false; kaydetBtn.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Kaydet'; }
-        yeniFaturaKapat();
+        document.getElementById("yeni-fatura-overlay")?.classList.remove("aktif");
       }, 900);
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
@@ -8914,8 +9242,14 @@
       if (!yoneticiGerekli()) return;
       const inv = faturaYukle().find(i => i.id === id);
       if (!inv) return;
-      if (!confirm(`${inv.no} numaralı fatura silinsin mi? Cari ödeme ve çek kayıtları korunacaktır.`)) return;
-      faturaKaydet(faturaYukle().filter(i=>i.id!==id), "Fatura silindi");
+      const bagliStokSayisi = stokHareketleriniYukle().filter(hareket=>hareket.kaynakTuru === "fatura" && String(hareket.kaynakId) === String(id) && hareket.durum !== "İptal").length;
+      const stokNotu = bagliStokSayisi ? ` Bağlı ${bagliStokSayisi} stok hareketi silinmeyip iptal edilecektir.` : "";
+      if (!confirm(`${inv.no} numaralı fatura silinsin mi? Cari ödeme ve çek kayıtları korunacaktır.${stokNotu}`)) return;
+      const yeniListe = faturaYukle().filter(i=>i.id!==id);
+      const mevcutStokHareketleri = stokHareketleriniYukle();
+      const guncelStokHareketleri = faturaStokHareketleriniIptalEt(mevcutStokHareketleri,id,"Kaynak fatura silindi");
+      if (bagliStokSayisi) faturaVeStokKaydet(yeniListe,guncelStokHareketleri,"Fatura silindi; bağlı stok hareketleri iptal edildi");
+      else faturaKaydet(yeniListe,"Fatura silindi");
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
@@ -8956,7 +9290,7 @@
             <td style="color:#64748b">${i+1}</td>
             <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${cariLogosuHtml(inv.cari)}</td>
             <td><span class="fatura-tur ${faturaTurunuNormallestir(inv.faturaTuru)}">${htmlGuvenli(faturaTuruEtiketi(inv.faturaTuru))}</span></td>
-            <td><strong>${htmlGuvenli(inv.no)}</strong></td>
+            <td><strong>${htmlGuvenli(inv.no)}</strong>${Array.isArray(inv.kalemler) && inv.kalemler.length ? `<span class="fatura-kalem-sayisi">${inv.kalemler.length} kalem</span>` : ""}</td>
             <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
             <td style="text-align:center;color:#94a3b8">${vg} gün</td>
             <td>${formatTarih(vade)}</td>
@@ -9261,7 +9595,10 @@
       if (!yoneticiGerekli()) return;
       yeniFaturaAc();
       const secim = document.getElementById("inp-fatura-turu");
-      if (secim) secim.value = tur === "satis" ? "satis" : "alis";
+      if (secim) {
+        secim.value = tur === "satis" ? "satis" : "alis";
+        faturaTuruDegisti();
+      }
     }
 
     function modulNavigasyon(islem, dugme) {

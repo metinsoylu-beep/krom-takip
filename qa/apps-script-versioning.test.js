@@ -24,6 +24,7 @@ let businessMovementValues = [];
 let accountTransferValues = [];
 let productValues = [];
 let stockMovementValues = [];
+let invoiceLineValues = [];
 let auditValues = [];
 let backupValues = [];
 let movementExists = false;
@@ -34,6 +35,7 @@ let businessMovementExists = false;
 let accountTransferExists = false;
 let productExists = false;
 let stockMovementExists = false;
+let invoiceLineExists = false;
 let auditExists = false;
 let backupExists = false;
 
@@ -104,6 +106,7 @@ const businessMovementSheet = sheetOlustur(() => businessMovementValues, next =>
 const accountTransferSheet = sheetOlustur(() => accountTransferValues, next => { accountTransferValues = next; }, "Hesap Transferleri");
 const productSheet = sheetOlustur(() => productValues, next => { productValues = next; }, "Ürün Hizmet Kartları");
 const stockMovementSheet = sheetOlustur(() => stockMovementValues, next => { stockMovementValues = next; }, "Stok Hareketleri");
+const invoiceLineSheet = sheetOlustur(() => invoiceLineValues, next => { invoiceLineValues = next; }, "Fatura Kalemleri");
 const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; }, "İşlem Geçmişi");
 const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; }, "Bulut Yedekleri");
 
@@ -125,6 +128,7 @@ const context = {
         .concat(accountTransferExists ? [accountTransferSheet] : [])
         .concat(productExists ? [productSheet] : [])
         .concat(stockMovementExists ? [stockMovementSheet] : [])
+        .concat(invoiceLineExists ? [invoiceLineSheet] : [])
         .concat(auditExists ? [auditSheet] : [])
         .concat(backupExists ? [backupSheet] : []);
     },
@@ -139,6 +143,7 @@ const context = {
       if (name === "Hesap Transferleri") return accountTransferExists ? accountTransferSheet : null;
       if (name === "Ürün Hizmet Kartları") return productExists ? productSheet : null;
       if (name === "Stok Hareketleri") return stockMovementExists ? stockMovementSheet : null;
+      if (name === "Fatura Kalemleri") return invoiceLineExists ? invoiceLineSheet : null;
       if (name === "İşlem Geçmişi") return auditExists ? auditSheet : null;
       if (name === "Bulut Yedekleri") return backupExists ? backupSheet : null;
       return null;
@@ -152,6 +157,7 @@ const context = {
       if (name === "Hesap Transferleri") { accountTransferExists = true; return accountTransferSheet; }
       if (name === "Ürün Hizmet Kartları") { productExists = true; return productSheet; }
       if (name === "Stok Hareketleri") { stockMovementExists = true; return stockMovementSheet; }
+      if (name === "Fatura Kalemleri") { invoiceLineExists = true; return invoiceLineSheet; }
       if (name === "İşlem Geçmişi") { auditExists = true; return auditSheet; }
       if (name === "Bulut Yedekleri") { backupExists = true; return backupSheet; }
       return invoiceSheet;
