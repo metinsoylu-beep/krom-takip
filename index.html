@@ -1454,6 +1454,118 @@
       .form-grid { grid-template-columns: 1fr; }
       table { min-width: 1120px; }
     }
+
+    /* ── ÖN MUHASEBE MODÜL MENÜSÜ ─────────────────────────────────────────── */
+    .navbar { position: sticky; top: 0; z-index: 90; }
+    .modul-menu-ac {
+      display: none; width: 30px; height: 30px; place-items: center; flex: 0 0 30px;
+      border: 1px solid #e6a91f55; border-radius: 7px; background: #e6a91f12;
+      color: var(--altin-acik); cursor: pointer;
+    }
+    .modul-panel {
+      position: fixed; z-index: 70; inset: 34px auto 0 0; width: 246px;
+      display: flex; flex-direction: column; overflow: hidden;
+      background: linear-gradient(180deg, #091a2d 0%, #061321 100%);
+      border-right: 1px solid #294159; box-shadow: 10px 0 30px #02091438;
+    }
+    .modul-panel-ust {
+      display: flex; align-items: center; gap: 10px; padding: 16px 15px 14px;
+      border-bottom: 1px solid #1c3248;
+    }
+    .modul-panel-amblem {
+      width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 36px;
+      border: 1px solid #e6a91f55; border-radius: 10px; color: var(--altin-acik);
+      background: linear-gradient(145deg, #e6a91f24, #10243a); font-size: 15px;
+    }
+    .modul-panel-kimlik { min-width: 0; }
+    .modul-panel-kimlik strong { display: block; color: #f2f6fa; font: 700 14px Georgia, serif; }
+    .modul-panel-kimlik small { display: block; margin-top: 3px; color: #71869b; font-size: 9px; letter-spacing: .35px; }
+    .modul-panel-kapat {
+      display: none; width: 30px; height: 30px; margin-left: auto; place-items: center;
+      border: 1px solid #294159; border-radius: 7px; background: #10243a; color: #9fb0c1; cursor: pointer;
+    }
+    .modul-nav { flex: 1; overflow-y: auto; padding: 10px 9px 16px; scrollbar-width: thin; scrollbar-color: #294159 transparent; }
+    .modul-ana-baglanti, .modul-alt-baglanti {
+      width: 100%; min-height: 35px; display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border: 0; border-radius: 7px; background: transparent;
+      color: #aab9c8; font: 600 10px "Segoe UI",Arial,sans-serif; text-align: left; cursor: pointer;
+    }
+    .modul-ana-baglanti { min-height: 39px; margin-bottom: 6px; color: #e9f0f6; font-size: 11px; }
+    .modul-ana-baglanti i, .modul-alt-baglanti i { width: 18px; color: #7f94a8; text-align: center; }
+    .modul-ana-baglanti:hover, .modul-alt-baglanti:hover { background: #16304a; color: #fff; }
+    .modul-ana-baglanti.aktif, .modul-alt-baglanti.aktif {
+      background: linear-gradient(90deg, #e6a91f20, #16304a); color: #fff;
+      box-shadow: inset 3px 0 0 var(--altin);
+    }
+    .modul-ana-baglanti.aktif i, .modul-alt-baglanti.aktif i { color: var(--altin-acik); }
+    .modul-grup { margin: 2px 0; border-top: 1px solid #13283c; }
+    .modul-grup summary {
+      min-height: 37px; display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+      color: #8194a7; font-size: 9px; font-weight: 750; letter-spacing: .55px;
+      text-transform: uppercase; cursor: pointer; list-style: none; user-select: none;
+    }
+    .modul-grup summary::-webkit-details-marker { display: none; }
+    .modul-grup summary i:first-child { width: 18px; color: #6e8397; text-align: center; }
+    .modul-grup summary::after {
+      content: "\f078"; margin-left: auto; color: #587086;
+      font: 700 8px/1 "Font Awesome 6 Free"; transition: transform .18s ease;
+    }
+    .modul-grup:not([open]) summary::after { transform: rotate(-90deg); }
+    .modul-grup-icerik { padding: 0 0 5px 9px; }
+    .modul-alt-baglanti { position: relative; padding-left: 14px; font-weight: 550; }
+    .modul-alt-baglanti::before {
+      content: ""; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: #375069;
+    }
+    .modul-alt-baglanti span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .modul-panel-alt {
+      display: flex; align-items: center; gap: 9px; padding: 11px 14px;
+      border-top: 1px solid #1c3248; background: #071625;
+    }
+    .modul-panel-alt i { color: #4ade80; }
+    .modul-panel-alt span { display: block; color: #a8b7c6; font-size: 9px; }
+    .modul-panel-alt small { display: block; margin-top: 2px; color: #62778b; font-size: 8px; }
+    .modul-panel-perde { display: none; }
+    .konteyner {
+      width: min(1500px, calc(100vw - 286px)); margin-left: 266px; margin-right: 20px;
+    }
+    footer { margin-left: 246px; }
+    .filtre-islemler .btn-cari-islem { display: none; }
+    .filtre-panel { grid-template-columns: minmax(260px, 1fr) minmax(140px, .35fr) auto; }
+
+    @media (max-width: 1180px) {
+      .modul-menu-ac { display: grid; }
+      .modul-panel {
+        z-index: 920; inset: 0 auto 0 0; width: min(286px, calc(100vw - 46px));
+        transform: translateX(-105%); transition: transform .22s ease;
+        box-shadow: 22px 0 55px #020914aa;
+      }
+      body.modul-panel-acik { overflow: hidden; }
+      body.modul-panel-acik .modul-panel { transform: translateX(0); }
+      .modul-panel-kapat { display: grid; }
+      .modul-panel-perde {
+        position: fixed; z-index: 910; inset: 0; display: block; visibility: hidden;
+        background: #020914b8; opacity: 0; transition: opacity .2s ease, visibility .2s ease;
+      }
+      body.modul-panel-acik .modul-panel-perde { visibility: visible; opacity: 1; }
+      .konteyner { width: min(1500px, calc(100vw - 40px)); margin-left: auto; margin-right: auto; }
+      footer { margin-left: 0; }
+      .filtre-panel { grid-template-columns: minmax(220px, 1fr) minmax(140px, .45fr) auto; }
+      .filtre-islemler { grid-column: auto; }
+    }
+    @media (max-width: 760px) {
+      .navbar { padding-inline: 10px; }
+      .arlinoks { font-size: 15px; }
+      .firma-duzenle { display: none; }
+      .konteyner { width: calc(100vw - 24px); }
+      .filtre-panel { grid-template-columns: 1fr 1fr; }
+      .filtre-islemler { grid-column: 1 / -1; display: block; }
+    }
+    body.auth-bekliyor .modul-panel,
+    body.auth-bekliyor .modul-panel-perde { display: none !important; }
+    @media print {
+      .modul-panel, .modul-panel-perde, .modul-menu-ac { display: none !important; }
+      .konteyner, footer { margin-left: 0 !important; }
+    }
     body.auth-bekliyor .navbar,
     body.auth-bekliyor .konteyner,
     body.auth-bekliyor footer,
@@ -2240,6 +2352,9 @@
 
   <!-- NAVBAR -->
   <div class="navbar">
+    <button class="modul-menu-ac" id="modul-menu-ac" type="button" onclick="modulPaneliniDegistir()" aria-controls="modul-panel" aria-expanded="false" aria-label="Ön muhasebe modül menüsünü aç">
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
     <div class="arlinoks">Arlinoks</div>
     <div class="navbar-sag">
       <div class="firma-duzenle">
@@ -2256,6 +2371,80 @@
       </div>
     </div>
   </div>
+
+  <!-- ÖN MUHASEBE MODÜL MENÜSÜ -->
+  <div class="modul-panel-perde" aria-hidden="true" onclick="modulPaneliniKapat()"></div>
+  <aside class="modul-panel" id="modul-panel" aria-label="Ön muhasebe modülleri">
+    <div class="modul-panel-ust">
+      <span class="modul-panel-amblem" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+      <span class="modul-panel-kimlik"><strong>Ön Muhasebe</strong><small>MODÜLLER VE İŞLEMLER</small></span>
+      <button class="modul-panel-kapat" type="button" onclick="modulPaneliniKapat()" aria-label="Modül menüsünü kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <nav class="modul-nav" aria-label="Uygulama bölümleri">
+      <button class="modul-ana-baglanti aktif" type="button" data-modul="genel-bakis" onclick="modulNavigasyon('genel-bakis',this)"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Genel Bakış</span></button>
+
+      <details class="modul-grup" open>
+        <summary><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>Alış &amp; Satış</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="fatura-listesi" onclick="modulNavigasyon('fatura-listesi',this)"><i class="fa-solid fa-list" aria-hidden="true"></i><span>Fatura Listesi</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="yeni-alis" onclick="modulNavigasyon('yeni-alis',this)"><i class="fa-solid fa-cart-arrow-down" aria-hidden="true"></i><span>Yeni Alış Faturası</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="yeni-satis" onclick="modulNavigasyon('yeni-satis',this)"><i class="fa-solid fa-file-export" aria-hidden="true"></i><span>Yeni Satış Faturası</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup" open>
+        <summary><i class="fa-solid fa-address-book" aria-hidden="true"></i>Cari Yönetimi</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="cari-hesaplar" onclick="modulNavigasyon('cari-hesaplar',this)"><i class="fa-solid fa-building" aria-hidden="true"></i><span>Cari Hesaplar &amp; Ekstre</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="cari-islem" onclick="modulNavigasyon('cari-islem',this)"><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i><span>Tahsilat / Ödeme Girişi</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup" open>
+        <summary><i class="fa-solid fa-building-columns" aria-hidden="true"></i>Kasa &amp; Banka</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="finans-hesaplari" onclick="modulNavigasyon('finans-hesaplari',this)"><i class="fa-solid fa-wallet" aria-hidden="true"></i><span>Kasa / Banka Hesapları</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="hesap-transferleri" onclick="modulNavigasyon('hesap-transferleri',this)"><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i><span>Hesap Transferleri</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup" open>
+        <summary><i class="fa-solid fa-receipt" aria-hidden="true"></i>Gelir &amp; Gider</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="gelir-gider" onclick="modulNavigasyon('gelir-gider',this)"><i class="fa-solid fa-receipt" aria-hidden="true"></i><span>Gelir / Gider Fişleri</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="aylik-ozet" onclick="modulNavigasyon('aylik-ozet',this)"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Aylık Finans Özeti</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup">
+        <summary><i class="fa-solid fa-money-check" aria-hidden="true"></i>Çek Yönetimi</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="cek-takibi" onclick="modulNavigasyon('cek-takibi',this)"><i class="fa-solid fa-money-check-dollar" aria-hidden="true"></i><span>Alınan / Verilen Çekler</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup">
+        <summary><i class="fa-solid fa-chart-pie" aria-hidden="true"></i>Raporlar</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti" type="button" data-modul="hizli-istatistikler" onclick="modulNavigasyon('hizli-istatistikler',this)"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Hızlı İstatistikler</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="fatura-raporu" onclick="modulNavigasyon('fatura-raporu',this)"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Gelişmiş Fatura Raporu</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="csv-aktar" onclick="modulNavigasyon('csv-aktar',this)"><i class="fa-solid fa-file-csv" aria-hidden="true"></i><span>CSV Dışa Aktar</span></button>
+        </div>
+      </details>
+
+      <details class="modul-grup">
+        <summary><i class="fa-solid fa-gears" aria-hidden="true"></i>Yönetim</summary>
+        <div class="modul-grup-icerik">
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="kullanicilar" onclick="modulNavigasyon('kullanicilar',this)"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Kullanıcılar &amp; Yetkiler</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="islem-gecmisi" onclick="modulNavigasyon('islem-gecmisi',this)"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>İşlem Geçmişi</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="bulut-yedekleri" onclick="modulNavigasyon('bulut-yedekleri',this)"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i><span>Bulut Yedekleri</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="veri-kontrol" onclick="modulNavigasyon('veri-kontrol',this)"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Veri Kontrol Merkezi</span></button>
+          <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="depolama" onclick="modulNavigasyon('depolama',this)"><i class="fa-solid fa-database" aria-hidden="true"></i><span>Depolama Sağlığı</span></button>
+        </div>
+      </details>
+    </nav>
+    <div class="modul-panel-alt"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><span id="modul-rol-metni">Güvenli oturum</span><small>Google Sheets ile eşitlenir</small></span></div>
+  </aside>
 
   <div class="konteyner">
 
@@ -5015,6 +5204,8 @@
       document.body.dataset.role = kullaniciRolu || "";
       document.getElementById("oturum-eposta").textContent = oturumKullanici?.email || "";
       document.getElementById("rol-rozet").textContent = yoneticiMi() ? "YÖNETİCİ" : "SALT GÖRÜNTÜLEME";
+      const modulRolu = document.getElementById("modul-rol-metni");
+      if (modulRolu) modulRolu.textContent = yoneticiMi() ? "Yönetici oturumu" : "Salt görüntüleme";
       const firma = document.getElementById("firma-adi-goster");
       if (firma) firma.title = yoneticiMi() ? "Düzenlemek için tıklayın" : "Salt görüntüleme modu";
       if (!yoneticiMi()) {
@@ -8456,6 +8647,75 @@
       topluIslemPaneliniGuncelle(liste);
     }
 
+    // ── MODÜL MENÜSÜ ────────────────────────────────────────────────────────
+    function modulPaneliniAc() {
+      document.body.classList.add("modul-panel-acik");
+      document.getElementById("modul-menu-ac")?.setAttribute("aria-expanded", "true");
+    }
+
+    function modulPaneliniKapat() {
+      document.body.classList.remove("modul-panel-acik");
+      document.getElementById("modul-menu-ac")?.setAttribute("aria-expanded", "false");
+    }
+
+    function modulPaneliniDegistir() {
+      if (document.body.classList.contains("modul-panel-acik")) modulPaneliniKapat();
+      else modulPaneliniAc();
+    }
+
+    function modulMenusuAktiflestir(dugme) {
+      if (!dugme) return;
+      document.querySelectorAll(".modul-ana-baglanti,.modul-alt-baglanti").forEach(eleman => eleman.classList.remove("aktif"));
+      dugme.classList.add("aktif");
+      dugme.closest("details")?.setAttribute("open", "");
+    }
+
+    function modulHedefineGit(secici, detayiAc=false) {
+      const hedef = document.querySelector(secici);
+      if (!hedef) return;
+      if (detayiAc) {
+        const dugme = hedef.querySelector("button[aria-expanded]");
+        const detay = hedef.querySelector(".veri-kontrol-detay");
+        dugme?.setAttribute("aria-expanded", "true");
+        if (detay) detay.hidden = false;
+      }
+      setTimeout(() => hedef.scrollIntoView({ behavior:"smooth", block:"start" }), 30);
+    }
+
+    function yeniFaturayiTuruneGoreAc(tur) {
+      if (!yoneticiGerekli()) return;
+      yeniFaturaAc();
+      const secim = document.getElementById("inp-fatura-turu");
+      if (secim) secim.value = tur === "satis" ? "satis" : "alis";
+    }
+
+    function modulNavigasyon(islem, dugme) {
+      switch (islem) {
+        case "genel-bakis": modulHedefineGit(".kur-panel"); break;
+        case "fatura-listesi": modulHedefineGit("#liste"); break;
+        case "hizli-istatistikler": modulHedefineGit(".hizli-panel"); break;
+        case "yeni-alis": yeniFaturayiTuruneGoreAc("alis"); break;
+        case "yeni-satis": yeniFaturayiTuruneGoreAc("satis"); break;
+        case "cari-hesaplar": cariHesaplariAc(); break;
+        case "cari-islem": odemeYonetiminiAc(); break;
+        case "finans-hesaplari": finansHesaplariniAc(); break;
+        case "hesap-transferleri": hesapTransferleriniAc(); break;
+        case "gelir-gider": gelirGiderMerkeziniAc(); break;
+        case "aylik-ozet": aylikFinansOzetiniAc(); break;
+        case "cek-takibi": cekTakibiniAc(); break;
+        case "fatura-raporu": raporAc(); break;
+        case "csv-aktar": csvRaporIndir(); break;
+        case "kullanicilar": kullaniciPaneliniAc(); break;
+        case "islem-gecmisi": islemGecmisiniAc(); break;
+        case "bulut-yedekleri": bulutYedekleriniAc(); break;
+        case "veri-kontrol": modulHedefineGit("#veri-kontrol-panel", true); break;
+        case "depolama": modulHedefineGit("#depolama-sagligi-panel", true); break;
+        default: return;
+      }
+      modulMenusuAktiflestir(dugme);
+      modulPaneliniKapat();
+    }
+
     // ── BAŞLANGIÇ ─────────────────────────────────────────────────────────────
     async function uygulamayiBaslat(ilkUzakDurum) {
       if (uygulamaBaslatildi) {
@@ -8465,6 +8725,7 @@
       uygulamaBaslatildi = true;
       firmaAdiniYukle();
       document.getElementById("navbar-tarih").textContent = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
+      window.addEventListener("resize", () => { if (window.innerWidth > 1180) modulPaneliniKapat(); });
       cariSecenekleriniGuncelle();
       finansHesabiSecenekleriniGuncelle();
       listeyiGoster();
@@ -8546,6 +8807,7 @@
           islemGecmisiniKapat();
           bulutYedekleriniKapat();
           cakismaYedekleriniKapat();
+          modulPaneliniKapat();
         }
       });
     }
