@@ -11,10 +11,15 @@ const kayit = {
   id:"kuyruk-1",
   kayitZamani:"2026-09-04T10:00:00.000Z",
   baseRevision:4,
+  kuyrukDurumu:"engelli",
+  sonHataKodu:"INVALID_CHECK_DETAILS",
+  sonHataMesaji:"Çek bilgilerini kontrol edin.",
   durum:{ items:[{ id:"F-1" }], cariHareketler:[], cekler:[], cariler:[] }
 };
 let kuyrukCagrisi = 0;
 let kontrolYenileme = 0;
+let sonKuyrukSecenekleri = null;
+let saklananKayit = null;
 const mesajlar = [];
 const context = {
   bekleyenBulutKaydi:kayit,
@@ -23,9 +28,10 @@ const context = {
   navigator:{ onLine:false },
   yoneticiGerekli:() => true,
   bekleyenBulutKaydiniOku:() => kayit,
+  bekleyenBulutKaydiniSakla:kayit => { saklananKayit = kayit; return true; },
   syncGoster:mesaj => mesajlar.push(mesaj),
   clearTimeout() {},
-  bulutKayitKuyrugunuCalistir:async () => { kuyrukCagrisi += 1; },
+  bulutKayitKuyrugunuCalistir:async secenekler => { kuyrukCagrisi += 1; sonKuyrukSecenekleri = secenekler; },
   bekleyenBulutKontrolunuGuncelle:() => { kontrolYenileme += 1; }
 };
 vm.createContext(context);
@@ -44,6 +50,9 @@ vm.runInContext(index.slice(baslangic, bitis), context);
   context.bulutKaydiCalisiyor = false;
   assert.equal(await context.bekleyenBulutKaydiniSimdiGonder(), true, "Çevrimiçiyken bekleyen gönderim elle başlatılabilmeli");
   assert.equal(kuyrukCagrisi, 1, "Elle gönderim mevcut güvenli kuyruk çalıştırıcısını kullanmalı");
+  assert.equal(sonKuyrukSecenekleri.zorla, true, "Kullanıcının elle denemesi kalıcı engeli kontrollü biçimde aşabilmeli");
+  assert.equal(saklananKayit.kuyrukDurumu, "bekliyor", "Elle yeniden deneme öncesinde kalıcı engel durumu kaldırılmalı");
+  assert.equal(saklananKayit.sonHataMesaji, "", "Eski engel mesajı yeni denemede temizlenmeli");
   assert.equal(kontrolYenileme, 1, "Gönderim denemesinden sonra Veri Kontrol Merkezi yenilenmeli");
 
   assert.match(index, /Şimdi Gönder/, "Bekleyen gönderim satırında görünür elle gönderme düğmesi bulunmalı");

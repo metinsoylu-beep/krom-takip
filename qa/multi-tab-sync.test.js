@@ -80,6 +80,8 @@ const dinleyiciContext = {
   JSON,
   Number,
   bekleyenBulutKaydiniDogrula:kayit => Array.isArray(kayit?.durum?.items) ? kayit : null,
+  bekleyenBulutKaydiEngelliMi:kayit => kayit?.kuyrukDurumu === "engelli",
+  bekleyenBulutEngelMesaji:kayit => kayit?.sonHataMesaji || "Kontrol gerekli",
   bekleyenBulutKontrolunuGuncelle:() => { kontrolYenilemeSayisi += 1; },
   yoneticiMi:() => true,
   clearTimeout() {},
@@ -103,6 +105,11 @@ depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify(kayitB), oldValue:
 assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-b", "Boş sekme diğer sekmenin bekleyen kaydını devralmalı");
 assert.ok(planlananGecikmeler.includes(500), "Devralınan kayıt kısa gecikmeyle gönderilmeli");
 assert.ok(kontrolYenilemeSayisi >= 3, "Bekleyen kaydın eklenmesi ve temizlenmesi diğer sekmelerin kontrol merkezini yenilemeli");
+
+const planSayisi = planlananGecikmeler.length;
+dinleyiciContext.bekleyenBulutKaydi = null;
+depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify({ ...kayitB, kuyrukDurumu:"engelli", sonHataMesaji:"Veri kontrolü gerekli" }), oldValue:null });
+assert.equal(planlananGecikmeler.length, planSayisi, "Başka sekmeden gelen kalıcı engelli kayıt otomatik gönderim planlamamalı");
 
 depolamaDinleyicisi({ key:"surum", newValue:"8", oldValue:"7" });
 assert.equal(dinleyiciContext.bulutSurumu, 8, "Diğer sekmenin yeni bulut sürümü belleğe alınmalı");

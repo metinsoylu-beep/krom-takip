@@ -65,6 +65,7 @@ const bekleyen = { id:"kuyruk-1", kayitZamani:"2026-09-04T10:00:00.000Z", baseRe
 
 assert.equal(context.bekleyenBulutKaydiniSakla(bekleyen), true, "Bekleyen kayıt tarayıcı deposuna yazılmalı");
 assert.equal(context.bekleyenBulutKaydiniOku().baseRevision, 4, "Kaydın dayandığı bulut sürümü korunmalı");
+assert.equal(context.bekleyenBulutKaydiniOku().kuyrukDurumu, "bekliyor", "Eski kuyruk kayıtları güvenli biçimde bekliyor durumuna yükseltilmeli");
 assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { ...yerelDurum, revision:5 }), "tamamlandi", "Bulutta zaten bulunan değişiklik tekrar gönderilmemeli");
 assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { items:[], cariHareketler:[], cekler:[], cariler:[], revision:4 }), "gonder", "Bulut değişmediyse bekleyen kayıt yeniden gönderilmeli");
 assert.equal(context.bekleyenBulutKaydiKarari(bekleyen, { items:[], cariHareketler:[], cekler:[], cariler:[], revision:5 }), "cakisma", "Başka cihaz değişikliği varsa üzerine yazılmamalı");
@@ -91,22 +92,34 @@ assert.match(index, /Kopyayı İndir/, "Bekleyen gönderim için görünür indi
 assert.match(index, /Tarayıcı güvenli saklama alanına yazılamadı/, "Tarayıcı deposu yazılamazsa kullanıcı açıkça uyarılmalı");
 assert.match(index, /\["oturum", "durdur"\]\.includes\(sonuc\)/, "Kalıcı engeller otomatik tekrar döngüsünü durdurmalı");
 assert.match(index, /\[true, "cakisma", "yerel"\]\.includes\(sonuc\)/, "Yalnızca tamamlanan veya güvenlik kopyasına alınan kayıtlar kuyruktan çıkarılmalı");
+assert.match(index, /kuyrukDurumu:"engelli"/, "Kalıcı engel durumu bekleyen kayda yazılmalı");
+assert.match(index, /kullanıcı kontrolü bekliyor/, "Veri Kontrol Merkezi engel nedenini kullanıcıya göstermeli");
+assert.match(index, /Tekrar Dene/, "Engellenen gönderim için açık bir elle yeniden deneme eylemi bulunmalı");
 
 const kuyrukBaslangici = index.indexOf("async function bulutKayitKuyrugunuCalistir");
 const kuyrukBitisi = index.indexOf("function buludaKaydet", kuyrukBaslangici);
 assert.ok(kuyrukBaslangici >= 0 && kuyrukBitisi > kuyrukBaslangici, "Bulut kuyruğu çalıştırıcısı bulunamadı");
 let tekrarGecikmesi = 0;
+let gonderimCagrisi = 0;
 const kuyrukContext = {
   console,
   bekleyenBulutKaydi:bekleyen,
   bulutKaydiCalisiyor:false,
   bulutTekrarDenemeZamanlayici:null,
   bulutSurumu:4,
+  bulutSonKuyrukHatasi:{ kod:"STORAGE_CRITICAL", mesaj:"Google Sheets alanı kritik." },
   navigator:{ onLine:true },
   yoneticiMi:() => true,
+  bekleyenBulutKaydiEngelliMi:kayit => kayit?.kuyrukDurumu === "engelli",
+  bekleyenBulutEngelMesaji:kayit => kayit?.sonHataMesaji || "Kontrol gerekli",
+  bekleyenBulutKontrolunuGuncelle() {},
   bekleyenBulutKaydiniOku:() => null,
   bekleyenBulutKaydiniSakla:() => true,
-  bulutKaydiniGonder:async () => "tekrar",
+  bekleyenBulutKaydiniEngelle:(kayit,hata) => {
+    kuyrukContext.bekleyenBulutKaydi = { ...kayit, kuyrukDurumu:"engelli", sonHataKodu:hata.kod, sonHataMesaji:hata.mesaj };
+    return true;
+  },
+  bulutKaydiniGonder:async () => { gonderimCagrisi += 1; return "tekrar"; },
   bekleyenBulutKaydiniTemizle:() => { kuyrukContext.bekleyenBulutKaydi = null; return true; },
   syncGoster() {},
   clearTimeout() {},
@@ -120,15 +133,22 @@ vm.runInContext(index.slice(kuyrukBaslangici, kuyrukBitisi), kuyrukContext);
   assert.equal(kuyrukContext.bekleyenBulutKaydi.id, "kuyruk-1", "Geçici bağlantı hatasında bekleyen kayıt silinmemeli");
   assert.equal(tekrarGecikmesi, 30000, "Geçici hata kontrollü aralıkla yeniden denenmeli");
 
-  kuyrukContext.bulutKaydiniGonder = async () => "durdur";
+  kuyrukContext.bulutKaydiniGonder = async () => { gonderimCagrisi += 1; return "durdur"; };
   tekrarGecikmesi = 0;
   await kuyrukContext.bulutKayitKuyrugunuCalistir();
   assert.equal(kuyrukContext.bekleyenBulutKaydi.id, "kuyruk-1", "Depolama veya doğrulama engelinde bekleyen kayıt korunmalı");
+  assert.equal(kuyrukContext.bekleyenBulutKaydi.kuyrukDurumu, "engelli", "Kalıcı engel sayfa yenilemesine dayanacak biçimde işaretlenmeli");
+  assert.equal(kuyrukContext.bekleyenBulutKaydi.sonHataKodu, "STORAGE_CRITICAL", "Engel nedeni kayıtla birlikte korunmalı");
   assert.equal(tekrarGecikmesi, 0, "Kalıcı engel gereksiz otomatik tekrar döngüsü başlatmamalı");
 
-  kuyrukContext.bulutKaydiniGonder = async () => true;
-  tekrarGecikmesi = 0;
+  const engelOncesiCagri = gonderimCagrisi;
+  kuyrukContext.bulutKaydiniGonder = async () => { gonderimCagrisi += 1; return true; };
   await kuyrukContext.bulutKayitKuyrugunuCalistir();
+  assert.equal(gonderimCagrisi, engelOncesiCagri, "Sayfa veya bağlantı olayı engellenen kaydı kendiliğinden yeniden göndermemeli");
+  assert.equal(kuyrukContext.bekleyenBulutKaydi.kuyrukDurumu, "engelli", "Otomatik kontrol engellenen kaydı korumalı");
+
+  tekrarGecikmesi = 0;
+  await kuyrukContext.bulutKayitKuyrugunuCalistir({ zorla:true });
   assert.equal(kuyrukContext.bekleyenBulutKaydi, null, "Başarılı gönderimden sonra bekleyen kayıt temizlenmeli");
   assert.equal(tekrarGecikmesi, 0, "Başarılı gönderim yeni deneme planlamamalı");
   console.log("Kalıcı bulut kuyruğu ve güvenli yeniden deneme testleri başarılı.");

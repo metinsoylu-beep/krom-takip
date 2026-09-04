@@ -17,6 +17,7 @@ const context = {
   Array,
   YEREL_GELISTIRME:false,
   bulutSurumu:4,
+  bulutSonKuyrukHatasi:null,
   sonGirisHatasi:"",
   firebaseAuth:null,
   yoneticiGerekli:() => true,
@@ -50,6 +51,7 @@ const kuyrukSecenekleri = { requestId:"kuyruk-istegi", baseRevision:4, kuyrukKay
 (async () => {
   apiHatasi = Object.assign(new Error("Alan kritik"), { code:"STORAGE_CRITICAL" });
   assert.equal(await context.bulutKaydiniGonder(durum, kuyrukSecenekleri), "durdur", "Kritik depolama engeli bekleyen kaydı korumalı");
+  assert.equal(context.bulutSonKuyrukHatasi.kod, "STORAGE_CRITICAL", "Kalıcı engelin hata kodu kuyruk kaydına aktarılabilmeli");
   assert.equal(await context.bulutKaydiniGonder(durum, { ...kuyrukSecenekleri, kuyrukKaydi:false }), false, "Doğrudan kayıt çağrısının mevcut boolean sözleşmesi korunmalı");
 
   apiHatasi = Object.assign(new Error("Eksik çek bilgisi"), { code:"INVALID_CHECK_DETAILS" });
