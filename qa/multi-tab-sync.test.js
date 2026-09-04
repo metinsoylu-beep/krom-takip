@@ -171,6 +171,9 @@ const gonderContext = {
   cariHareketleriNormallestir:liste => liste,
   cekleriNormallestir:liste => liste,
   cariKartlariniNormallestir:liste => liste,
+  finansHesaplariniNormallestir:liste => Array.isArray(liste) ? liste : [],
+  isletmeHareketleriniNormallestir:liste => Array.isArray(liste) ? liste : [],
+  hesapTransferleriniNormallestir:liste => Array.isArray(liste) ? liste : [],
   localStorage:{ removeItem() {} },
   depolamaSagligiYenile() {},
   alert() {}
@@ -179,7 +182,7 @@ vm.createContext(gonderContext);
 vm.runInContext(index.slice(gonderBaslangici, gonderBitisi), gonderContext);
 
 (async () => {
-  const durum = { items:[{ id:"fatura-1" }], cariHareketler:[], cekler:[], cariler:[] };
+  const durum = { items:[{ id:"fatura-1" }], cariHareketler:[], cekler:[], cariler:[], hesaplar:[], isletmeHareketler:[] };
   await gonderContext.bulutKaydiniGonder(durum, { requestId:"kalici-istek", baseRevision:7, kuyrukKaydi:true });
   gonderContext.bulutSurumu = 7;
   await gonderContext.bulutKaydiniGonder(durum, { requestId:"kalici-istek", baseRevision:7, kuyrukKaydi:true });

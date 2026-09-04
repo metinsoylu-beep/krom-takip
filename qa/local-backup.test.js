@@ -18,6 +18,9 @@ const context = {
   CARI_HAREKET_ANAHTAR: "hareketler",
   CEK_ANAHTAR: "cekler",
   CARI_KART_ANAHTAR: "cariler",
+  FINANS_HESAP_ANAHTAR: "hesaplar",
+  ISLETME_HAREKET_ANAHTAR: "fisler",
+  HESAP_TRANSFER_ANAHTAR: "transferler",
   YEDEK_ANAHTAR: "yedekler",
   YEDEK_SINIR: 10,
   kullaniciRolu: "admin",
@@ -32,15 +35,30 @@ const context = {
   cariHareketleriNormallestir: liste => Array.isArray(liste) ? liste : [],
   cekleriNormallestir: liste => Array.isArray(liste) ? liste : [],
   cariKartlariniNormallestir: liste => Array.isArray(liste) ? liste : [],
+  finansHesaplariniNormallestir: liste => Array.isArray(liste) ? liste : [],
+  isletmeHareketleriniNormallestir: liste => Array.isArray(liste) ? liste : [],
+  hesapTransferleriniNormallestir: liste => Array.isArray(liste) ? liste : [],
   cariHareketleriYukle: () => JSON.parse(depo.get("hareketler") || "[]"),
   cekleriYukle: () => JSON.parse(depo.get("cekler") || "[]"),
   cariKartlariniYukle: () => JSON.parse(depo.get("cariler") || "[]"),
+  finansHesaplariniYukle: () => JSON.parse(depo.get("hesaplar") || "[]"),
+  isletmeHareketleriniYukle: () => JSON.parse(depo.get("fisler") || "[]"),
+  hesapTransferleriniYukle: () => JSON.parse(depo.get("transferler") || "[]"),
+  finansHesabiSecenekleriniGuncelle() {},
+  gelirGiderHesapSecenekleriniGuncelle() {},
+  finansHesaplariniGoster() {},
+  gelirGiderHareketleriniGoster() {},
+  hesapTransferleriniGoster() {},
+  hesapHareketDokumunuGoster() {},
   cariSecenekleriniGuncelle() {},
   uygulamaDurumuOlustur: liste => ({
     items:Array.isArray(liste) ? liste : [],
     cariHareketler:JSON.parse(depo.get("hareketler") || "[]"),
     cekler:JSON.parse(depo.get("cekler") || "[]"),
-    cariler:JSON.parse(depo.get("cariler") || "[]")
+    cariler:JSON.parse(depo.get("cariler") || "[]"),
+    hesaplar:JSON.parse(depo.get("hesaplar") || "[]"),
+    isletmeHareketler:JSON.parse(depo.get("fisler") || "[]"),
+    hesapTransferleri:JSON.parse(depo.get("transferler") || "[]")
   }),
   listeSurumImzasi: durum => JSON.stringify(durum),
   buludaKaydet: liste => { bulutaGonderilen = liste; },
@@ -58,6 +76,8 @@ depo.set("faturalar", JSON.stringify(ilkListe));
 depo.set("hareketler", JSON.stringify([{ id:"h-1", cari:"Firma A", tarih:"2026-09-01", tutar:40 }]));
 depo.set("cekler", JSON.stringify([{ id:"c-1", cari:"Firma A", tarih:"2026-09-01", vadeTarihi:"2026-10-01", tutar:20, durum:"Verildi" }]));
 depo.set("cariler", JSON.stringify([{ id:"cari-1", cari:"Firma A", acilisBorc:10, acilisAlacak:0 }]));
+depo.set("hesaplar", JSON.stringify([{ id:"hesap-1", ad:"Merkez Kasa", tur:"kasa", acilisBakiyesi:500 }]));
+depo.set("fisler", JSON.stringify([{ id:"fis-1", tarih:"2026-09-01", tur:"gider", hesapId:"hesap-1", kategori:"Kira", tutar:50 }]));
 
 const yeniListe = [...ilkListe, { id: 2, no: "F-2", tarih: "2026-09-02", vadeGun: 30, tutar: "200", odendi: false }];
 context.faturaKaydet(yeniListe, "Fatura eklendi");
@@ -68,6 +88,8 @@ assert.deepEqual(yedekler[0].liste, ilkListe, "Yedek eski listeyi içermeli");
 assert.equal(yedekler[0].durum.cariHareketler.length, 1, "Cari hareketler aynı güvenlik yedeğinde tutulmalı");
 assert.equal(yedekler[0].durum.cekler.length, 1, "Çekler aynı güvenlik yedeğinde tutulmalı");
 assert.equal(yedekler[0].durum.cariler.length, 1, "Cari kartlar aynı güvenlik yedeğinde tutulmalı");
+assert.equal(yedekler[0].durum.hesaplar.length, 1, "Kasa/banka hesapları aynı güvenlik yedeğinde tutulmalı");
+assert.equal(yedekler[0].durum.isletmeHareketler.length, 1, "Gelir/gider fişleri aynı güvenlik yedeğinde tutulmalı");
 assert.equal(dugme.hidden, false, "Geri alma düğmesi görünür olmalı");
 
 context.sonIslemiGeriAl();

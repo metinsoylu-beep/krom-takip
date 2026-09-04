@@ -19,11 +19,17 @@ let paymentValues = [
 let movementValues = [];
 let checkValues = [];
 let customerValues = [];
+let financeAccountValues = [];
+let businessMovementValues = [];
+let accountTransferValues = [];
 let auditValues = [];
 let backupValues = [];
 let movementExists = false;
 let checkExists = false;
 let customerExists = false;
+let financeAccountExists = false;
+let businessMovementExists = false;
+let accountTransferExists = false;
 let auditExists = false;
 let backupExists = false;
 
@@ -89,6 +95,9 @@ const paymentSheet = sheetOlustur(() => paymentValues, next => { paymentValues =
 const movementSheet = sheetOlustur(() => movementValues, next => { movementValues = next; }, "Cari Hareketler");
 const checkSheet = sheetOlustur(() => checkValues, next => { checkValues = next; }, "Çekler");
 const customerSheet = sheetOlustur(() => customerValues, next => { customerValues = next; }, "Cariler");
+const financeAccountSheet = sheetOlustur(() => financeAccountValues, next => { financeAccountValues = next; }, "Kasa Banka Hesapları");
+const businessMovementSheet = sheetOlustur(() => businessMovementValues, next => { businessMovementValues = next; }, "Gelir Gider Fişleri");
+const accountTransferSheet = sheetOlustur(() => accountTransferValues, next => { accountTransferValues = next; }, "Hesap Transferleri");
 const auditSheet = sheetOlustur(() => auditValues, next => { auditValues = next; }, "İşlem Geçmişi");
 const backupSheet = sheetOlustur(() => backupValues, next => { backupValues = next; }, "Bulut Yedekleri");
 
@@ -105,6 +114,9 @@ const context = {
         .concat(movementExists ? [movementSheet] : [])
         .concat(checkExists ? [checkSheet] : [])
         .concat(customerExists ? [customerSheet] : [])
+        .concat(financeAccountExists ? [financeAccountSheet] : [])
+        .concat(businessMovementExists ? [businessMovementSheet] : [])
+        .concat(accountTransferExists ? [accountTransferSheet] : [])
         .concat(auditExists ? [auditSheet] : [])
         .concat(backupExists ? [backupSheet] : []);
     },
@@ -114,6 +126,9 @@ const context = {
       if (name === "Cari Hareketler") return movementExists ? movementSheet : null;
       if (name === "Çekler") return checkExists ? checkSheet : null;
       if (name === "Cariler") return customerExists ? customerSheet : null;
+      if (name === "Kasa Banka Hesapları") return financeAccountExists ? financeAccountSheet : null;
+      if (name === "Gelir Gider Fişleri") return businessMovementExists ? businessMovementSheet : null;
+      if (name === "Hesap Transferleri") return accountTransferExists ? accountTransferSheet : null;
       if (name === "İşlem Geçmişi") return auditExists ? auditSheet : null;
       if (name === "Bulut Yedekleri") return backupExists ? backupSheet : null;
       return null;
@@ -122,6 +137,9 @@ const context = {
       if (name === "Cari Hareketler") { movementExists = true; return movementSheet; }
       if (name === "Çekler") { checkExists = true; return checkSheet; }
       if (name === "Cariler") { customerExists = true; return customerSheet; }
+      if (name === "Kasa Banka Hesapları") { financeAccountExists = true; return financeAccountSheet; }
+      if (name === "Gelir Gider Fişleri") { businessMovementExists = true; return businessMovementSheet; }
+      if (name === "Hesap Transferleri") { accountTransferExists = true; return accountTransferSheet; }
       if (name === "İşlem Geçmişi") { auditExists = true; return auditSheet; }
       if (name === "Bulut Yedekleri") { backupExists = true; return backupSheet; }
       return invoiceSheet;
@@ -173,6 +191,18 @@ assert.equal(context.yeniAyniCekNumaralariniBul(
   [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }],
   [{ id:"eski", cekNo:"001", banka:"Test Bank", durum:"Verildi" }, { id:"yeni", cekNo:" 001 ", banka:"TEST BANK", durum:"Verildi" }]
 )[0].id, "yeni", "Yeni aynı banka ve çek numarası tespit edilmeli");
+assert.equal(context.yeniGecersizFinansBaglantilariniBul(
+  { cariHareketler:[], cekler:[], hesaplar:[] },
+  [{ id:"h-yeni", hesapId:"", durum:"Aktif" }],
+  [],
+  [{ id:"kasa-1", ad:"Merkez Kasa", tur:"kasa", durum:"Aktif" }]
+)[0].mesaj, "Yeni ödeme veya tahsilat için aktif bir kasa/banka hesabı seçin.");
+assert.equal(context.yeniGecersizFinansBaglantilariniBul(
+  { cariHareketler:[], cekler:[], hesaplar:[] },
+  [],
+  [{ id:"cek-yeni", hesapId:"kasa-1", durum:"Ödendi" }],
+  [{ id:"kasa-1", ad:"Merkez Kasa", tur:"kasa", durum:"Aktif" }]
+)[0].mesaj, "Yeni veya ödenen çek için aktif bir banka hesabı seçin.");
 
 assert.equal(context.firebaseBaglantisiniYetkilendir(), 401);
 const cariHazirligi = context.cariSutununuHazirla();
@@ -185,17 +215,28 @@ const post = (payload, idToken="admin-token") => read(context.doPost({ parameter
 const item1 = { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-09-01", vadeGun:30, tutar:100 };
 const item2 = { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-09-01", vadeGun:30, tutar:200 };
 const hareketler = [
-  { id:"h-1", cari:"Örnek Metal", tarih:"2026-09-02", tutar:140, yontem:"Havale / EFT", referans:"REF-1" },
-  { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, yontem:"Nakit" },
-  { id:"h-3", cari:"Başarı Çelik", tarih:"2026-09-04", tutar:25, yontem:"Nakit", durum:"İptal", iptalZamani:"2026-09-04T11:00:00.000Z", iptalNedeni:"Mükerrer kayıt" }
+  { id:"h-1", cari:"Örnek Metal", tarih:"2026-09-02", tutar:140, hesapId:"banka-1", yontem:"Havale / EFT", referans:"REF-1" },
+  { id:"h-2", cari:"Başarı Çelik", tarih:"2026-09-03", tutar:50, hesapId:"kasa-1", yontem:"Nakit" },
+  { id:"h-3", cari:"Başarı Çelik", tarih:"2026-09-04", tutar:25, hesapId:"kasa-1", yontem:"Nakit", durum:"İptal", iptalZamani:"2026-09-04T11:00:00.000Z", iptalNedeni:"Mükerrer kayıt" }
 ];
 const cekler = [
-  { id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", durum:"Verildi" },
-  { id:"c-2", cari:"Başarı Çelik", tarih:"2026-09-04", vadeTarihi:"2026-10-04", tutar:60, cekNo:"CHK-2", banka:"Test Bank", durum:"İptal", iptalZamani:"2026-09-04T12:00:00.000Z", iptalNedeni:"Hatalı çek" }
+  { id:"c-1", cari:"Başarı Çelik", tarih:"2026-09-03", vadeTarihi:"2026-10-03", tutar:75, cekNo:"CHK-1", banka:"Test Bank", hesapId:"banka-1", durum:"Verildi" },
+  { id:"c-2", cari:"Başarı Çelik", tarih:"2026-09-04", vadeTarihi:"2026-10-04", tutar:60, cekNo:"CHK-2", banka:"Test Bank", hesapId:"banka-1", durum:"İptal", iptalZamani:"2026-09-04T12:00:00.000Z", iptalNedeni:"Hatalı çek" }
 ];
 const cariler = [
   { id:"cari-1", cari:"Örnek Metal", vergiNo:"1234567890", acilisTarihi:"2026-01-01", acilisBorc:25, acilisAlacak:0 },
   { id:"cari-2", cari:"Başarı Çelik", vergiNo:"", acilisTarihi:"", acilisBorc:0, acilisAlacak:10 }
+];
+const hesaplar = [
+  { id:"kasa-1", ad:"Merkez Kasa", tur:"kasa", acilisBakiyesi:1000, durum:"Aktif" },
+  { id:"banka-1", ad:"Ana Banka", tur:"banka", bankaAdi:"Test Bank", iban:"TR001234567890123456789012", acilisBakiyesi:5000, durum:"Aktif" }
+];
+const isletmeHareketler = [
+  { id:"fis-1", tarih:"2026-09-04", tur:"gelir", hesapId:"banka-1", kategori:"Diğer Gelir", tutar:250, belgeNo:"G-1", aciklama:"Test geliri", durum:"Aktif" },
+  { id:"fis-2", tarih:"2026-09-04", tur:"gider", hesapId:"kasa-1", kategori:"Kira", tutar:100, belgeNo:"G-2", aciklama:"Test gideri", durum:"İptal", iptalZamani:"2026-09-04T13:00:00.000Z" }
+];
+const hesapTransferleri = [
+  { id:"transfer-1", tarih:"2026-09-04", kaynakHesapId:"kasa-1", hedefHesapId:"banka-1", tutar:300, referans:"TR-1", durum:"Aktif" }
 ];
 
 assert.equal(read(context.doGet()).code, "AUTH_REQUIRED");
@@ -243,20 +284,32 @@ const yetkiGecmisi = post({ action:"audit.list" });
 assert.equal(yetkiGecmisi.logs.length, 3, "Başarılı yetki ekleme, değiştirme ve kaldırma işlemleri kaydedilmeli");
 assert.equal(yetkiGecmisi.logs[0].islem, "Kullanıcı erişimi kaldırıldı");
 
-const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler, cariler });
+const saved = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler, cariler, hesaplar, isletmeHareketler, hesapTransferleri });
 assert.deepEqual({ ok:saved.ok, revision:saved.revision, count:saved.count, movementCount:saved.movementCount, checkCount:saved.checkCount, customerCount:saved.customerCount },
   { ok:true, revision:1, count:2, movementCount:3, checkCount:2, customerCount:2 });
 assert.equal(movementValues[0][0], "Hareket ID");
 assert.equal(movementValues.length, 4);
-assert.equal(movementValues[3][10], "İptal", "İptal durumu Google Sheets'e yazılmalı");
-assert.equal(movementValues[3][12], "Mükerrer kayıt", "İptal nedeni Google Sheets'e yazılmalı");
+assert.equal(movementValues[3][12], "İptal", "İptal durumu Google Sheets'e yazılmalı");
+assert.equal(movementValues[3][14], "Mükerrer kayıt", "İptal nedeni Google Sheets'e yazılmalı");
 assert.equal(checkValues[0][0], "Çek ID");
 assert.equal(checkValues.length, 3);
-assert.equal(checkValues[2][12], "Hatalı çek", "Çek iptal nedeni Google Sheets'e yazılmalı");
-assert.equal(checkValues[0][14], "Ödeme Tarihi", "Çekler sayfasında ödeme tarihi sütunu bulunmalı");
+assert.equal(checkValues[2][13], "Hatalı çek", "Çek iptal nedeni Google Sheets'e yazılmalı");
+assert.equal(checkValues[0][15], "Ödeme Tarihi", "Çekler sayfasında ödeme tarihi sütunu bulunmalı");
 assert.equal(invoiceValues[1][1], "275 ₺", "İptal edilen ödeme ve çek toplam alacağa katılmamalı");
 assert.equal(customerValues[0][0], "Cari ID");
 assert.equal(customerValues.length, 3);
+assert.equal(financeAccountValues[0][0], "Hesap ID", "Kasa/banka hesap sayfası otomatik hazırlanmalı");
+assert.equal(financeAccountValues.length, 3, "Kasa ve banka hesapları Google Sheets'e yazılmalı");
+assert.equal(saved.financeAccountCount, 2);
+assert.equal(saved.businessMovementCount, 2);
+assert.equal(businessMovementValues[0][0], "Fiş ID", "Gelir/gider fişi sayfası otomatik hazırlanmalı");
+assert.equal(businessMovementValues.length, 3, "Gelir/gider fişleri Google Sheets'e yazılmalı");
+assert.equal(businessMovementValues.find(row => row[0] === "fis-1")[2], "Gelir");
+assert.equal(businessMovementValues.find(row => row[0] === "fis-2")[8], "İptal", "İptal edilen fiş geçmişte korunmalı");
+assert.equal(saved.accountTransferCount, 1);
+assert.equal(accountTransferValues[0][0], "Transfer ID", "Hesap transferi sayfası otomatik hazırlanmalı");
+assert.equal(accountTransferValues[1][2], "kasa-1");
+assert.equal(accountTransferValues[1][3], "banka-1");
 assert.equal(paymentValues.length, 2, "Eski Ödemeler sayfası geçiş arşivi olarak korunmalı");
 const veriGecmisi = post({ action:"audit.list" });
 assert.equal(veriGecmisi.logs[0].islem, "Veri değişikliği", "Muhasebe veri değişikliği işlem geçmişine yazılmalı");
@@ -288,7 +341,7 @@ assert.equal(kayitSonrasi.cekler[0].durum, "Verildi");
 assert.equal(kayitSonrasi.cekler[1].durum, "İptal");
 assert.equal(kayitSonrasi.cekler[1].iptalNedeni, "Hatalı çek");
 assert.equal(kayitSonrasi.cariler.find(cari => cari.cari === "Örnek Metal").acilisBorc, 25);
-assert.equal(invoiceValues[3][7], "Vade Durumu", "Fatura sayfasında ödeme durumu yerine vade durumu bulunmalı");
+assert.equal(invoiceValues[3][8], "Vade Durumu", "Fatura sayfasında ödeme durumu yerine vade durumu bulunmalı");
 
 const replayed = post({ action:"save", baseRevision:0, requestId:"request-1", items:[item1,item2], cariHareketler:hareketler, cekler });
 assert.equal(replayed.replayed, true);
@@ -303,6 +356,9 @@ const eskiOnYuzOkumasi = post({ action:"read" });
 assert.equal(eskiOnYuzOkumasi.cariHareketler.length, 3, "Eski ön yüz cari hareket alanını göndermese de kayıtlar korunmalı");
 assert.equal(eskiOnYuzOkumasi.cekler.length, 2, "Eski ön yüz çek alanını göndermese de çekler korunmalı");
 assert.equal(eskiOnYuzOkumasi.cariler.length, 2, "Eski ön yüz cari kart alanını göndermese de kartlar korunmalı");
+assert.equal(eskiOnYuzOkumasi.hesaplar.length, 2, "Eski ön yüz kasa/banka alanını göndermese de hesaplar korunmalı");
+assert.equal(eskiOnYuzOkumasi.isletmeHareketler.length, 2, "Eski ön yüz gelir/gider alanını göndermese de fişler korunmalı");
+assert.equal(eskiOnYuzOkumasi.hesapTransferleri.length, 1, "Eski ön yüz transfer alanını göndermese de hesap transferleri korunmalı");
 
 const yeniBenzerOdeme = { ...eskiOnYuzOkumasi.cariHareketler[0], id:"h-benzer", kayitZamani:"2026-09-05T10:00:00.000Z" };
 const benzerReddedildi = post({

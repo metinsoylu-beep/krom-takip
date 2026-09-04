@@ -40,12 +40,15 @@ const context = {
   faturalariTekillestir:liste => ({ liste }),
   cariHareketleriNormallestir:liste => liste,
   cekleriNormallestir:liste => liste,
-  cariKartlariniNormallestir:liste => liste
+  cariKartlariniNormallestir:liste => liste,
+  finansHesaplariniNormallestir:liste => Array.isArray(liste) ? liste : [],
+  isletmeHareketleriniNormallestir:liste => Array.isArray(liste) ? liste : [],
+  hesapTransferleriniNormallestir:liste => Array.isArray(liste) ? liste : []
 };
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
 
-const durum = { items:[{ id:"fatura-1" }], cariHareketler:[], cekler:[], cariler:[] };
+const durum = { items:[{ id:"fatura-1" }], cariHareketler:[], cekler:[], cariler:[], hesaplar:[], isletmeHareketler:[] };
 const kuyrukSecenekleri = { requestId:"kuyruk-istegi", baseRevision:4, kuyrukKaydi:true };
 
 (async () => {
