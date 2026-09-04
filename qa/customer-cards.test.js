@@ -19,6 +19,8 @@ const context = {
     setItem: (anahtar,deger) => depo.set(anahtar,String(deger))
   },
   cariAdiAnahtari: cari => String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g," ") || "BELİRTİLMEDİ",
+  faturaTurunuNormallestir: deger => String(deger || "").toLowerCase() === "satis" ? "satis" : "alis",
+  cariHareketTurunuNormallestir: deger => String(deger || "").toLowerCase() === "tahsilat" ? "tahsilat" : "odeme",
   tutarSayiyaCevir: deger => Number(deger) || 0,
   tarihGecerliMi: deger => /^\d{4}-\d{2}-\d{2}$/.test(String(deger || "")),
   faturaYukle: () => faturalar,

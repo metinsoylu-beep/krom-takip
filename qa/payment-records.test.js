@@ -88,9 +88,9 @@ assert.match(index, /function cariHareketDuzenlemeyiBaslat\(/, "Aktif ödeme ve 
 assert.match(index, /class="odeme-kaydi-duzenle"/, "Aktif cari harekette düzenleme düğmesi bulunmalı");
 assert.match(index, /Kaydın türü değiştirilemez/, "Düzenleme sırasında ödeme ve çek türü korunmalı");
 assert.match(index, /Değişiklikten önce otomatik yedek alınacaktır/, "Finansal kayıt düzenlemesi açık onay ve yedek uyarısı içermeli");
-assert.match(index, /"Çek kaydı düzenlendi" : "Ödeme kaydı düzenlendi"/, "Düzenleme işlem geçmişinde ayırt edilebilmeli");
+assert.match(index, /"Çek kaydı düzenlendi" : `\$\{cariHareketTuruEtiketi\(guncellenen\.islemTuru\)\} kaydı düzenlendi`/, "Düzenleme işlem geçmişinde ayırt edilebilmeli");
 assert.match(index, /let cariHareketKayitKilidi = false;/, "Hızlı çift tıklama için cari hareket kayıt kilidi bulunmalı");
-assert.match(index, /Aynı bilgilerle aktif bir ödeme kaydı zaten var/, "Benzer ödeme için açık kullanıcı uyarısı bulunmalı");
+assert.match(index, /Aynı bilgilerle aktif bir \$\{hareketEtiketi\} kaydı zaten var/, "Benzer ödeme veya tahsilat için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /Aynı bilgilerle aktif bir çek kaydı zaten var/, "Benzer çek için açık kullanıcı uyarısı bulunmalı");
 assert.match(index, /code === "DUPLICATE_MOVEMENT"/, "Sunucunun mükerrer kayıt reddi güvenli biçimde ele alınmalı");
 assert.match(index, /code === "DUPLICATE_CHECK_NUMBER"/, "Sunucunun aynı çek numarası reddi güvenli biçimde ele alınmalı");

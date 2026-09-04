@@ -28,7 +28,7 @@ assert.match(index, /id="d-cari"/);
 assert.match(index, /CARİ \/ FİRMA/);
 assert.match(index, /Cari veya fatura no ara/);
 assert.match(index, /const aramaMetni = `\$\{inv\.cari/);
-assert.match(index, /\["Cari\/Firma","Fatura No"/);
+assert.match(index, /\["Cari\/Firma","Fatura Türü","Fatura No"/);
 assert.match(code, /"Cari\/Firma"/);
 assert.match(code, /cari: String\(ham\.cari/);
 

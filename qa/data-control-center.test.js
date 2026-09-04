@@ -20,6 +20,8 @@ const context = {
   Map,
   Set,
   cariAdiAnahtari: cari => String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ",
+  faturaTurunuNormallestir: deger => String(deger || "").toLowerCase() === "satis" ? "satis" : "alis",
+  cariHareketTurunuNormallestir: deger => String(deger || "").toLowerCase() === "tahsilat" ? "tahsilat" : "odeme",
   tutarSayiyaCevir,
   tarihOlusturYerel: deger => {
     const [yil, ay, gun] = String(deger || "").split("-").map(Number);
@@ -27,6 +29,7 @@ const context = {
   },
   cariHareketleriYukle: () => [],
   cekleriYukle: () => [],
+  cariKartlariniYukle: () => [],
   cekNumarasiAnahtari: cek => {
     const temizle = deger => String(deger || "").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g," ");
     const no = temizle(cek?.cekNo);
