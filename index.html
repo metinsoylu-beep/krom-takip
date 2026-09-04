@@ -991,6 +991,10 @@
       font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
     }
     .veri-kontrol-duzelt:hover { background: #f3be3e24; }
+    .veri-kontrol-islemler { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+    .veri-kontrol-islemler .veri-kontrol-duzelt i { margin: 0; color: inherit; }
+    .veri-kontrol-gonder { color: #86efac; border-color: #4ade8066; background: #4ade8012; }
+    .veri-kontrol-gonder:hover { background: #4ade8024; }
     .veri-kontrol-sorunlar li.veri-kontrol-daha-fazla { justify-content: center; padding-top: 3px; }
     .veri-kontrol-devam {
       min-height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
@@ -1192,6 +1196,9 @@
       .veri-kontrol-ok { grid-column: 3; grid-row: 1 / span 2; }
       .veri-kontrol-detay { padding-left: 13px; }
       .veri-kontrol-sayaclar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .veri-kontrol-sorunlar li { flex-wrap: wrap; }
+      .veri-kontrol-islemler { width: 100%; padding-left: 16px; }
+      .veri-kontrol-islemler .veri-kontrol-duzelt { flex: 1; justify-content: center; }
       .depolama-alt-satir { align-items: flex-start; flex-direction: column; }
       .toplu-islem-panel { align-items: stretch; flex-wrap: wrap; padding: 10px; }
       .toplu-islem-bilgi { width: 100%; min-width: 0; }
@@ -2790,6 +2797,29 @@
       } catch (_) {}
     }
 
+    async function bekleyenBulutKaydiniSimdiGonder() {
+      if (!yoneticiGerekli()) return false;
+      const kayit = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
+      if (!kayit) {
+        syncGoster("Gönderilmeyi bekleyen değişiklik bulunmuyor", "#60a5fa");
+        return false;
+      }
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        syncGoster("İnternet bağlantısı yok · Bekleyen değişiklik bu cihazda korunuyor", "#f59e0b");
+        return false;
+      }
+      if (bulutKaydiCalisiyor) {
+        syncGoster("Bulut gönderimi zaten devam ediyor", "#60a5fa");
+        return false;
+      }
+      bekleyenBulutKaydi = kayit;
+      clearTimeout(bulutTekrarDenemeZamanlayici);
+      syncGoster("Bekleyen değişiklik şimdi buluta gönderiliyor…", "#60a5fa");
+      await bulutKayitKuyrugunuCalistir();
+      bekleyenBulutKontrolunuGuncelle();
+      return true;
+    }
+
     function bekleyenBulutKaydiniSakla(kayit) {
       const guvenliKayit = bekleyenBulutKaydiniDogrula(kayit);
       if (!guvenliKayit) return false;
@@ -3951,12 +3981,20 @@
         ikon.setAttribute("aria-hidden", "true");
         const yazi = document.createElement("span");
         yazi.textContent = `${bekleyenBulutKaydiYasMetni(bekleyenKayit)} buluta gönderilmeyi bekliyor. İşlem: ${bekleyenKayit.auditAction || "Veri değişikliği"}.`;
+        const islemler = document.createElement("div");
+        islemler.className = "veri-kontrol-islemler";
+        const gonder = document.createElement("button");
+        gonder.type = "button";
+        gonder.className = "veri-kontrol-duzelt veri-kontrol-gonder yalnizca-yonetici";
+        gonder.innerHTML = '<i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Şimdi Gönder';
+        gonder.addEventListener("click", bekleyenBulutKaydiniSimdiGonder);
         const indir = document.createElement("button");
         indir.type = "button";
         indir.className = "veri-kontrol-duzelt yalnizca-yonetici";
         indir.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i> Kopyayı İndir';
         indir.addEventListener("click", bekleyenBulutKaydiniIndir);
-        satir.append(ikon, yazi, indir);
+        islemler.append(gonder, indir);
+        satir.append(ikon, yazi, islemler);
         sorunListesi.appendChild(satir);
       }
       if (cakismaSayisi) {
