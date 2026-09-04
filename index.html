@@ -715,11 +715,13 @@
     .kullanici-rolu.admin { color: #c4b5fd; background: #a78bfa16; border: 1px solid #a78bfa44; }
     .kullanici-rolu.viewer { color: #7dd3fc; background: #38bdf816; border: 1px solid #38bdf844; }
     .kullanici-satir-islemler { display: flex; gap: 6px; }
-    .kullanici-duzenle, .kullanici-kaldir {
+    .kullanici-duzenle, .kullanici-davet, .kullanici-kaldir {
       min-height: 30px; padding: 0 9px; border-radius: 6px; background: transparent;
       font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
     }
     .kullanici-duzenle { border: 1px solid #38bdf855; color: #7dd3fc; }
+    .kullanici-davet { border: 1px solid #39c56b55; color: #68e394; }
+    .kullanici-davet:hover { background: #39c56b16; }
     .kullanici-kaldir { border: 1px solid #ff3f4f55; color: #ff7a85; }
     .kullanici-kaldir:disabled { border-color: #64748b44; color: #64748b; cursor: not-allowed; }
     .islem-gecmisi-kart { width: min(1040px,100%); max-width: 1040px; border-top-color: #a78bfa; }
@@ -2082,6 +2084,7 @@
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
     const YEDEK_SINIR = 10;
+    const CANLI_UYGULAMA_URL = "https://metinsoylu-finans.netlify.app/";
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk",
@@ -3536,6 +3539,7 @@
           <span class="kullanici-eposta">${htmlGuvenli(eposta)}<small>${aciklama}</small></span>
           <span class="kullanici-rolu ${role}">${rolMetni}</span>
           <span class="kullanici-satir-islemler">
+            <button class="kullanici-davet" type="button" data-email="${htmlGuvenli(eposta)}" data-role="${role}" onclick="kullaniciDavetiniKopyala(this.dataset.email,this.dataset.role)" title="Hazır davet mesajını kopyala"><i class="fa-solid fa-copy" aria-hidden="true"></i> Davet</button>
             <button class="kullanici-duzenle" type="button" data-email="${htmlGuvenli(eposta)}" data-role="${role}" onclick="kullaniciFormunaAktar(this)">Düzenle</button>
             <button class="kullanici-kaldir" type="button" data-email="${htmlGuvenli(eposta)}" onclick="kullaniciYetkisiniKaldir(this.dataset.email)" ${kaldirmaKapali ? "disabled" : ""}>Kaldır</button>
           </span>
@@ -3581,6 +3585,50 @@
       document.getElementById("kullanici-eposta")?.focus();
     }
 
+    function kullaniciDavetMetniOlustur(eposta, role) {
+      const temizEposta = String(eposta || "").trim().toLowerCase();
+      const rolMetni = role === "admin" ? "Yönetici" : "Sadece görüntüleme";
+      return [
+        "Arlinoks Vadeli Ödeme Takibi erişiminiz hazır.",
+        "",
+        `Bağlantı: ${CANLI_UYGULAMA_URL}`,
+        `Yetkili hesap: ${temizEposta}`,
+        `Yetki türü: ${rolMetni}`,
+        "",
+        "Google ile Giriş Yap düğmesine basın. Hesabınız görünmüyorsa ‘Başka bir hesap kullan’ seçeneğiyle yukarıdaki e-posta adresini seçin.",
+        "Bağlantı WhatsApp içinde açılır ve giriş başlamazsa menüden ‘Tarayıcıda aç’ seçeneğini kullanın."
+      ].join("\n");
+    }
+
+    async function metniPanoyaKopyala(metin) {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(metin);
+        return;
+      }
+      const alan = document.createElement("textarea");
+      alan.value = metin;
+      alan.setAttribute("readonly", "");
+      alan.style.position = "fixed";
+      alan.style.opacity = "0";
+      document.body.appendChild(alan);
+      alan.select();
+      const basarili = document.execCommand("copy");
+      alan.remove();
+      if (!basarili) throw new Error("Kopyalama tarayıcı tarafından engellendi.");
+    }
+
+    async function kullaniciDavetiniKopyala(eposta, role) {
+      if (!yoneticiGerekli()) return;
+      const temizEposta = String(eposta || "").trim().toLowerCase();
+      if (!temizEposta) return kullaniciYonetimMesaji("Davet oluşturmak için geçerli bir e-posta gerekli.", true);
+      try {
+        await metniPanoyaKopyala(kullaniciDavetMetniOlustur(temizEposta, role));
+        kullaniciYonetimMesaji(`${temizEposta} için davet mesajı kopyalandı. WhatsApp veya e-postaya yapıştırabilirsiniz.`);
+      } catch (hata) {
+        kullaniciYonetimMesaji(hata?.message || "Davet mesajı kopyalanamadı.", true);
+      }
+    }
+
     async function kullaniciYetkisiKaydet(event) {
       event?.preventDefault();
       if (!yoneticiGerekli()) return;
@@ -3608,7 +3656,7 @@
         }
         kullaniciListesiniGoster();
         document.getElementById("kullanici-formu")?.reset();
-        kullaniciYonetimMesaji(`${eposta} için ${role === "admin" ? "yönetici" : "sadece görüntüleme"} yetkisi kaydedildi.`);
+        kullaniciYonetimMesaji(`${eposta} için ${role === "admin" ? "yönetici" : "sadece görüntüleme"} yetkisi kaydedildi. Satırdaki Davet düğmesiyle hazır mesajı kopyalayabilirsiniz.`);
       } catch (hata) {
         kullaniciYonetimMesaji(hata?.message || "Yetki kaydedilemedi.", true);
       } finally {
