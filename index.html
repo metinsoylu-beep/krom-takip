@@ -931,6 +931,14 @@
       font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
     }
     .veri-kontrol-duzelt:hover { background: #f3be3e24; }
+    .veri-kontrol-sorunlar li.veri-kontrol-daha-fazla { justify-content: center; padding-top: 3px; }
+    .veri-kontrol-devam {
+      min-height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border: 1px solid #38bdf84d; border-radius: 7px; background: #38bdf812; color: #7dd3fc;
+      font: 700 9px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .veri-kontrol-devam:hover { background: #38bdf824; }
+    .veri-kontrol-devam i { margin: 0; color: inherit; }
     .veri-kontrol-not { margin-top: 8px; color: #718398; font-size: 9px; }
 
     .depolama-sagligi-panel { border-left-color: #2dd4bf; }
@@ -2119,6 +2127,7 @@
     let kullaniciRolu = null;
     let uygulamaBaslatildi = false;
     let sonGirisHatasi = "";
+    let veriKontrolTumUyarilarAcik = false;
     let yetkiliKullanicilar = [];
     let yerelYetkiliKullanicilar = [
       { email:"arlinoksmuhasebe@gmail.com", role:"admin", protected:true, current:true },
@@ -3290,6 +3299,17 @@
       };
     }
 
+    function veriKontrolMesajlariniSinirla(mesajlar, tumuAcik=false, sinir=8) {
+      const guvenliMesajlar = Array.isArray(mesajlar) ? mesajlar : [];
+      const guvenliSinir = Number.isInteger(sinir) && sinir > 0 ? sinir : 8;
+      const gosterilecekler = tumuAcik ? guvenliMesajlar : guvenliMesajlar.slice(0, guvenliSinir);
+      return {
+        mesajlar:gosterilecekler,
+        gizliSayisi:Math.max(0, guvenliMesajlar.length - gosterilecekler.length),
+        daraltilabilir:tumuAcik && guvenliMesajlar.length > guvenliSinir
+      };
+    }
+
     function veriKontrolSayaciniGuncelle(kartId, degerId, deger, sorun) {
       document.getElementById(degerId).textContent = String(deger);
       document.getElementById(kartId).classList.toggle("sorun", Boolean(sorun));
@@ -3327,7 +3347,9 @@
 
       const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
       sorunListesi.replaceChildren();
-      const gosterilecekler = uyariVar ? rapor.mesajlar.slice(0, 8) : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
+      if (rapor.mesajlar.length <= 8) veriKontrolTumUyarilarAcik = false;
+      const mesajGorunumu = veriKontrolMesajlariniSinirla(rapor.mesajlar, veriKontrolTumUyarilarAcik);
+      const gosterilecekler = uyariVar ? mesajGorunumu.mesajlar : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
       const kullanilanDuzeltilebilirler = new Set();
       gosterilecekler.forEach(metin => {
         const satir = document.createElement("li");
@@ -3359,16 +3381,25 @@
         }
         sorunListesi.appendChild(satir);
       });
-      if (rapor.mesajlar.length > 8) {
+      if (mesajGorunumu.gizliSayisi > 0 || mesajGorunumu.daraltilabilir) {
         const satir = document.createElement("li");
-        const ikon = document.createElement("i");
-        ikon.className = "fa-solid fa-ellipsis";
-        ikon.setAttribute("aria-hidden", "true");
-        const yazi = document.createElement("span");
-        yazi.textContent = `${rapor.mesajlar.length - 8} ek uyarı daha var.`;
-        satir.append(ikon, yazi);
+        satir.className = "veri-kontrol-daha-fazla";
+        const dugme = document.createElement("button");
+        dugme.type = "button";
+        dugme.className = "veri-kontrol-devam";
+        dugme.setAttribute("aria-expanded", String(veriKontrolTumUyarilarAcik));
+        dugme.innerHTML = veriKontrolTumUyarilarAcik
+          ? '<i class="fa-solid fa-chevron-up" aria-hidden="true"></i> Daha az göster'
+          : `<i class="fa-solid fa-list-check" aria-hidden="true"></i> ${mesajGorunumu.gizliSayisi} ek uyarıyı göster`;
+        dugme.addEventListener("click", veriKontrolUyariGorunumunuDegistir);
+        satir.appendChild(dugme);
         sorunListesi.appendChild(satir);
       }
+    }
+
+    function veriKontrolUyariGorunumunuDegistir() {
+      veriKontrolTumUyarilarAcik = !veriKontrolTumUyarilarAcik;
+      veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
     }
 
     function veriKontrolDetayiniDegistir() {

@@ -135,6 +135,13 @@ assert.equal(cariDenetimRaporu.kartsizCariSayisi, 1, "Geçici kartı olan cari t
 assert.match(cariDenetimRaporu.mesajlar.join("\n"), /Kartsız Ltd.*2 kayıtta.*tamamlanmış cari kartı yok/i, "Kartsız cari kullanımı tek uyarıda gruplanmalı");
 assert.equal(cariDenetimRaporu.duzeltilebilirSorunlar.filter(sorun => sorun.islem === "cari-kart").length, 1, "Kartsız cari için kart tamamlama eylemi sunulmalı");
 
+const cokUyariliGorunum = context.veriKontrolMesajlariniSinirla(Array.from({ length:11 }, (_, sira) => `Uyarı ${sira + 1}`));
+assert.equal(cokUyariliGorunum.mesajlar.length, 8, "Uzun uyarı listesi ilk açılışta sekiz satırla sınırlandırılmalı");
+assert.equal(cokUyariliGorunum.gizliSayisi, 3, "Gizli uyarı sayısı doğru hesaplanmalı");
+const tumUyarilarGorunumu = context.veriKontrolMesajlariniSinirla(Array.from({ length:11 }, (_, sira) => `Uyarı ${sira + 1}`), true);
+assert.equal(tumUyarilarGorunumu.mesajlar.length, 11, "Kullanıcı istediğinde tüm uyarılar gösterilmeli");
+assert.equal(tumUyarilarGorunumu.daraltilabilir, true, "Açılmış uzun liste yeniden daraltılabilmeli");
+
 assert.match(index, /id="kontrol-cek-tarihi"/, "Çek tarihleri kontrol sayacı bulunmalı");
 assert.match(index, /id="kontrol-eksik-cari"/, "Eksik cari kontrol sayacı bulunmalı");
 assert.match(index, /id="kontrol-kartsiz-cari"/, "Kartsız cari kontrol sayacı bulunmalı");
@@ -144,6 +151,9 @@ assert.match(index, /className = "veri-kontrol-duzelt yalnizca-yonetici"/, "Çek
 assert.match(index, /function veriKontrolCekiniDuzelt\(kimlik\)/, "Düzeltme düğmesi ilgili çek formunu açmalı");
 assert.match(index, /function veriKontrolKaydiniDuzelt\(kaynak, kimlik\)/, "Eksik carili kayıt doğrudan düzenlenebilmeli");
 assert.match(index, /function veriKontrolCariKartiniTamamla\(cari\)/, "Kartsız cari doğrudan kart formuna yönlenmeli");
+assert.match(index, /function veriKontrolUyariGorunumunuDegistir\(\)/, "Tüm uyarıları gösterme ve daraltma işlevi bulunmalı");
+assert.match(index, /ek uyarıyı göster/, "Gizli uyarılara erişim düğmesi bulunmalı");
+assert.match(index, /Daha az göster/, "Uzun uyarı listesi yeniden daraltılabilmeli");
 assert.match(index, /cariHareketDuzenlemeyiBaslat\("cek", kimlik\)/, "Sorunlu çek doğrudan düzenlenebilmeli");
 assert.match(index, /kayit\.durum !== "İptal"/, "Bekleyen ve ödenen sorunlu çekler düzeltmeye açılabilmeli");
 assert.match(index, /Bu merkez yalnızca denetler; hiçbir kaydı otomatik değiştirmez\./);
