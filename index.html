@@ -2156,6 +2156,7 @@
     let bekleyenBulutKaydi = null;
     let bulutKayitZamanlayici = null;
     let bulutTekrarDenemeZamanlayici = null;
+    let sekmelerArasiEsitlemeZamanlayici = null;
     let bulutKaydiCalisiyor = false;
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
@@ -2211,18 +2212,66 @@
     }
 
     window.addEventListener("online", () => {
-      if (!yoneticiMi()) return;
       bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
-      if (!bekleyenBulutKaydi) return;
-      clearTimeout(bulutTekrarDenemeZamanlayici);
-      syncGoster("İnternet bağlantısı geldi · Bekleyen değişiklik gönderiliyor…", "#60a5fa");
-      bulutKayitKuyrugunuCalistir();
+      if (bekleyenBulutKaydi && yoneticiMi()) {
+        clearTimeout(bulutTekrarDenemeZamanlayici);
+        syncGoster("İnternet bağlantısı geldi · Bekleyen değişiklik gönderiliyor…", "#60a5fa");
+        bulutKayitKuyrugunuCalistir();
+        return;
+      }
+      if (["admin", "viewer"].includes(kullaniciRolu)) {
+        syncGoster("İnternet bağlantısı geldi · Bulut verisi kontrol ediliyor…", "#60a5fa");
+        sekmelerArasiBulutYenilemesiniPlanla();
+      }
     });
 
     window.addEventListener("offline", () => {
       if (bekleyenBulutKaydi || bekleyenBulutKaydiniOku()) {
         syncGoster("İnternet bağlantısı yok · Değişiklik bu cihazda güvenle bekliyor", "#f59e0b");
       }
+    });
+
+    function sekmelerArasiBulutYenilemesiniPlanla() {
+      if (YEREL_GELISTIRME || !["admin", "viewer"].includes(kullaniciRolu)) return;
+      clearTimeout(sekmelerArasiEsitlemeZamanlayici);
+      sekmelerArasiEsitlemeZamanlayici = setTimeout(() => {
+        if (bulutYuklemeDevamEdiyor || bulutKaydiCalisiyor) {
+          sekmelerArasiBulutYenilemesiniPlanla();
+          return;
+        }
+        buludanYukle();
+      }, 500);
+    }
+
+    window.addEventListener("storage", olay => {
+      if (olay.key === BULUT_BEKLEYEN_ANAHTAR) {
+        let digerSekmeninKaydi = null;
+        try { digerSekmeninKaydi = bekleyenBulutKaydiniDogrula(JSON.parse(olay.newValue || "null")); } catch (_) {}
+        if (!digerSekmeninKaydi) {
+          let digerSekmeninSildigiKayit = null;
+          try { digerSekmeninSildigiKayit = bekleyenBulutKaydiniDogrula(JSON.parse(olay.oldValue || "null")); } catch (_) {}
+          if (!bulutKaydiCalisiyor && (!bekleyenBulutKaydi || !digerSekmeninSildigiKayit || bekleyenBulutKaydi.id === digerSekmeninSildigiKayit.id)) {
+            bekleyenBulutKaydi = null;
+          }
+          return;
+        }
+        if (!bekleyenBulutKaydi) bekleyenBulutKaydi = digerSekmeninKaydi;
+        if (yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
+          clearTimeout(bulutTekrarDenemeZamanlayici);
+          syncGoster("Başka sekmede bekleyen değişiklik algılandı · Buluta gönderiliyor…", "#60a5fa");
+          bulutTekrarDenemeZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 500);
+        }
+        return;
+      }
+
+      if (olay.key !== BULUT_SURUM_ANAHTAR) return;
+      const digerSekmeSurumu = Number(olay.newValue);
+      if (!Number.isInteger(digerSekmeSurumu) || digerSekmeSurumu < 0) return;
+      if (Number.isInteger(bulutSurumu) && digerSekmeSurumu <= bulutSurumu) return;
+      bulutSurumu = digerSekmeSurumu;
+      if (YEREL_GELISTIRME || !["admin", "viewer"].includes(kullaniciRolu)) return;
+      syncGoster("Başka sekmede yeni bulut verisi algılandı · Ekran güncelleniyor…", "#60a5fa");
+      sekmelerArasiBulutYenilemesiniPlanla();
     });
 
     // ── SYNC ──────────────────────────────────────────────────────────────────
@@ -2331,6 +2380,7 @@
 
     function bulutSurumunuKaydet(surum) {
       if (!Number.isInteger(surum) || surum < 0) return;
+      if (Number.isInteger(bulutSurumu) && surum < bulutSurumu) return;
       bulutSurumu = surum;
       localStorage.setItem(BULUT_SURUM_ANAHTAR, String(surum));
     }
@@ -2448,10 +2498,13 @@
     }
 
     function bekleyenBulutKaydiniTemizle(kimlik="") {
-      const mevcut = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
-      if (kimlik && mevcut && mevcut.id !== kimlik) return false;
-      bekleyenBulutKaydi = null;
-      localStorage.removeItem(BULUT_BEKLEYEN_ANAHTAR);
+      const bellekKaydi = bekleyenBulutKaydi;
+      const depoKaydi = bekleyenBulutKaydiniOku();
+      const bellekEslesiyor = Boolean(bellekKaydi && (!kimlik || bellekKaydi.id === kimlik));
+      const depoEslesiyor = Boolean(depoKaydi && (!kimlik || depoKaydi.id === kimlik));
+      if (kimlik && !bellekEslesiyor && !depoEslesiyor) return false;
+      if (!kimlik || bellekEslesiyor) bekleyenBulutKaydi = null;
+      if (!kimlik || depoEslesiyor) localStorage.removeItem(BULUT_BEKLEYEN_ANAHTAR);
       clearTimeout(bulutTekrarDenemeZamanlayici);
       return true;
     }
@@ -2514,7 +2567,7 @@
           }
 
           const baseRevision = temelSurum;
-          const requestId = istekKimligiOlustur();
+          const requestId = String(secenekler.requestId || "").trim().slice(0,120) || istekKimligiOlustur();
           const yanit = await apiIstegi({
             action: "save",
             baseRevision,
@@ -2615,6 +2668,7 @@
         while (bekleyenBulutKaydi) {
           const sonKayit = bekleyenBulutKaydi;
           const sonuc = await bulutKaydiniGonder(sonKayit.durum, {
+            requestId:sonKayit.id,
             auditAction:sonKayit.auditAction,
             allowDuplicateRecordIds:sonKayit.allowDuplicateRecordIds,
             baseRevision:sonKayit.baseRevision,
@@ -2633,6 +2687,7 @@
         }
       } finally {
         bulutKaydiCalisiyor = false;
+        bekleyenBulutKaydi = bekleyenBulutKaydi || bekleyenBulutKaydiniOku();
         clearTimeout(bulutTekrarDenemeZamanlayici);
         if (bekleyenBulutKaydi && yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
           bulutTekrarDenemeZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 30000);
