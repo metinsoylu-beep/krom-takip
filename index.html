@@ -838,6 +838,32 @@
     .bulut-yedegi-olustur { color: #071827; border-color: #5eead4; background: #5eead4; }
     .bulut-yedegi-olustur:hover { background: #99f6e4; }
     .bulut-yedegi-geri:disabled, .bulut-yedegi-indir:disabled, .bulut-yedegi-olustur:disabled { opacity: .55; cursor: wait; }
+    .cakisma-yedekleri-kart { width: min(940px,100%); max-width: 940px; border-top-color: #ff5260; }
+    .cakisma-yedekleri-kart .odeme-yonetim-baslik i { color: #ff7a85; }
+    .cakisma-yedekleri-bilgi {
+      margin: 13px 18px 0; padding: 11px 12px; color: #b8c7d6; background: #ff52600d;
+      border: 1px solid #ff52603d; border-left: 3px solid #ff5260; border-radius: 8px; font-size: 9px; line-height: 1.55;
+    }
+    .cakisma-yedekleri-bilgi i { margin-right: 6px; color: #ff7a85; }
+    .cakisma-yedekleri-liste { display: grid; gap: 8px; max-height: 62vh; overflow: auto; padding: 13px 18px 18px; }
+    .cakisma-yedegi-satir {
+      display: grid; grid-template-columns: minmax(150px,.85fr) minmax(190px,1.15fr) minmax(220px,1.35fr) auto;
+      align-items: center; gap: 12px; padding: 12px; background: #0a1a2b;
+      border: 1px solid var(--cizgi); border-left: 3px solid #ff5260; border-radius: 8px;
+    }
+    .cakisma-yedegi-satir span { display: block; color: #718398; font-size: 8px; text-transform: uppercase; }
+    .cakisma-yedegi-satir strong { display: block; margin-top: 3px; color: #dce6ef; font-size: 10px; line-height: 1.35; }
+    .cakisma-yedegi-satir small { display: block; margin-top: 4px; color: #8193a6; font-size: 8px; line-height: 1.4; }
+    .cakisma-yedegi-surum strong { color: #f6c95c; }
+    .cakisma-yedegi-islemler { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .cakisma-yedegi-indir, .cakisma-yedegi-sil {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 7px 10px; border-radius: 7px; font: 700 9px "Segoe UI",Arial,sans-serif; white-space: nowrap; cursor: pointer;
+    }
+    .cakisma-yedegi-indir { color: #93c5fd; border: 1px solid #60a5fa66; background: #60a5fa12; }
+    .cakisma-yedegi-indir:hover { background: #60a5fa24; }
+    .cakisma-yedegi-sil { color: #ff7a85; border: 1px solid #ff526055; background: #ff526010; }
+    .cakisma-yedegi-sil:hover { background: #ff526022; }
     .bulut-yedegi-dosya {
       min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       padding: 7px 11px; border: 1px solid #f3be3e66; border-radius: 7px; background: #f3be3e12;
@@ -1215,6 +1241,12 @@
       .islem-gecmisi-islemler { align-items: stretch; flex-direction: column-reverse; }
       .islem-gecmisi-yenile { width: 100%; }
       .bulut-yedekleri-liste { padding: 12px; }
+      .cakisma-yedekleri-bilgi { margin: 12px 12px 0; }
+      .cakisma-yedekleri-liste { padding: 12px; }
+      .cakisma-yedegi-satir { grid-template-columns: 1fr 1fr; }
+      .cakisma-yedegi-icerik, .cakisma-yedegi-islemler { grid-column: 1 / -1; }
+      .cakisma-yedegi-islemler { justify-content: stretch; }
+      .cakisma-yedegi-islemler button { flex: 1; }
       .bulut-yedek-olusturma { grid-template-columns: 1fr; padding: 12px; }
       .bulut-yedek-olusturma .bulut-yedegi-olustur { width: 100%; }
       .bulut-yedekleri-filtreler { grid-template-columns: 1fr; padding: 12px; }
@@ -1647,6 +1679,21 @@
       <div class="bulut-yedekleri-liste" id="bulut-yedekleri-liste" aria-live="polite">
         <div class="islem-gecmisi-bos">Bulut yedekleri yükleniyor…</div>
       </div>
+    </section>
+  </div>
+
+  <!-- EŞİTLEME ÇAKIŞMASI KURTARMA KOPYALARI -->
+  <div class="popup-overlay odeme-yonetim-overlay yalnizca-yonetici" id="cakisma-yedekleri-overlay">
+    <section class="popup-kutu odeme-yonetim-kart cakisma-yedekleri-kart" role="dialog" aria-modal="true" aria-labelledby="cakisma-yedekleri-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="cakisma-yedekleri-baslik"><i class="fa-solid fa-shield-heart" aria-hidden="true"></i> Eşitleme Kurtarma</h2>
+          <p class="odeme-yonetim-alt">Başka bir cihazdaki değişiklik nedeniyle buluta gönderilmeyen yerel kopyalar.</p>
+        </div>
+        <button class="modal-kapat" type="button" onclick="cakismaYedekleriniKapat()" aria-label="Eşitleme kurtarma penceresini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <p class="cakisma-yedekleri-bilgi"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Bu kopyalar muhasebe kayıtlarını kendiliğinden değiştirmez. İndirdiğiniz JSON dosyasını Bulut Yedekleri bölümünde önce karşılaştırarak geri yükleyebilirsiniz.</p>
+      <div class="cakisma-yedekleri-liste" id="cakisma-yedekleri-liste" aria-live="polite"></div>
     </section>
   </div>
 
@@ -2461,9 +2508,10 @@
       }
     }
 
-    function sonCakismaYedeginiIndir() {
+    function cakismaYedeginiIndir(sira=0) {
       if (!yoneticiGerekli()) return false;
-      const yedek = cakismaYedekleriniOku()[0];
+      const guvenliSira = Number.isInteger(Number(sira)) ? Number(sira) : 0;
+      const yedek = cakismaYedekleriniOku()[guvenliSira];
       if (!yedek) {
         syncGoster("İndirilecek eşitleme güvenlik kopyası bulunamadı", "#f59e0b");
         return false;
@@ -2502,6 +2550,69 @@
       baglanti.remove();
       URL.revokeObjectURL(adres);
       syncGoster("Eşitleme güvenlik kopyası indirildi", "#4ade80");
+      return true;
+    }
+
+    function sonCakismaYedeginiIndir() {
+      return cakismaYedeginiIndir(0);
+    }
+
+    function cakismaYedekleriniGoster() {
+      const alan = document.getElementById("cakisma-yedekleri-liste");
+      if (!alan) return;
+      const yedekler = cakismaYedekleriniOku();
+      if (!yedekler.length) {
+        alan.innerHTML = '<div class="islem-gecmisi-bos"><i class="fa-solid fa-shield-circle-check" aria-hidden="true"></i><br>Korunan eşitleme kopyası bulunmuyor.</div>';
+        return;
+      }
+      alan.innerHTML = yedekler.map((yedek, sira) => {
+        const durum = yedek.yerelDurum || {};
+        const sayilar = {
+          fatura:Array.isArray(durum.items) ? durum.items.length : 0,
+          cari:Array.isArray(durum.cariler) ? durum.cariler.length : 0,
+          odeme:Array.isArray(durum.cariHareketler) ? durum.cariHareketler.length : 0,
+          cek:Array.isArray(durum.cekler) ? durum.cekler.length : 0
+        };
+        const tarih = new Date(yedek.kayitZamani);
+        const tarihMetni = Number.isNaN(tarih.getTime()) ? "Tarih bilinmiyor" : tarih.toLocaleString("tr-TR");
+        return `<article class="cakisma-yedegi-satir">
+          <div><span>TARİH / SAAT</span><strong>${htmlGuvenli(tarihMetni)}</strong><small>Bu tarayıcıda korunuyor</small></div>
+          <div class="cakisma-yedegi-surum"><span>SÜRÜM ÇAKIŞMASI</span><strong>Cihaz ${htmlGuvenli(String(yedek.cihazSurumu ?? "—"))} → Bulut ${htmlGuvenli(String(yedek.bulutSurumu ?? "—"))}</strong><small>${htmlGuvenli(yedek.neden || "Başka cihazda daha yeni veri bulundu")}</small></div>
+          <div class="cakisma-yedegi-icerik"><span>KOPYA İÇERİĞİ</span><strong>${sayilar.fatura} fatura · ${sayilar.cari} cari · ${sayilar.odeme} ödeme · ${sayilar.cek} çek</strong><small>Geri yükleme öncesinde fark analizi gösterilir.</small></div>
+          <div class="cakisma-yedegi-islemler">
+            <button class="cakisma-yedegi-indir" type="button" onclick="cakismaYedeginiIndir(${sira})"><i class="fa-solid fa-download" aria-hidden="true"></i> İndir</button>
+            <button class="cakisma-yedegi-sil" type="button" onclick="cakismaYedeginiSil(${sira})"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Sil</button>
+          </div>
+        </article>`;
+      }).join("");
+    }
+
+    function cakismaYedekleriniAc() {
+      if (!yoneticiGerekli()) return;
+      cakismaYedekleriniGoster();
+      document.getElementById("cakisma-yedekleri-overlay")?.classList.add("aktif");
+    }
+
+    function cakismaYedekleriniKapat() {
+      document.getElementById("cakisma-yedekleri-overlay")?.classList.remove("aktif");
+    }
+
+    function cakismaYedeginiSil(sira) {
+      if (!yoneticiGerekli()) return false;
+      const yedekler = cakismaYedekleriniOku();
+      const guvenliSira = Number(sira);
+      const yedek = yedekler[guvenliSira];
+      if (!yedek) return false;
+      const tarih = new Date(yedek.kayitZamani);
+      const tarihMetni = Number.isNaN(tarih.getTime()) ? "tarihi bilinmeyen" : tarih.toLocaleString("tr-TR");
+      if (!confirm(`${tarihMetni} tarihli eşitleme güvenlik kopyası yalnızca bu tarayıcıdan silinsin mi? Gerekliyse önce JSON olarak indirin.`)) return false;
+      yedekler.splice(guvenliSira, 1);
+      if (yedekler.length) localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify(yedekler));
+      else localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
+      bulutCakismaUyarildi = yedekler.length > 0;
+      cakismaYedekleriniGoster();
+      veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
+      syncGoster("Eşitleme güvenlik kopyası bu tarayıcıdan silindi", "#60a5fa");
       return true;
     }
 
@@ -3717,8 +3828,8 @@
         const indir = document.createElement("button");
         indir.type = "button";
         indir.className = "veri-kontrol-duzelt yalnizca-yonetici";
-        indir.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i> Son Kopyayı İndir';
-        indir.addEventListener("click", sonCakismaYedeginiIndir);
+        indir.innerHTML = '<i class="fa-solid fa-folder-open" aria-hidden="true"></i> Kopyaları Yönet';
+        indir.addEventListener("click", cakismaYedekleriniAc);
         satir.append(ikon, yazi, indir);
         sorunListesi.appendChild(satir);
       }
@@ -6573,6 +6684,9 @@
       document.getElementById("bulut-yedekleri-overlay")?.addEventListener("click", e => {
         if (e.target.id === "bulut-yedekleri-overlay") bulutYedekleriniKapat();
       });
+      document.getElementById("cakisma-yedekleri-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "cakisma-yedekleri-overlay") cakismaYedekleriniKapat();
+      });
       window.addEventListener("keydown", e => {
         if (e.key === "Escape") {
           yeniFaturaKapat();
@@ -6586,6 +6700,7 @@
           kullaniciPaneliniKapat();
           islemGecmisiniKapat();
           bulutYedekleriniKapat();
+          cakismaYedekleriniKapat();
         }
       });
     }
