@@ -847,6 +847,53 @@
     }
     .ekstre-belge-alt strong { display: block; color: #334155; font-size: 9px; }
     .ekstre-belge-alt .ekstre-alt-sag { text-align: right; white-space: nowrap; }
+    .fatura-detay-kart { width: min(980px,100%); max-width: 980px; border-top-color: #38bdf8; }
+    .fatura-belge {
+      width: calc(100% - 36px); margin: 18px auto; padding: 30px 32px 24px; background: #fff; color: #1f2937;
+      border: 1px solid #cbd5e1; border-radius: 3px; box-shadow: 0 12px 36px #0614242d;
+      font-family: "Segoe UI",Arial,sans-serif;
+    }
+    .fatura-belge-ust { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 2px solid #17324d; }
+    .fatura-belge-tur { text-align: right; }
+    .fatura-belge-tur strong { display: block; color: #17324d; font: 800 20px Georgia,serif; letter-spacing: 1px; }
+    .fatura-belge-tur span { display: block; margin-top: 6px; color: #64748b; font-size: 10px; }
+    .fatura-belge-bilgiler { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(220px,.8fr); gap: 12px; padding: 16px 0; }
+    .fatura-belge-cari, .fatura-belge-meta { padding: 13px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; }
+    .fatura-belge-etiket { display: block; margin-bottom: 7px; color: #64748b; font-size: 8px; font-weight: 750; letter-spacing: .45px; }
+    .fatura-belge-cari strong { display: block; color: #172b3f; font-size: 13px; overflow-wrap: anywhere; }
+    .fatura-belge-cari small { display: block; margin-top: 6px; color: #526579; font-size: 9px; line-height: 1.5; }
+    .fatura-belge-meta { display: grid; gap: 7px; }
+    .fatura-belge-meta-satir { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; color: #526579; font-size: 9px; }
+    .fatura-belge-meta-satir strong { color: #172b3f; font-size: 10px; text-align: right; }
+    .fatura-belge-tablo-wrap { overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .fatura-belge-tablo { width: 100%; min-width: 720px; border-collapse: collapse; color: #24384d; font-size: 9px; }
+    .fatura-belge-tablo th { padding: 9px 8px; background: #17324d; color: #fff; border: 0; text-align: left; font-size: 8px; letter-spacing: .35px; }
+    .fatura-belge-tablo td { padding: 10px 8px; border: 0; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .fatura-belge-tablo tbody tr:nth-child(even) { background: #f8fafc; }
+    .fatura-belge-tablo tbody tr:last-child td { border-bottom: 0; }
+    .fatura-belge-tablo .fatura-belge-para { text-align: right; white-space: nowrap; }
+    .fatura-belge-kalem strong { display: block; color: #17324d; }
+    .fatura-belge-kalem span { display: block; margin-top: 3px; color: #64748b; font-size: 8px; }
+    .fatura-belge-ozet-alani { display: grid; grid-template-columns: minmax(0,1fr) 270px; align-items: start; gap: 18px; margin-top: 15px; }
+    .fatura-belge-durum { padding: 11px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid var(--belge-durum-renk,#64748b); border-radius: 5px; }
+    .fatura-belge-durum span { display: block; color: #64748b; font-size: 8px; font-weight: 750; letter-spacing: .4px; }
+    .fatura-belge-durum strong { display: block; margin-top: 5px; color: var(--belge-durum-renk,#334155); font-size: 11px; }
+    .fatura-belge-toplamlar { overflow: hidden; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .fatura-belge-toplam { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 8px 11px; color: #526579; font-size: 9px; }
+    .fatura-belge-toplam + .fatura-belge-toplam { border-top: 1px solid #e2e8f0; }
+    .fatura-belge-toplam strong { color: #172b3f; font-size: 10px; }
+    .fatura-belge-toplam.genel { background: #17324d; color: #fff; font-weight: 750; }
+    .fatura-belge-toplam.genel strong { color: #fff; font: 800 14px Georgia,serif; }
+    .fatura-belge-alt { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-top: 22px; padding-top: 14px; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 8px; line-height: 1.55; }
+    .fatura-belge-alt strong { display: block; color: #334155; font-size: 9px; }
+    .fatura-belge-alt-sag { text-align: right; white-space: nowrap; }
+    .fatura-detay-ac {
+      display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent;
+      color: #eef4fa; font: inherit; text-align: left; cursor: pointer;
+    }
+    .fatura-detay-ac i { color: #67cdfa; font-size: 9px; }
+    .fatura-detay-ac:hover strong, .fatura-detay-ac:focus-visible strong { color: #67cdfa; text-decoration: underline; text-underline-offset: 3px; }
+    .fatura-detay-ac:focus-visible { outline: 2px solid #38bdf8; outline-offset: 3px; border-radius: 2px; }
     .kullanici-yonetim-kart { width: min(820px,100%); max-width: 820px; border-top-color: #a78bfa; }
     .kullanici-yonetim-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .kullanici-formu {
@@ -1400,6 +1447,11 @@
       .ekstre-belge-tur, .ekstre-belge-alt .ekstre-alt-sag { text-align: left; }
       .ekstre-kimlikler { grid-template-columns: 1fr; }
       .ekstre-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .fatura-detay-kart { min-height: 100vh; max-height: none; border-radius: 0; }
+      .fatura-belge { width: calc(100% - 20px); margin: 10px; padding: 20px 16px; }
+      .fatura-belge-ust, .fatura-belge-alt { flex-direction: column; }
+      .fatura-belge-tur, .fatura-belge-alt-sag { text-align: left; }
+      .fatura-belge-bilgiler, .fatura-belge-ozet-alani { grid-template-columns: 1fr; }
       .kullanici-formu { grid-template-columns: 1fr; padding: 12px; }
       .kullanici-form-mesaj { grid-column: 1; }
       .kullanici-yetki-btn { width: 100%; }
@@ -1752,9 +1804,10 @@
     }
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
+      @page fatura-belgesi { size: A4 portrait; margin: 12mm; }
       body { background: #fff !important; color: #111 !important; }
       body > * { display: none !important; }
-      body:not(.ekstre-yazdiriliyor) #rapor-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
+      body:not(.ekstre-yazdiriliyor):not(.fatura-yazdiriliyor) #rapor-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
       #rapor-overlay .rapor-kart { width: 100% !important; max-height: none !important; display: block !important; overflow: visible !important; background: #fff !important; border: 0 !important; box-shadow: none !important; }
       #rapor-overlay .rapor-filtreler, #rapor-overlay .rapor-butonlar, #rapor-overlay .modal-kapat { display: none !important; }
       #rapor-overlay .rapor-ust, #rapor-overlay .rapor-alt { border-color: #bbb !important; }
@@ -1776,6 +1829,15 @@
       body.ekstre-yazdiriliyor .ekstre-tablo { min-width: 0 !important; }
       body.ekstre-yazdiriliyor .ekstre-tablo thead { display: table-header-group; }
       body.ekstre-yazdiriliyor .ekstre-tablo tr { break-inside: avoid; }
+      body.fatura-yazdiriliyor #rapor-overlay, body.fatura-yazdiriliyor #cari-ekstre-overlay { display: none !important; }
+      body.fatura-yazdiriliyor #fatura-detay-overlay { position: static !important; display: block !important; padding: 0 !important; background: #fff !important; }
+      body.fatura-yazdiriliyor #fatura-detay-overlay .fatura-detay-kart { width: 100% !important; max-width: none !important; max-height: none !important; display: block !important; overflow: visible !important; background: #fff !important; border: 0 !important; box-shadow: none !important; }
+      body.fatura-yazdiriliyor #fatura-detay-overlay .cari-ekstre-toolbar { display: none !important; }
+      body.fatura-yazdiriliyor #fatura-detay-belge { page: fatura-belgesi; width: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
+      body.fatura-yazdiriliyor .fatura-belge-tablo-wrap { overflow: visible !important; }
+      body.fatura-yazdiriliyor .fatura-belge-tablo { min-width: 0 !important; }
+      body.fatura-yazdiriliyor .fatura-belge-tablo thead { display: table-header-group; }
+      body.fatura-yazdiriliyor .fatura-belge-tablo tr { break-inside: avoid; }
     }
   </style>
 </head>
@@ -2257,6 +2319,23 @@
           </div>
         </div>
       </article>
+    </section>
+  </div>
+
+  <!-- FATURA AYRINTISI VE YAZDIRILABİLİR BELGE -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="fatura-detay-overlay">
+    <section class="popup-kutu cari-ekstre-kart fatura-detay-kart" role="dialog" aria-modal="true" aria-labelledby="fatura-detay-baslik">
+      <div class="cari-ekstre-toolbar">
+        <div class="cari-ekstre-toolbar-bilgi">
+          <strong id="fatura-detay-baslik">Fatura Ayrıntısı</strong>
+          <small>Yazdırma ekranında “PDF olarak kaydet” seçeneğini kullanabilirsiniz.</small>
+        </div>
+        <div class="cari-ekstre-toolbar-islem">
+          <button class="rapor-btn birincil" type="button" onclick="faturaBelgesiYazdir()"><i class="fa-solid fa-print" aria-hidden="true"></i> Yazdır / PDF</button>
+          <button class="modal-kapat" type="button" onclick="faturaDetayKapat()" aria-label="Fatura ayrıntısını kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <article class="fatura-belge" id="fatura-detay-belge"></article>
     </section>
   </div>
 
@@ -3043,6 +3122,7 @@
     let onerilenBulutYedegiId = "";
     let aktifRaporListesi = [];
     let aktifCariEkstresi = null;
+    let aktifFaturaBelgesi = null;
     const seciliFaturaKimlikleri = new Set();
     let topluSilmeKimlikleri = [];
 
@@ -7679,6 +7759,153 @@
       window.print();
     }
 
+    function faturaBelgesiVerisi(inv, referans=new Date()) {
+      if (!inv || typeof inv !== "object") return null;
+      const kalemler = faturaKalemleriniNormallestir(inv.kalemler);
+      const hesaplanan = faturaKalemToplamlariniHesapla(kalemler);
+      const genelToplam = kalemler.length ? hesaplanan.genelToplam : tutarSayiyaCevir(inv.tutar);
+      const kayitliKdv = Math.max(0,tutarSayiyaCevir(inv.kdvToplami));
+      const kdvToplami = kalemler.length ? hesaplanan.kdvToplami : Math.min(kayitliKdv,genelToplam);
+      const araToplam = kalemler.length
+        ? hesaplanan.araToplam
+        : Math.max(0,tutarSayiyaCevir(inv.araToplam) || genelToplam-kdvToplami);
+      const vadeGun = parseInt(inv.vadeGun,10) || 90;
+      const vade = vadeTarihi(inv.tarih,vadeGun);
+      const takipKapali = faturaTakibiKapali(inv);
+      const durum = durumBilgi(kalanGun(vade),takipKapali);
+      const cari = String(inv.cari || "Belirtilmedi").trim() || "Belirtilmedi";
+      const cariKarti = cariKartiniBul(cari);
+      const kayitliFirma = String(localStorage.getItem(FIRMA_ANAHTAR) || "").trim();
+      return {
+        id:String(inv.id || ""),
+        no:String(inv.no || "—").trim() || "—",
+        cari,
+        cariKarti,
+        faturaTuru:faturaTurunuNormallestir(inv.faturaTuru),
+        faturaTuruEtiketi:`${faturaTuruEtiketi(inv.faturaTuru)} Faturası`,
+        tarih:String(inv.tarih || "").split("T")[0],
+        vadeTarihi:bugununTarihi(vade),
+        vadeGun,
+        kalemler,
+        eskiKayit:kalemler.length === 0,
+        araToplam,
+        kdvToplami,
+        genelToplam,
+        takipKapali,
+        durum,
+        duzenleyenFirma:!kayitliFirma || kayitliFirma === "X Firması" ? "Arlinoks" : kayitliFirma,
+        olusturmaZamani:new Date(referans).toLocaleString("tr-TR")
+      };
+    }
+
+    function faturaBelgesiMiktariniFormatla(deger) {
+      return tutarSayiyaCevir(deger).toLocaleString("tr-TR",{minimumFractionDigits:0,maximumFractionDigits:3});
+    }
+
+    function faturaBelgesiniGoster(veri) {
+      if (!veri) return false;
+      aktifFaturaBelgesi = veri;
+      const cariKarti = veri.cariKarti || {};
+      const cariBilgileri = [
+        cariKarti.vergiNo ? `Vergi / T.C. No: ${htmlGuvenli(cariKarti.vergiNo)}` : "",
+        cariKarti.telefon ? `Telefon: ${htmlGuvenli(cariKarti.telefon)}` : "",
+        cariKarti.eposta ? `E-posta: ${htmlGuvenli(cariKarti.eposta)}` : ""
+      ].filter(Boolean).join(" · ") || "Cari kartta iletişim veya vergi bilgisi bulunmuyor.";
+      const belgeKalemleri = veri.kalemler.length ? veri.kalemler : [{
+        kod:"—", ad:"Fatura toplamı (kalem ayrıntısı girilmemiş eski kayıt)", birim:"Fatura", miktar:1,
+        birimFiyat:veri.araToplam, kdvOrani:null, kdvTutari:veri.kdvToplami, toplamTutar:veri.genelToplam
+      }];
+      const cariEtiketi = veri.faturaTuru === "satis" ? "MÜŞTERİ / CARİ" : "TEDARİKÇİ / CARİ";
+      const belge = document.getElementById("fatura-detay-belge");
+      if (!belge) return false;
+      document.getElementById("fatura-detay-baslik").textContent = `${veri.no} · ${veri.faturaTuruEtiketi}`;
+      belge.innerHTML = `
+        <header class="fatura-belge-ust">
+          <div>
+            <div class="ekstre-marka">Arlinoks</div>
+            <div class="ekstre-duzenleyen">${htmlGuvenli(veri.duzenleyenFirma)}</div>
+          </div>
+          <div class="fatura-belge-tur">
+            <strong>${htmlGuvenli(veri.faturaTuruEtiketi.toLocaleUpperCase("tr-TR"))}</strong>
+            <span>Ön muhasebe kayıt özeti</span>
+          </div>
+        </header>
+        <div class="fatura-belge-bilgiler">
+          <div class="fatura-belge-cari">
+            <span class="fatura-belge-etiket">${cariEtiketi}</span>
+            <strong>${htmlGuvenli(veri.cari)}</strong>
+            <small>${cariBilgileri}</small>
+          </div>
+          <div class="fatura-belge-meta">
+            <div class="fatura-belge-meta-satir"><span>Fatura No</span><strong>${htmlGuvenli(veri.no)}</strong></div>
+            <div class="fatura-belge-meta-satir"><span>Fatura Tarihi</span><strong>${formatTarih(tarihOlusturYerel(veri.tarih))}</strong></div>
+            <div class="fatura-belge-meta-satir"><span>Vade Tarihi</span><strong>${formatTarih(tarihOlusturYerel(veri.vadeTarihi))}</strong></div>
+            <div class="fatura-belge-meta-satir"><span>Vade</span><strong>${veri.vadeGun} gün</strong></div>
+          </div>
+        </div>
+        <div class="fatura-belge-tablo-wrap">
+          <table class="fatura-belge-tablo">
+            <thead><tr><th>#</th><th>ÜRÜN / HİZMET</th><th>MİKTAR</th><th class="fatura-belge-para">BİRİM FİYAT</th><th class="fatura-belge-para">KDV</th><th class="fatura-belge-para">TOPLAM</th></tr></thead>
+            <tbody>${belgeKalemleri.map((kalem,sira)=>`<tr>
+              <td>${sira+1}</td>
+              <td class="fatura-belge-kalem"><strong>${htmlGuvenli(kalem.ad)}</strong><span>${htmlGuvenli(kalem.kod || "—")}</span></td>
+              <td>${faturaBelgesiMiktariniFormatla(kalem.miktar)} ${htmlGuvenli(kalem.birim || "Adet")}</td>
+              <td class="fatura-belge-para">${formatPara(kalem.birimFiyat)}</td>
+              <td class="fatura-belge-para">${kalem.kdvOrani === null ? "—" : `%${faturaBelgesiMiktariniFormatla(tutarSayiyaCevir(kalem.kdvOrani)*100)} · ${formatPara(kalem.kdvTutari)}`}</td>
+              <td class="fatura-belge-para"><strong>${formatPara(kalem.toplamTutar)}</strong></td>
+            </tr>`).join("")}</tbody>
+          </table>
+        </div>
+        <div class="fatura-belge-ozet-alani">
+          <div class="fatura-belge-durum" style="--belge-durum-renk:${veri.durum.renk}">
+            <span>FATURA TAKİBİ</span>
+            <strong>${htmlGuvenli(veri.durum.label)}</strong>
+          </div>
+          <div class="fatura-belge-toplamlar">
+            <div class="fatura-belge-toplam"><span>Ara Toplam</span><strong>${formatPara(veri.araToplam)}</strong></div>
+            <div class="fatura-belge-toplam"><span>KDV Toplamı</span><strong>${formatPara(veri.kdvToplami)}</strong></div>
+            <div class="fatura-belge-toplam genel"><span>Genel Toplam</span><strong>${formatPara(veri.genelToplam)}</strong></div>
+          </div>
+        </div>
+        <div class="fatura-belge-alt">
+          <div>
+            <strong>Bilgilendirme</strong>
+            Bu çıktı ön muhasebe kayıt özetidir; e-Fatura, e-Arşiv Fatura veya yasal mali belge yerine geçmez.<br>
+            ${veri.eskiKayit ? "Eski kayıtta ürün/hizmet kalem ayrıntısı bulunmadığı için fatura toplamı tek satırda gösterilmiştir." : "Tutarlar kayıtlı fatura kalemleri ve KDV oranlarından hesaplanmıştır."}
+          </div>
+          <div class="fatura-belge-alt-sag">
+            <strong>${htmlGuvenli(veri.duzenleyenFirma)}</strong>
+            <span>${htmlGuvenli(veri.olusturmaZamani)} tarihinde oluşturuldu</span>
+          </div>
+        </div>`;
+      return true;
+    }
+
+    function faturaDetayAc(id) {
+      const inv = faturaYukle().find(kayit=>String(kayit.id) === String(id));
+      if (!inv) {
+        syncGoster("Fatura kaydı bulunamadı", "#ef4444");
+        return false;
+      }
+      if (!faturaBelgesiniGoster(faturaBelgesiVerisi(inv))) return false;
+      document.getElementById("fatura-detay-overlay")?.classList.add("aktif");
+      return true;
+    }
+
+    function faturaDetayKapat() {
+      document.getElementById("fatura-detay-overlay")?.classList.remove("aktif");
+      document.body.classList.remove("fatura-yazdiriliyor");
+      aktifFaturaBelgesi = null;
+    }
+
+    function faturaBelgesiYazdir() {
+      if (!aktifFaturaBelgesi) return false;
+      document.body.classList.add("fatura-yazdiriliyor");
+      window.addEventListener("afterprint", () => document.body.classList.remove("fatura-yazdiriliyor"), { once:true });
+      window.print();
+      return true;
+    }
+
     function odemeYonetiminiGuncelle() {
       const cari = document.getElementById("odeme-cari")?.value.trim() || "";
       const hesap = cariOzetiniGetir(cari || "Belirtilmedi");
@@ -9290,7 +9517,7 @@
             <td style="color:#64748b">${i+1}</td>
             <td class="cari-hucre ${inv.cari ? "" : "cari-belirsiz"}">${cariLogosuHtml(inv.cari)}</td>
             <td><span class="fatura-tur ${faturaTurunuNormallestir(inv.faturaTuru)}">${htmlGuvenli(faturaTuruEtiketi(inv.faturaTuru))}</span></td>
-            <td><strong>${htmlGuvenli(inv.no)}</strong>${Array.isArray(inv.kalemler) && inv.kalemler.length ? `<span class="fatura-kalem-sayisi">${inv.kalemler.length} kalem</span>` : ""}</td>
+            <td><button class="fatura-detay-ac" type="button" data-fatura-id="${htmlGuvenli(kimlik)}" onclick="faturaDetayAc(this.dataset.faturaId)" aria-label="${htmlGuvenli(inv.no)} fatura ayrıntısını görüntüle" title="Fatura ayrıntısını görüntüle"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><strong>${htmlGuvenli(inv.no)}</strong></button>${Array.isArray(inv.kalemler) && inv.kalemler.length ? `<span class="fatura-kalem-sayisi">${inv.kalemler.length} kalem · Belgeyi aç</span>` : '<span class="fatura-kalem-sayisi">Belgeyi aç</span>'}</td>
             <td style="color:#64748b">${formatTarih(new Date(inv.tarih))}</td>
             <td style="text-align:center;color:#94a3b8">${vg} gün</td>
             <td>${formatTarih(vade)}</td>
@@ -9694,6 +9921,9 @@
       document.getElementById("cari-ekstre-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cari-ekstre-overlay") cariEkstreKapat();
       });
+      document.getElementById("fatura-detay-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "fatura-detay-overlay") faturaDetayKapat();
+      });
       document.getElementById("kullanici-yonetim-overlay")?.addEventListener("click", e => {
         if (e.target.id === "kullanici-yonetim-overlay") kullaniciPaneliniKapat();
       });
@@ -9722,6 +9952,7 @@
           cekTakibiniKapat();
           cariKartFormunuKapat();
           cariEkstreKapat();
+          faturaDetayKapat();
           kullaniciPaneliniKapat();
           islemGecmisiniKapat();
           bulutYedekleriniKapat();
