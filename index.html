@@ -2337,18 +2337,28 @@
           bekleyenBulutKontrolunuGuncelle();
           return;
         }
+        const farkliSekmeKaydiVar = Boolean(bekleyenBulutKaydi && bekleyenBulutKaydi.id !== digerSekmeninKaydi.id);
+        if (farkliSekmeKaydiVar) {
+          bekleyenBulutKaydiKalici = false;
+          syncGoster("Başka sekmede yeni değişiklik var · Bu sekmedeki bekleyen kayıt yalnızca açık sayfada korunuyor", "#f59e0b");
+        } else if (bekleyenBulutKaydi?.id === digerSekmeninKaydi.id) {
+          bekleyenBulutKaydiKalici = true;
+        }
         if (!bekleyenBulutKaydi) {
           bekleyenBulutKaydi = digerSekmeninKaydi;
           bekleyenBulutKaydiKalici = true;
         }
         bekleyenBulutKontrolunuGuncelle();
         if (yoneticiMi() && (typeof navigator === "undefined" || navigator.onLine !== false)) {
-          if (bekleyenBulutKaydiEngelliMi(digerSekmeninKaydi)) {
-            syncGoster(`Başka sekmede kullanıcı kontrolü bekleyen gönderim var · ${bekleyenBulutEngelMesaji(digerSekmeninKaydi)}`, "#f59e0b");
+          const etkinKayit = bekleyenBulutKaydi;
+          if (bekleyenBulutKaydiEngelliMi(etkinKayit)) {
+            syncGoster(`Kullanıcı kontrolü bekleyen gönderim var · ${bekleyenBulutEngelMesaji(etkinKayit)}`, "#f59e0b");
             return;
           }
           clearTimeout(bulutTekrarDenemeZamanlayici);
-          syncGoster("Başka sekmede bekleyen değişiklik algılandı · Buluta gönderiliyor…", "#60a5fa");
+          syncGoster(farkliSekmeKaydiVar
+            ? "Bu sekmedeki bekleyen değişiklik öncelikle buluta gönderiliyor…"
+            : "Başka sekmede bekleyen değişiklik algılandı · Buluta gönderiliyor…", "#60a5fa");
           bulutTekrarDenemeZamanlayici = setTimeout(bulutKayitKuyrugunuCalistir, 500);
         }
         return;

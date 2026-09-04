@@ -71,6 +71,7 @@ const dinleyiciContext = {
   BULUT_SURUM_ANAHTAR:"surum",
   bekleyenBulutKaydi:kayitA,
   bulutKaydiCalisiyor:false,
+  bekleyenBulutKaydiKalici:true,
   bulutTekrarDenemeZamanlayici:null,
   sekmelerArasiEsitlemeZamanlayici:null,
   bulutSurumu:7,
@@ -97,12 +98,15 @@ assert.equal(typeof depolamaDinleyicisi, "function", "Depolama olayı dinleyicis
 
 depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify(kayitB), oldValue:JSON.stringify(kayitA) });
 assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-a", "Diğer sekmenin kaydı bellekteki gönderilmemiş kaydı ezmemeli");
+assert.equal(dinleyiciContext.bekleyenBulutKaydiKalici, false, "Ortak depo başka sekmece değiştirilince bu sekmenin kaydı yalnız bellek riski olarak işaretlenmeli");
 depolamaDinleyicisi({ key:"bekleyen", newValue:null, oldValue:JSON.stringify(kayitB) });
 assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-a", "Diğer sekmenin temizliği farklı bellek kaydını silmemeli");
+assert.equal(dinleyiciContext.bekleyenBulutKaydiKalici, false, "Diğer sekmenin temizliği bellekteki kaydı yanlışlıkla kalıcı saymamalı");
 
 dinleyiciContext.bekleyenBulutKaydi = null;
 depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify(kayitB), oldValue:null });
 assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-b", "Boş sekme diğer sekmenin bekleyen kaydını devralmalı");
+assert.equal(dinleyiciContext.bekleyenBulutKaydiKalici, true, "Ortak depodan devralınan kayıt kalıcı kabul edilmeli");
 assert.ok(planlananGecikmeler.includes(500), "Devralınan kayıt kısa gecikmeyle gönderilmeli");
 assert.ok(kontrolYenilemeSayisi >= 3, "Bekleyen kaydın eklenmesi ve temizlenmesi diğer sekmelerin kontrol merkezini yenilemeli");
 
@@ -110,6 +114,13 @@ const planSayisi = planlananGecikmeler.length;
 dinleyiciContext.bekleyenBulutKaydi = null;
 depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify({ ...kayitB, kuyrukDurumu:"engelli", sonHataMesaji:"Veri kontrolü gerekli" }), oldValue:null });
 assert.equal(planlananGecikmeler.length, planSayisi, "Başka sekmeden gelen kalıcı engelli kayıt otomatik gönderim planlamamalı");
+
+dinleyiciContext.bekleyenBulutKaydi = { ...kayitA, kuyrukDurumu:"bekliyor" };
+dinleyiciContext.bekleyenBulutKaydiKalici = true;
+const aktifKayitPlanSayisi = planlananGecikmeler.length;
+depolamaDinleyicisi({ key:"bekleyen", newValue:JSON.stringify({ ...kayitB, kuyrukDurumu:"engelli", sonHataMesaji:"Diğer sekmede kontrol gerekli" }), oldValue:JSON.stringify(kayitA) });
+assert.ok(planlananGecikmeler.length > aktifKayitPlanSayisi, "Gelen kayıt engelli olsa bile bu sekmedeki etkin ve gönderilebilir kayıt durdurulmamalı");
+assert.equal(dinleyiciContext.bekleyenBulutKaydi.id, "sekme-a", "Gönderim kararı bu sekmenin etkin kaydına göre verilmeli");
 
 depolamaDinleyicisi({ key:"surum", newValue:"8", oldValue:"7" });
 assert.equal(dinleyiciContext.bulutSurumu, 8, "Diğer sekmenin yeni bulut sürümü belleğe alınmalı");
