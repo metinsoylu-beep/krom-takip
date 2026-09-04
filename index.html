@@ -1233,6 +1233,16 @@
     }
     .giris-google:hover { background: #f4f7fa; }
     .giris-google:disabled { opacity: .65; cursor: wait; }
+    .giris-yardim {
+      margin-top: 16px; padding: 14px 15px; text-align: left;
+      background: #07182a99; border: 1px solid #29435d; border-radius: 9px;
+    }
+    .giris-yardim-baslik { display: flex; align-items: center; gap: 7px; color: #dce7f1; font-size: 11px; font-weight: 750; }
+    .giris-yardim-baslik i { color: #67cdfa; }
+    .giris-adimlar { margin: 9px 0 0; padding-left: 18px; color: #a9b8c7; font-size: 10px; line-height: 1.65; }
+    .giris-adimlar strong { color: #eef4fa; }
+    .giris-guvenlik { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; color: #7dd3fc; font-size: 9px; line-height: 1.5; }
+    .giris-tarayici-notu { margin: 9px 0 0; color: #f6c95c; font-size: 9px; line-height: 1.5; }
     .giris-durum { min-height: 20px; margin-top: 14px; color: #f6c95c; font-size: 12px; line-height: 1.5; }
     .oturum-bilgi { display: flex; align-items: center; gap: 8px; }
     .oturum-eposta { max-width: 210px; overflow: hidden; color: #9aaabd; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
@@ -1286,6 +1296,16 @@
         <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
         Google ile Giriş Yap
       </button>
+      <div class="giris-yardim" aria-label="Giriş adımları">
+        <div class="giris-yardim-baslik"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Giriş nasıl yapılır?</div>
+        <ol class="giris-adimlar">
+          <li>Yukarıdaki düğmeye basın.</li>
+          <li>Google ekranında <strong>Başka bir hesap kullan</strong> seçeneğini açın.</li>
+          <li>Yöneticinin yetki verdiği Google hesabıyla giriş yapın.</li>
+        </ol>
+        <p class="giris-guvenlik"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>E-posta ve şifreniz bu uygulamaya değil, yalnızca Google'ın güvenli giriş ekranına yazılır.</span></p>
+        <p class="giris-tarayici-notu"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Bağlantıyı WhatsApp veya e-posta içinden açtıysanız ve giriş başlamazsa menüden “Tarayıcıda aç” seçeneğini kullanın.</p>
+      </div>
       <p class="giris-durum" id="giris-durum" role="status">Oturum kontrol ediliyor…</p>
     </div>
   </section>
@@ -3426,6 +3446,16 @@
       return false;
     }
 
+    function girisHatasiMesaji(hata) {
+      const kod = String(hata?.code || "");
+      if (kod === "auth/popup-closed-by-user" || kod === "auth/cancelled-popup-request") return "Giriş penceresi kapatıldı. Yeniden deneyebilirsiniz.";
+      if (kod === "auth/popup-blocked") return "Giriş penceresi tarayıcı tarafından engellendi. Açılır pencereye izin verip yeniden deneyin.";
+      if (kod === "auth/network-request-failed") return "Google'a ulaşılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.";
+      if (kod === "auth/unauthorized-domain") return "Bu bağlantı Google girişi için henüz yetkilendirilmemiş. Yöneticiye bildirin.";
+      if (kod === "auth/operation-not-supported-in-this-environment") return "Bu tarayıcı Google girişini desteklemiyor. Bağlantıyı Chrome, Edge veya Safari ile açın.";
+      return "Google girişi tamamlanamadı. Bağlantıyı normal tarayıcıda açıp yeniden deneyin.";
+    }
+
     async function girisYap() {
       if (!firebaseAuth) {
         girisDurumuGoster("Giriş servisi yüklenemedi. İnternet bağlantınızı kontrol edin.", true);
@@ -3443,11 +3473,8 @@
           await firebaseAuth.signInWithPopup(saglayici);
         }
       } catch (hata) {
-        if (hata?.code !== "auth/popup-closed-by-user") {
-          girisDurumuGoster("Google girişi tamamlanamadı. Lütfen yeniden deneyin.", true);
-        } else {
-          girisDurumuGoster("Giriş penceresi kapatıldı.");
-        }
+        const kullaniciKapatti = ["auth/popup-closed-by-user", "auth/cancelled-popup-request"].includes(hata?.code);
+        girisDurumuGoster(girisHatasiMesaji(hata), !kullaniciKapatti);
       } finally {
         if (dugme) dugme.disabled = false;
       }

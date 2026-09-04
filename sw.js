@@ -1,4 +1,4 @@
-const CACHE = 'odeme-takip-v51';
+const CACHE = 'odeme-takip-v52';
 const BASE = self.registration.scope;
 const FILES = [
   `${BASE}index.html`,
