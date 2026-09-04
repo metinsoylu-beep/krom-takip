@@ -955,6 +955,7 @@
     .veri-kontrol-sorunlar li { display: flex; align-items: flex-start; gap: 7px; color: #b9c5d1; font-size: 10px; line-height: 1.4; }
     .veri-kontrol-sorunlar i { margin-top: 2px; color: #f59e0b; font-size: 9px; }
     .veri-kontrol-sorunlar li.basarili i { color: #4ade80; }
+    .veri-kontrol-sorunlar li.veri-kontrol-cakisma i { color: #ff6b77; }
     .veri-kontrol-sorunlar li > span { flex: 1; min-width: 0; }
     .veri-kontrol-duzelt {
       flex: 0 0 auto; min-height: 26px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px;
@@ -2045,6 +2046,7 @@
                 <div class="veri-kontrol-sayac" id="kontrol-eksik-cek-kart"><span>EKSİK ÇEK BİLGİSİ</span><strong id="kontrol-eksik-cek">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-ayni-cek-no-kart"><span>AYNI ÇEK NO</span><strong id="kontrol-ayni-cek-no">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-cek-tarihi-kart"><span>ÇEK TARİHLERİ</span><strong id="kontrol-cek-tarihi">0</strong></div>
+                <div class="veri-kontrol-sayac yalnizca-yonetici" id="kontrol-cakisma-kart"><span>EŞİTLEME KOPYASI</span><strong id="kontrol-cakisma">0</strong></div>
                 <div class="veri-kontrol-sayac" id="kontrol-toplam-kart"><span>TOPLAM KONTROLÜ</span><strong id="kontrol-toplam">DOĞRU</strong></div>
               </div>
               <ul class="veri-kontrol-sorunlar" id="veri-kontrol-sorunlar"></ul>
@@ -2136,6 +2138,7 @@
     const ESKI_ODEME_GECIS_ANAHTAR = "krom-takip-eski-odeme-gecisi";
     const BULUT_SURUM_ANAHTAR = "krom-takip-bulut-surum";
     const BULUT_CAKISMA_ANAHTAR = "krom-takip-cakisma-yedegi";
+    const BULUT_CAKISMA_YEDEK_SINIRI = 5;
     const BULUT_BEKLEYEN_ANAHTAR = "krom-takip-bekleyen-bulut-kaydi";
     const SON_BULUT_ESITLEME_ANAHTAR = "krom-takip-son-bulut-esitleme";
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
@@ -2446,15 +2449,81 @@
       };
     }
 
+    function cakismaYedekleriniOku() {
+      try {
+        const ham = JSON.parse(localStorage.getItem(BULUT_CAKISMA_ANAHTAR) || "null");
+        const liste = Array.isArray(ham) ? ham : (ham ? [ham] : []);
+        return liste
+          .filter(kayit => kayit && typeof kayit === "object" && Array.isArray(kayit.yerelDurum?.items))
+          .slice(0, BULUT_CAKISMA_YEDEK_SINIRI);
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function sonCakismaYedeginiIndir() {
+      if (!yoneticiGerekli()) return false;
+      const yedek = cakismaYedekleriniOku()[0];
+      if (!yedek) {
+        syncGoster("İndirilecek eşitleme güvenlik kopyası bulunamadı", "#f59e0b");
+        return false;
+      }
+      const durum = yedek.yerelDurum;
+      const durumMetni = JSON.stringify(durum);
+      const tarih = new Date(yedek.kayitZamani);
+      const tarihMetni = Number.isNaN(tarih.getTime())
+        ? "tarihsiz"
+        : tarih.toISOString().replace(/[:.]/g, "-");
+      const icerik = JSON.stringify({
+        format:"arlinoks-merkezi-yedek-v1",
+        yedekId:yedek.id,
+        kayitZamani:yedek.kayitZamani,
+        kullanici:oturumKullanici?.email || "bu-cihaz",
+        revision:Number(yedek.cihazSurumu) || 0,
+        aciklama:"Eşitleme çakışmasında korunan yerel değişiklik",
+        kontrol:{
+          kod:jsonYedekKontrolKodu(durumMetni),
+          boyutBayt:new Blob([durumMetni], { type:"application/json" }).size,
+          kayitSayilari:{
+            fatura:Array.isArray(durum.items) ? durum.items.length : 0,
+            cariHareket:Array.isArray(durum.cariHareketler) ? durum.cariHareketler.length : 0,
+            cek:Array.isArray(durum.cekler) ? durum.cekler.length : 0,
+            cariKart:Array.isArray(durum.cariler) ? durum.cariler.length : 0
+          }
+        },
+        durum
+      }, null, 2);
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"application/json;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-esitleme-kopyasi-${tarihMetni}.json`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      URL.revokeObjectURL(adres);
+      syncGoster("Eşitleme güvenlik kopyası indirildi", "#4ade80");
+      return true;
+    }
+
     function bulutCakismasiniKaydet(yerelDurum, uzakDurum, secenekler={}) {
-      localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify({
+      const yeniKayit = {
+        id:istekKimligiOlustur(),
         kayitZamani: new Date().toISOString(),
         cihazSurumu: bulutSurumu,
         bulutSurumu: uzakDurum.revision,
         yerelDurum: Array.isArray(yerelDurum) ? uygulamaDurumuOlustur(yerelDurum) : yerelDurum,
-        bulutDurum: uzakDurum
-      }));
+        bulutDurum: uzakDurum,
+        neden:String(secenekler.syncMesaji || "Başka cihazda değişiklik algılandı").slice(0,180)
+      };
+      const yedekler = [yeniKayit, ...cakismaYedekleriniOku()]
+        .slice(0, BULUT_CAKISMA_YEDEK_SINIRI);
+      localStorage.setItem(BULUT_CAKISMA_ANAHTAR, JSON.stringify(yedekler));
       syncGoster(secenekler.syncMesaji || "Başka cihazda değişiklik algılandı · Bu cihazdaki değişiklik yedeklendi", "#ef4444");
+      try {
+        if (typeof document !== "undefined" && document.getElementById("veri-kontrol-panel")) {
+          veriKontrolunuGuncelle(hamFaturaVerisiniYukle(), faturaYukle());
+        }
+      } catch (_) {}
       if (!bulutCakismaUyarildi) {
         bulutCakismaUyarildi = true;
         alert(secenekler.uyariMesaji || "Başka bir cihazda daha yeni kayıt bulundu. Bu cihazdaki değişiklik buluta gönderilmedi ve güvenlik kopyası olarak saklandı. Güncel verileri almak için Yenile düğmesini kullanın.");
@@ -2582,7 +2651,6 @@
             cariler:cariKartlariniNormallestir(durum.cariler)
           });
           bulutSurumunuKaydet(Number(yanit.revision));
-          localStorage.removeItem(BULUT_CAKISMA_ANAHTAR);
           bulutCakismaUyarildi = false;
           kaydedildi = true;
         });
@@ -3600,17 +3668,20 @@
         kalan: document.getElementById("oz-kalan")?.textContent || ""
       };
       const rapor = veriKontrolRaporuOlustur(hamListe, liste, ozetMetinleri, null, null, new Date(), cariKartlariniYukle());
-      const uyariVar = rapor.uyariSayisi > 0;
+      const cakismaYedekleri = yoneticiMi() ? cakismaYedekleriniOku() : [];
+      const cakismaSayisi = cakismaYedekleri.length;
+      const toplamUyariSayisi = rapor.uyariSayisi + cakismaSayisi;
+      const uyariVar = toplamUyariSayisi > 0;
       const panel = document.getElementById("veri-kontrol-panel");
       panel.classList.toggle("uyari", uyariVar);
       panel.querySelector(".veri-kontrol-ikon i").className = uyariVar
         ? "fa-solid fa-triangle-exclamation"
         : "fa-solid fa-shield-circle-check";
       document.getElementById("veri-kontrol-durum").textContent = uyariVar
-        ? `${rapor.kayitSayisi} geçerli kayıt · ${rapor.uyariSayisi} kontrol uyarısı bulundu`
+        ? `${rapor.kayitSayisi} geçerli kayıt · ${toplamUyariSayisi} kontrol uyarısı bulundu`
         : `${rapor.kayitSayisi} kayıt kontrol edildi · Sorun bulunmadı`;
       document.getElementById("veri-kontrol-rozet").textContent = uyariVar
-        ? `${rapor.uyariSayisi} UYARI`
+        ? `${toplamUyariSayisi} UYARI`
         : "SAĞLIKLI";
 
       veriKontrolSayaciniGuncelle("kontrol-gecersiz-kart", "kontrol-gecersiz", rapor.gecersizSayisi, rapor.gecersizSayisi > 0);
@@ -3621,14 +3692,36 @@
       veriKontrolSayaciniGuncelle("kontrol-eksik-cek-kart", "kontrol-eksik-cek", rapor.eksikCekBilgisiSayisi, rapor.eksikCekBilgisiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-ayni-cek-no-kart", "kontrol-ayni-cek-no", rapor.ayniCekNumarasiSayisi, rapor.ayniCekNumarasiSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-cek-tarihi-kart", "kontrol-cek-tarihi", rapor.cekTarihiSorunuSayisi, rapor.cekTarihiSorunuSayisi > 0);
+      veriKontrolSayaciniGuncelle("kontrol-cakisma-kart", "kontrol-cakisma", cakismaSayisi, cakismaSayisi > 0);
       veriKontrolSayaciniGuncelle("kontrol-toplam-kart", "kontrol-toplam", rapor.toplamlarDogru ? "DOĞRU" : "KONTROL ET", !rapor.toplamlarDogru);
 
       const sorunListesi = document.getElementById("veri-kontrol-sorunlar");
       sorunListesi.replaceChildren();
       if (rapor.mesajlar.length <= 8) veriKontrolTumUyarilarAcik = false;
       const mesajGorunumu = veriKontrolMesajlariniSinirla(rapor.mesajlar, veriKontrolTumUyarilarAcik);
-      const gosterilecekler = uyariVar ? mesajGorunumu.mesajlar : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."];
+      const gosterilecekler = rapor.uyariSayisi > 0
+        ? mesajGorunumu.mesajlar
+        : (cakismaSayisi ? [] : ["Cari bağlantıları, fatura ve çek numaraları, çek tarihleri, tutarlar ve özet toplamları tutarlı."]);
       const kullanilanDuzeltilebilirler = new Set();
+      if (cakismaSayisi) {
+        const sonYedek = cakismaYedekleri[0];
+        const tarih = new Date(sonYedek.kayitZamani);
+        const tarihMetni = Number.isNaN(tarih.getTime()) ? "tarihi bilinmiyor" : tarih.toLocaleString("tr-TR");
+        const satir = document.createElement("li");
+        satir.className = "veri-kontrol-cakisma";
+        const ikon = document.createElement("i");
+        ikon.className = "fa-solid fa-cloud-arrow-down";
+        ikon.setAttribute("aria-hidden", "true");
+        const yazi = document.createElement("span");
+        yazi.textContent = `${cakismaSayisi} eşitleme güvenlik kopyası korunuyor. Son kayıt: ${tarihMetni}.`;
+        const indir = document.createElement("button");
+        indir.type = "button";
+        indir.className = "veri-kontrol-duzelt yalnizca-yonetici";
+        indir.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i> Son Kopyayı İndir';
+        indir.addEventListener("click", sonCakismaYedeginiIndir);
+        satir.append(ikon, yazi, indir);
+        sorunListesi.appendChild(satir);
+      }
       gosterilecekler.forEach(metin => {
         const satir = document.createElement("li");
         if (!uyariVar) satir.className = "basarili";
