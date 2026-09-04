@@ -3,13 +3,14 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const index = fs.readFileSync("index.html", "utf8");
-const baslangic = index.indexOf("async function cakismaYedeginiKarsilastir");
+const baslangic = index.indexOf("function cakismaYedegiKisaKimligi");
 const bitis = index.indexOf("function cakismaYedeginiSil", baslangic);
 assert.ok(baslangic >= 0 && bitis > baslangic, "Doğrudan eşitleme kopyası karşılaştırma işlevi bulunmalı");
 
 const hedefDurum = { items:[{ id:"F-2" }], cariHareketler:[], cekler:[], cariler:[] };
 const mevcutDurum = { items:[{ id:"F-1" }], cariHareketler:[], cekler:[], cariler:[] };
 const yedek = {
+  id:"a1b2c3d4-e5f6-7890",
   kayitZamani:"2026-09-04T09:30:00.000Z",
   cihazSurumu:7,
   yerelDurum:hedefDurum
@@ -17,9 +18,10 @@ const yedek = {
 let onay = false;
 let bulutSonucu = true;
 let uygulananlar = [];
+let sonDenetimMetni = "";
 const olaylar = [];
 const context = {
-  Number,
+  Number, String, Array,
   YEREL_GELISTIRME:false,
   yoneticiGerekli:() => true,
   cakismaYedekleriniOku:() => [yedek],
@@ -30,6 +32,7 @@ const context = {
     return { durum:veri.durum };
   },
   bulutYedegiTarihiniFormatla:() => "04.09.2026 12:30",
+  yedekFarklariniHesapla:() => [{ eklenecek:1, guncellenecek:2, kaldirilacak:1 }],
   cakismaYedekleriniKapat:() => olaylar.push("paneli-kapat"),
   cakismaYedekleriniAc:() => olaylar.push("paneli-aç"),
   yedekGeriYuklemeOnayiAl:async () => {
@@ -42,8 +45,9 @@ const context = {
     uygulananlar.push(durum);
     return durum;
   },
-  bulutKaydiniGonder:async () => {
+  bulutKaydiniGonder:async (durum, secenekler) => {
     olaylar.push("buluta-gönder");
+    sonDenetimMetni = secenekler.auditAction;
     return bulutSonucu;
   },
   syncGoster:() => olaylar.push("başarılı"),
@@ -61,6 +65,7 @@ vm.runInContext(index.slice(baslangic, bitis), context);
   onay = true;
   assert.equal(await context.cakismaYedeginiKarsilastir(0), true, "Onaylanan kopya güvenle geri yüklenmeli");
   assert.deepEqual(olaylar, ["doğrula", "paneli-kapat", "karşılaştır", "önce-yedekle", "uygula", "buluta-gönder", "başarılı"], "Geri yükleme güvenli işlem sırasını izlemeli");
+  assert.match(sonDenetimMetni, /04\.09\.2026 12:30 · ID A1B2C3D4 · 4 kayıt/, "İşlem geçmişi kopya tarihi, kısa kimliği ve etkilenen kayıt sayısını içermeli");
 
   olaylar.length = 0;
   uygulananlar = [];
@@ -73,6 +78,8 @@ vm.runInContext(index.slice(baslangic, bitis), context);
 
   assert.match(index, /onclick="cakismaYedeginiKarsilastir\(\$\{sira\}\)"/, "Her güvenlik kopyasında Karşılaştır düğmesi bulunmalı");
   assert.match(index, /Eşitleme kopyası geri yüklenmeden önce/, "Mevcut kayıtlar geri yükleme öncesinde yedeklenmeli");
+  assert.match(index, /Bu tarayıcıda korunuyor · ID/, "Kopya kimliği kurtarma panelinde gösterilmeli");
+  assert.match(index, /auditAction:denetimMetni/, "Ayrıntılı kaynak bilgisi merkezi işlem geçmişine gönderilmeli");
   assert.doesNotMatch(index.slice(baslangic, bitis), /removeItem\(BULUT_CAKISMA_ANAHTAR\)/, "Geri yüklenen güvenlik kopyası sessizce silinmemeli");
 
   console.log("Eşitleme kopyasını doğrudan karşılaştırma, onay ve geri alma testleri başarılı.");

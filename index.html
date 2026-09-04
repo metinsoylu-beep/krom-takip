@@ -2578,7 +2578,7 @@
         const tarih = new Date(yedek.kayitZamani);
         const tarihMetni = Number.isNaN(tarih.getTime()) ? "Tarih bilinmiyor" : tarih.toLocaleString("tr-TR");
         return `<article class="cakisma-yedegi-satir">
-          <div><span>TARİH / SAAT</span><strong>${htmlGuvenli(tarihMetni)}</strong><small>Bu tarayıcıda korunuyor</small></div>
+          <div><span>TARİH / SAAT</span><strong>${htmlGuvenli(tarihMetni)}</strong><small>Bu tarayıcıda korunuyor · ID ${htmlGuvenli(cakismaYedegiKisaKimligi(yedek))}</small></div>
           <div class="cakisma-yedegi-surum"><span>SÜRÜM ÇAKIŞMASI</span><strong>Cihaz ${htmlGuvenli(String(yedek.cihazSurumu ?? "—"))} → Bulut ${htmlGuvenli(String(yedek.bulutSurumu ?? "—"))}</strong><small>${htmlGuvenli(yedek.neden || "Başka cihazda daha yeni veri bulundu")}</small></div>
           <div class="cakisma-yedegi-icerik"><span>KOPYA İÇERİĞİ</span><strong>${sayilar.fatura} fatura · ${sayilar.cari} cari · ${sayilar.odeme} ödeme · ${sayilar.cek} çek</strong><small>Geri yükleme öncesinde fark analizi gösterilir.</small></div>
           <div class="cakisma-yedegi-islemler">
@@ -2600,6 +2600,18 @@
       document.getElementById("cakisma-yedekleri-overlay")?.classList.remove("aktif");
     }
 
+    function cakismaYedegiKisaKimligi(yedek) {
+      const kimlik = String(yedek?.id || "").trim();
+      return kimlik ? kimlik.slice(0,8).toUpperCase() : "KİMLİKSİZ";
+    }
+
+    function cakismaGeriYuklemeDenetimMetni(yedek, farklar) {
+      const etkilenen = (Array.isArray(farklar) ? farklar : []).reduce((toplam, satir) =>
+        toplam + (Number(satir?.eklenecek) || 0) + (Number(satir?.guncellenecek) || 0) + (Number(satir?.kaldirilacak) || 0), 0);
+      const tarih = bulutYedegiTarihiniFormatla(yedek?.kayitZamani);
+      return `Eşitleme kopyası geri yüklendi · ${tarih} · ID ${cakismaYedegiKisaKimligi(yedek)} · ${etkilenen} kayıt`.slice(0,120);
+    }
+
     async function cakismaYedeginiKarsilastir(sira) {
       if (!yoneticiGerekli()) return false;
       const guvenliSira = Number(sira);
@@ -2619,6 +2631,8 @@
           durum:yedek.yerelDurum
         }, "Eşitleme güvenlik kopyası");
         const tarih = bulutYedegiTarihiniFormatla(yedek.kayitZamani);
+        const farklar = yedekFarklariniHesapla(mevcutDurum, dogrulanmis.durum);
+        const denetimMetni = cakismaGeriYuklemeDenetimMetni(yedek, farklar);
         cakismaYedekleriniKapat();
         const onaylandi = await yedekGeriYuklemeOnayiAl(dogrulanmis.durum, `${tarih} tarihli eşitleme kopyası`);
         if (!onaylandi) {
@@ -2631,7 +2645,7 @@
         yereldeUygulandi = true;
         const kaydedildi = YEREL_GELISTIRME
           ? true
-          : await bulutKaydiniGonder(geriYuklenenDurum, { auditAction:"Eşitleme kurtarma kopyası geri yüklendi" });
+          : await bulutKaydiniGonder(geriYuklenenDurum, { auditAction:denetimMetni });
         if (!kaydedildi) throw new Error("Eşitleme kopyası geri yüklenemedi; mevcut veriler korundu.");
         syncGoster(`${tarih} tarihli eşitleme kopyası geri yüklendi · Güvenlik kopyası korunuyor`, "#4ade80");
         return true;
