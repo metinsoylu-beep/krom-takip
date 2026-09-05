@@ -1706,13 +1706,37 @@
     .stok-sayim-deger.fark.esit { border-color: #67cdfa; }
     .stok-sayim-deger.fark.esit strong { color: #67cdfa; }
     .urun-stok-filtreler {
-      display: grid; grid-template-columns: minmax(240px,1fr) minmax(180px,.35fr); gap: 10px;
+      display: grid; grid-template-columns: minmax(240px,1fr) minmax(180px,.35fr) auto; gap: 10px;
       padding: 13px 18px;
     }
     .urun-stok-filtreler input, .urun-stok-filtreler select {
       width: 100%; height: 40px; padding: 0 11px; border: 1px solid #294159; border-radius: 6px;
       background: #10243a; color: #eef4fa; font: 11px "Segoe UI",Arial,sans-serif;
     }
+    .urun-stok-csv {
+      min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 0 13px; border: 1px solid #4ade8066; border-radius: 6px; background: #4ade8012;
+      color: #79e79d; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer; white-space: nowrap;
+    }
+    .urun-stok-csv:hover { background: #4ade8024; border-color: #4ade80aa; }
+    .stok-degerleme-paneli { padding: 14px; }
+    .stok-degerleme-ozet {
+      display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin-bottom: 12px;
+    }
+    .stok-degerleme-metrik {
+      padding: 10px 12px; border: 1px solid #294159; border-left: 3px solid var(--deger-renk);
+      border-radius: 7px; background: #10243a;
+    }
+    .stok-degerleme-metrik span { display: block; color: #8294a7; font-size: 8px; }
+    .stok-degerleme-metrik strong { display: block; margin-top: 4px; color: var(--deger-renk); font: 750 15px Georgia,serif; }
+    .stok-degerleme-not {
+      display: flex; align-items: flex-start; gap: 7px; margin: 0 0 12px; padding: 9px 10px;
+      border: 1px solid #e6a91f38; border-radius: 6px; background: #e6a91f0d; color: #aebcca;
+      font: 9px/1.55 "Segoe UI",Arial,sans-serif;
+    }
+    .stok-degerleme-not i { margin-top: 2px; color: #f3be3e; }
+    .stok-degerleme-uyari { color: #f6c95c; font-weight: 750; }
+    .stok-degerleme-toplam td { border-top: 2px solid #4ade8055; background: #10243a; color: #eef4fa; font-weight: 750; }
     .urun-stok-tablo-wrap { min-height: 220px; margin: 0 18px 18px; overflow: auto; border: 1px solid #294159; border-radius: 7px; }
     .urun-stok-tablo { min-width: 1030px; font: 11px "Segoe UI",Arial,sans-serif; }
     .urun-stok-tablo th { height: 35px; padding: 0 12px; }
@@ -1814,7 +1838,7 @@
       .urun-stok-ust-islemler .urun-stok-aksiyon { padding-inline: 8px; }
       .urun-stok-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 12px 12px 0; }
       .urun-stok-form { margin: 12px 12px 0; }
-      .urun-stok-form-grid, .urun-stok-filtreler { grid-template-columns: 1fr; }
+      .urun-stok-form-grid, .urun-stok-filtreler, .stok-degerleme-ozet { grid-template-columns: 1fr; }
       .urun-stok-form-grid .odeme-form-alan.genis { grid-column: 1; }
       .stok-sayim-ozeti { grid-template-columns: 1fr; }
       .urun-stok-form-islem { align-items: stretch; flex-direction: column; }
@@ -2147,7 +2171,8 @@
       </div>
       <div class="urun-stok-filtreler">
         <input id="urun-stok-arama" type="search" placeholder="Kod, ürün veya hizmet ara" oninput="urunStokMerkeziniGoster()"/>
-        <select id="urun-stok-gorunum" onchange="urunStokMerkeziniGoster()"><option value="kartlar">Tüm kartlar</option><option value="kritik">Kritik stoklar</option><option value="hareketler">Stok hareketleri</option></select>
+        <select id="urun-stok-gorunum" onchange="urunStokMerkeziniGoster()"><option value="kartlar">Tüm kartlar</option><option value="kritik">Kritik stoklar</option><option value="hareketler">Stok hareketleri</option><option value="degerleme">Stok değerleme</option></select>
+        <button class="urun-stok-csv" id="urun-stok-csv" type="button" onclick="stokDegerlemeCsvIndir()" hidden><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Değerlemeyi İndir</button>
       </div>
       <div class="urun-stok-tablo-wrap" id="urun-stok-tablo-wrap"></div>
     </section>
@@ -2819,6 +2844,7 @@
           <button class="modul-alt-baglanti" type="button" data-modul="stok-hareketleri" onclick="modulNavigasyon('stok-hareketleri',this)"><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i><span>Stok Hareketleri</span></button>
           <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="stok-sayimi" onclick="modulNavigasyon('stok-sayimi',this)"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i><span>Stok Sayımı</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="kritik-stok" onclick="modulNavigasyon('kritik-stok',this)"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Kritik Stok</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="stok-degerleme" onclick="modulNavigasyon('stok-degerleme',this)"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span>Stok Değerleme</span></button>
         </div>
       </details>
 
@@ -4835,6 +4861,33 @@
         hizmet:aktifler.filter(kart=>kart.tur === "hizmet").length,
         kritik:kritikler.length,
         maliyetDegeri:aktifler.filter(kart=>kart.tur === "urun").reduce((toplam,kart)=>toplam+Math.max(0,stoklar.get(kart.id))*kart.alisFiyati,0)
+      };
+    }
+
+    function stokDegerlemeRaporunuHesapla(urunler=urunKartlariniYukle(), hareketler=stokHareketleriniYukle()) {
+      const satirlar = urunKartlariniNormallestir(urunler)
+        .filter(kart=>kart.tur === "urun")
+        .map(kart=>{
+          const miktar = urunStokMiktariniHesapla(kart,hareketler);
+          const degerlenecekMiktar = Math.max(0,miktar);
+          const maliyetDegeri = degerlenecekMiktar * kart.alisFiyati;
+          const satisPotansiyeli = degerlenecekMiktar * kart.satisFiyati;
+          return {
+            id:kart.id, kod:kart.kod, ad:kart.ad, birim:kart.birim, durum:kart.durum,
+            miktar, kritikStok:kart.kritikStok, alisFiyati:kart.alisFiyati, satisFiyati:kart.satisFiyati,
+            maliyetDegeri, satisPotansiyeli, tahminiBrutFark:satisPotansiyeli-maliyetDegeri,
+            kritik:kart.durum === "Aktif" && miktar <= kart.kritikStok,
+            fiyatEksik:degerlenecekMiktar > 0 && kart.alisFiyati <= 0
+          };
+        })
+        .sort((a,b)=>b.maliyetDegeri-a.maliyetDegeri || a.ad.localeCompare(b.ad,"tr"));
+      return {
+        satirlar,
+        toplamMaliyet:satirlar.reduce((toplam,satir)=>toplam+satir.maliyetDegeri,0),
+        toplamSatis:satirlar.reduce((toplam,satir)=>toplam+satir.satisPotansiyeli,0),
+        toplamBrutFark:satirlar.reduce((toplam,satir)=>toplam+satir.tahminiBrutFark,0),
+        fiyatEksikSayisi:satirlar.filter(satir=>satir.fiyatEksik).length,
+        pasifStokSayisi:satirlar.filter(satir=>satir.durum === "Pasif" && satir.miktar > 0).length
       };
     }
 
@@ -10114,6 +10167,39 @@
       stokHareketleriniKaydet(hareketler.map(item=>item.id === kimlik ? {...item,durum:yeniDurum,iptalZamani:yeniDurum === "İptal" ? new Date().toISOString() : ""} : item),`${urun.kod} stok hareketi ${yenidenEtkin ? "yeniden etkinleştirildi" : "iptal edildi"}`);
     }
 
+    function stokDegerlemeSatirlariniFiltrele(satirlar, arama="") {
+      const aranan = String(arama || "").trim().toLocaleUpperCase("tr-TR");
+      return (Array.isArray(satirlar) ? satirlar : []).filter(satir=>
+        !aranan || [satir.kod,satir.ad,satir.birim,satir.durum].join(" ").toLocaleUpperCase("tr-TR").includes(aranan)
+      );
+    }
+
+    function stokDegerlemeCsvIndir() {
+      const rapor = stokDegerlemeRaporunuHesapla();
+      const satirlar = stokDegerlemeSatirlariniFiltrele(rapor.satirlar,document.getElementById("urun-stok-arama")?.value);
+      if (!satirlar.length) {
+        syncGoster("İndirilecek stok değerleme kaydı bulunamadı", "#f59e0b");
+        return;
+      }
+      const sayi = deger=>tutarSayiyaCevir(deger).toLocaleString("tr-TR",{useGrouping:false,minimumFractionDigits:2,maximumFractionDigits:2});
+      const basliklar = ["Kod","Ürün","Durum","Birim","Stok Miktarı","Alış Birim Fiyatı (TL)","Stok Maliyet Değeri (TL)","Satış Birim Fiyatı (TL)","Satış Potansiyeli (TL)","Tahmini Brüt Fark (TL)","Kritik Stok","Değerleme Tarihi"];
+      const icerikSatirlari = satirlar.map(satir=>[
+        satir.kod,satir.ad,satir.durum,satir.birim,stokMiktariniFormatla(satir.miktar),
+        sayi(satir.alisFiyati),sayi(satir.maliyetDegeri),sayi(satir.satisFiyati),
+        sayi(satir.satisPotansiyeli),sayi(satir.tahminiBrutFark),satir.kritik ? "Evet" : "Hayır",bugununTarihi()
+      ].map(csvHucre).join(";"));
+      const icerik = "\uFEFF" + [basliklar.map(csvHucre).join(";"),...icerikSatirlari].join("\r\n");
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-stok-degerleme-${bugununTarihi()}.csv`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      setTimeout(()=>URL.revokeObjectURL(adres),1000);
+      syncGoster(`${satirlar.length} ürün stok değerleme raporuna aktarıldı`, "#4ade80");
+    }
+
     function urunStokMerkeziniGoster() {
       const tablo = document.getElementById("urun-stok-tablo-wrap");
       if (!tablo) return;
@@ -10126,6 +10212,26 @@
       document.getElementById("urun-stok-hizmet").textContent = String(ozet.hizmet);
       const arama = String(document.getElementById("urun-stok-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
       const gorunum = document.getElementById("urun-stok-gorunum")?.value || "kartlar";
+      const csvDugmesi = document.getElementById("urun-stok-csv");
+      if (csvDugmesi) csvDugmesi.hidden = gorunum !== "degerleme";
+      if (gorunum === "degerleme") {
+        const degerleme = stokDegerlemeRaporunuHesapla(urunler,hareketler);
+        const satirlar = stokDegerlemeSatirlariniFiltrele(degerleme.satirlar,arama);
+        const ekUyarilar = [
+          degerleme.fiyatEksikSayisi ? `<span class="stok-degerleme-uyari">${degerleme.fiyatEksikSayisi} stoklu üründe alış fiyatı eksik.</span>` : "",
+          degerleme.pasifStokSayisi ? `<span class="stok-degerleme-uyari">${degerleme.pasifStokSayisi} pasif kartta stok bulunuyor.</span>` : ""
+        ].filter(Boolean).join(" ");
+        tablo.innerHTML = `<div class="stok-degerleme-paneli">
+          <div class="stok-degerleme-ozet">
+            <div class="stok-degerleme-metrik" style="--deger-renk:#4ade80"><span>TOPLAM MALİYET DEĞERİ</span><strong>${formatPara(degerleme.toplamMaliyet)}</strong></div>
+            <div class="stok-degerleme-metrik" style="--deger-renk:#67cdfa"><span>TAHMİNİ SATIŞ POTANSİYELİ</span><strong>${formatPara(degerleme.toplamSatis)}</strong></div>
+            <div class="stok-degerleme-metrik" style="--deger-renk:#f3be3e"><span>TAHMİNİ BRÜT FARK</span><strong>${formatPara(degerleme.toplamBrutFark)}</strong></div>
+          </div>
+          <p class="stok-degerleme-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Değerler kartlardaki güncel alış ve satış fiyatlarıyla hesaplanır; ağırlıklı ortalama veya geçmiş maliyet yöntemi uygulanmaz. ${ekUyarilar}</span></p>
+          ${satirlar.length ? `<table class="urun-stok-tablo"><thead><tr><th>KOD</th><th>ÜRÜN</th><th>STOK</th><th>ALIŞ FİYATI</th><th>MALİYET DEĞERİ</th><th>SATIŞ FİYATI</th><th>SATIŞ POTANSİYELİ</th><th>TAHMİNİ BRÜT FARK</th><th>DURUM</th></tr></thead><tbody>${satirlar.map(satir=>`<tr class="${satir.durum === "Pasif" ? "pasif" : ""}"><td><span class="urun-kod">${htmlGuvenli(satir.kod)}</span></td><td><span class="urun-ad">${htmlGuvenli(satir.ad)}</span></td><td><span class="stok-miktar ${satir.kritik ? "kritik" : ""}">${stokMiktariniFormatla(satir.miktar)} ${htmlGuvenli(satir.birim)}</span></td><td class="${satir.fiyatEksik ? "stok-degerleme-uyari" : ""}">${satir.fiyatEksik ? "Eksik" : formatPara(satir.alisFiyati)}</td><td>${formatPara(satir.maliyetDegeri)}</td><td>${formatPara(satir.satisFiyati)}</td><td>${formatPara(satir.satisPotansiyeli)}</td><td>${formatPara(satir.tahminiBrutFark)}</td><td><span class="stok-durum-rozet ${satir.durum === "Aktif" ? "aktif" : "pasif"}">${htmlGuvenli(satir.durum)}</span></td></tr>`).join("")}</tbody><tfoot><tr class="stok-degerleme-toplam"><td colspan="4">GENEL TOPLAM</td><td>${formatPara(satirlar.reduce((toplam,satir)=>toplam+satir.maliyetDegeri,0))}</td><td>—</td><td>${formatPara(satirlar.reduce((toplam,satir)=>toplam+satir.satisPotansiyeli,0))}</td><td>${formatPara(satirlar.reduce((toplam,satir)=>toplam+satir.tahminiBrutFark,0))}</td><td>${satirlar.length} ürün</td></tr></tfoot></table>` : '<div class="urun-stok-bos"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><br>Filtreye uygun ürün bulunamadı.</div>'}
+        </div>`;
+        return;
+      }
       if (gorunum === "hareketler") {
         const liste = hareketler.filter(hareket=>{
           const urun = urunler.find(kart=>kart.id === hareket.urunId);
@@ -10155,7 +10261,7 @@
       const arama = document.getElementById("urun-stok-arama");
       const secim = document.getElementById("urun-stok-gorunum");
       if (arama) arama.value = "";
-      if (secim) secim.value = ["kartlar","kritik","hareketler"].includes(gorunum) ? gorunum : "kartlar";
+      if (secim) secim.value = ["kartlar","kritik","hareketler","degerleme"].includes(gorunum) ? gorunum : "kartlar";
       urunStokMerkeziniGoster();
       document.getElementById("urun-stok-overlay")?.classList.add("aktif");
       if (gorunum === "sayim") stokSayimFormunuAc();
@@ -10222,6 +10328,7 @@
         case "stok-hareketleri": urunStokMerkeziniAc("hareketler"); break;
         case "stok-sayimi": urunStokMerkeziniAc("sayim"); break;
         case "kritik-stok": urunStokMerkeziniAc("kritik"); break;
+        case "stok-degerleme": urunStokMerkeziniAc("degerleme"); break;
         case "cari-hesaplar": cariHesaplariAc(); break;
         case "cari-islem": odemeYonetiminiAc(); break;
         case "finans-hesaplari": finansHesaplariniAc(); break;

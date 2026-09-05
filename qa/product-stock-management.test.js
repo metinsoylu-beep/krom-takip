@@ -32,7 +32,8 @@ function fonksiyonuAl(kaynak, ad) {
   "Ürün &amp; Stok",
   "Ürün / Hizmet Kartları",
   "Stok Hareketleri",
-  "Kritik Stok"
+  "Kritik Stok",
+  "Stok Değerleme"
 ].forEach(metin => assert.ok(index.includes(metin), `${metin} menüde bulunmalı`));
 assert.match(index, /id="urun-stok-overlay"/, "Ürün ve stok yönetim ekranı bulunmalı");
 assert.match(index, /class="urun-stok-aksiyon yalnizca-yonetici"/, "Kart oluşturma yalnızca yöneticiye açık olmalı");
