@@ -797,6 +797,43 @@
     .cari-risk-durum.kapali { --risk-renk:#4ade80; }
     .cari-risk-ekstre { min-height:30px; padding:5px 9px; border:1px solid #38bdf855; border-radius:6px; background:#38bdf810; color:#7dd3fc; font-weight:750; cursor:pointer; }
     .cari-risk-ekstre:hover { background:#38bdf822; }
+    .nakit-tahmin-kart { width:min(1180px,100%); max-width:1180px; border-top-color:#14b8a6; }
+    .nakit-tahmin-kart .odeme-yonetim-baslik i { color:#5eead4; }
+    .nakit-tahmin-filtreler {
+      display:grid; grid-template-columns:minmax(190px,240px) minmax(190px,240px) minmax(260px,1fr); gap:10px;
+      align-items:end; padding:13px 18px; border-bottom:1px solid var(--cizgi-yumusak); background:#0a1a2b;
+    }
+    .nakit-tahmin-filtreler .odeme-form-alan input, .nakit-tahmin-filtreler .odeme-form-alan select {
+      width:100%; height:38px; padding:0 11px; border:1px solid var(--cizgi); border-radius:7px;
+      background:#10243a; color:#eef4fa; font:11px "Segoe UI",Arial,sans-serif; outline:none;
+    }
+    .nakit-tahmin-filtreler input:focus, .nakit-tahmin-filtreler select:focus { border-color:#14b8a6; box-shadow:0 0 0 2px #14b8a61f; }
+    .nakit-tahmin-kapsam { align-self:center; color:#8fa4b8; font-size:9px; line-height:1.5; text-align:right; }
+    .nakit-tahmin-ozetler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; padding:14px 18px 0; }
+    .nakit-tahmin-donemler { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:14px 18px 0; }
+    .nakit-tahmin-donem {
+      border:1px solid #1d4558; border-top:2px solid var(--donem-renk); border-radius:8px; overflow:hidden;
+      background:linear-gradient(145deg,#10263a,#0d1f31);
+    }
+    .nakit-tahmin-donem-baslik { display:flex; justify-content:space-between; gap:8px; padding:10px 12px; border-bottom:1px solid #17344a; }
+    .nakit-tahmin-donem-baslik strong { color:#f2f7fb; font-size:10px; }
+    .nakit-tahmin-donem-baslik span { color:#8294a7; font-size:8px; text-align:right; }
+    .nakit-tahmin-donem-degerler { display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; padding:11px 12px; }
+    .nakit-tahmin-donem-degerler span { display:block; color:#72869a; font-size:7px; letter-spacing:.35px; }
+    .nakit-tahmin-donem-degerler strong { display:block; margin-top:3px; color:#dce8f1; font:750 12px Georgia,serif; }
+    .nakit-tahmin-donem-degerler .giris strong { color:#4ade80; }
+    .nakit-tahmin-donem-degerler .cikis strong { color:#ff6b77; }
+    .nakit-tahmin-donem-degerler .kapanis { grid-column:1 / -1; padding-top:7px; border-top:1px solid #17344a; }
+    .nakit-tahmin-tablo { min-width:930px; font:10px "Segoe UI",Arial,sans-serif; }
+    .nakit-tahmin-tablo th, .nakit-tahmin-tablo td { padding:10px 12px; vertical-align:middle; }
+    .nakit-tahmin-tutar { text-align:right; font-weight:800; }
+    .nakit-tahmin-tutar.giris { color:#4ade80; }
+    .nakit-tahmin-tutar.cikis { color:#ff6b77; }
+    .nakit-tahmin-yon { display:inline-flex; align-items:center; gap:5px; padding:4px 7px; border-radius:999px; font-weight:800; white-space:nowrap; }
+    .nakit-tahmin-yon.giris { color:#68e394; background:#39c56b14; border:1px solid #39c56b44; }
+    .nakit-tahmin-yon.cikis { color:#ff7a85; background:#ff3f4f14; border:1px solid #ff3f4f44; }
+    .nakit-tahmin-vade { display:block; margin-top:3px; color:#8294a7; font-size:8px; }
+    .nakit-tahmin-vade.gecikmis { color:#ff7a85; font-weight:750; }
     .cek-takip-kart { width: min(1180px,100%); max-width: 1180px; border-top-color: #a78bfa; }
     .cek-takip-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .cek-takip-ust-islemler { display: flex; align-items: center; gap: 8px; }
@@ -1441,6 +1478,10 @@
       .cari-risk-filtreler { grid-template-columns:1fr; padding:12px; }
       .cari-risk-kartlar { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
       .cari-risk-kartlar .aylik-metrik:last-child { grid-column:1 / -1; }
+      .nakit-tahmin-filtreler { grid-template-columns:1fr; padding:12px; }
+      .nakit-tahmin-kapsam { text-align:left; }
+      .nakit-tahmin-ozetler { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
+      .nakit-tahmin-donemler { grid-template-columns:1fr; padding:12px 12px 0; }
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
@@ -2503,6 +2544,49 @@
     </section>
   </div>
 
+  <!-- NAKİT AKIŞ TAHMİNİ -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="nakit-tahmin-overlay">
+    <section class="popup-kutu odeme-yonetim-kart nakit-tahmin-kart" role="dialog" aria-modal="true" aria-labelledby="nakit-tahmin-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="nakit-tahmin-baslik"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Nakit Akış Tahmini</h2>
+          <p class="odeme-yonetim-alt">Açık faturalar ve vadesi bekleyen çeklerle önümüzdeki 90 günün tahmini nakit görünümünü hesaplar.</p>
+        </div>
+        <div class="cari-ust-islemler">
+          <button class="cek-takip-csv" type="button" onclick="nakitAkisTahminiCsvIndir()"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV İndir</button>
+          <button class="modal-kapat" type="button" onclick="nakitAkisTahmininiKapat()" aria-label="Nakit akış tahminini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="nakit-tahmin-filtreler">
+        <div class="odeme-form-alan"><label for="nakit-tahmin-tarih">BAŞLANGIÇ TARİHİ</label><input id="nakit-tahmin-tarih" type="date" onchange="nakitAkisTahmininiGoster()"/></div>
+        <div class="odeme-form-alan"><label for="nakit-tahmin-yon">HAREKET TÜRÜ</label><select id="nakit-tahmin-yon" onchange="nakitAkisTahmininiGoster()"><option value="tumu">Tüm hareketler</option><option value="giris">Tahmini girişler</option><option value="cikis">Tahmini çıkışlar</option><option value="gecikmis">Vadesi geçmiş olanlar</option></select></div>
+        <div class="nakit-tahmin-kapsam" id="nakit-tahmin-kapsam">Başlangıç günü ve sonraki 90 takvim günü esas alınır.</div>
+      </div>
+      <div class="nakit-tahmin-ozetler">
+        <div class="aylik-metrik" style="--aylik-renk:#67cdfa"><span>MEVCUT KASA / BANKA</span><strong id="nakit-tahmin-mevcut">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#4ade80"><span>90 GÜNDE GİRİŞ</span><strong id="nakit-tahmin-giris">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#ff6b77"><span>90 GÜNDE ÇIKIŞ</span><strong id="nakit-tahmin-cikis">0 ₺</strong></div>
+        <div class="aylik-metrik" id="nakit-tahmin-son-kart" style="--aylik-renk:#5eead4"><span>90. GÜN TAHMİNİ</span><strong id="nakit-tahmin-son">0 ₺</strong></div>
+      </div>
+      <div class="nakit-tahmin-donemler">
+        <article class="nakit-tahmin-donem" style="--donem-renk:#f6c95c">
+          <div class="nakit-tahmin-donem-baslik"><strong>İLK 30 GÜN</strong><span id="nakit-tahmin-30-aralik">—</span></div>
+          <div class="nakit-tahmin-donem-degerler"><div class="giris"><span>GİRİŞ</span><strong id="nakit-tahmin-30-giris">0 ₺</strong></div><div class="cikis"><span>ÇIKIŞ</span><strong id="nakit-tahmin-30-cikis">0 ₺</strong></div><div><span>NET HAREKET</span><strong id="nakit-tahmin-30-net">0 ₺</strong></div><div class="kapanis"><span>TAHMİNİ DÖNEM SONU</span><strong id="nakit-tahmin-30-son">0 ₺</strong></div></div>
+        </article>
+        <article class="nakit-tahmin-donem" style="--donem-renk:#67cdfa">
+          <div class="nakit-tahmin-donem-baslik"><strong>31–60 GÜN</strong><span id="nakit-tahmin-60-aralik">—</span></div>
+          <div class="nakit-tahmin-donem-degerler"><div class="giris"><span>GİRİŞ</span><strong id="nakit-tahmin-60-giris">0 ₺</strong></div><div class="cikis"><span>ÇIKIŞ</span><strong id="nakit-tahmin-60-cikis">0 ₺</strong></div><div><span>NET HAREKET</span><strong id="nakit-tahmin-60-net">0 ₺</strong></div><div class="kapanis"><span>TAHMİNİ DÖNEM SONU</span><strong id="nakit-tahmin-60-son">0 ₺</strong></div></div>
+        </article>
+        <article class="nakit-tahmin-donem" style="--donem-renk:#a78bfa">
+          <div class="nakit-tahmin-donem-baslik"><strong>61–90 GÜN</strong><span id="nakit-tahmin-90-aralik">—</span></div>
+          <div class="nakit-tahmin-donem-degerler"><div class="giris"><span>GİRİŞ</span><strong id="nakit-tahmin-90-giris">0 ₺</strong></div><div class="cikis"><span>ÇIKIŞ</span><strong id="nakit-tahmin-90-cikis">0 ₺</strong></div><div><span>NET HAREKET</span><strong id="nakit-tahmin-90-net">0 ₺</strong></div><div class="kapanis"><span>TAHMİNİ DÖNEM SONU</span><strong id="nakit-tahmin-90-son">0 ₺</strong></div></div>
+        </article>
+      </div>
+      <div class="aylik-ozet-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Bu tahmin resmi mali tablo değildir. Vadesi geçmiş açık faturalar ilk 30 güne alınır. Verilen çekler ayrı banka çıkışı olarak gösterilir; ödeme ve çekler faturalara otomatik dağıtılmaz.</div>
+      <div class="aylik-ozet-tablo-wrap" id="nakit-tahmin-tablo-wrap"></div>
+    </section>
+  </div>
+
   <!-- ÇEK TAKİP MERKEZİ -->
   <div class="popup-overlay odeme-yonetim-overlay" id="cek-takip-overlay">
     <section class="popup-kutu odeme-yonetim-kart cek-takip-kart" role="dialog" aria-modal="true" aria-labelledby="cek-takip-baslik">
@@ -2990,6 +3074,7 @@
           <button class="modul-alt-baglanti" type="button" data-modul="hizli-istatistikler" onclick="modulNavigasyon('hizli-istatistikler',this)"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Hızlı İstatistikler</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="fatura-raporu" onclick="modulNavigasyon('fatura-raporu',this)"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Gelişmiş Fatura Raporu</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="cari-risk" onclick="modulNavigasyon('cari-risk',this)"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>Cari Bakiye Raporu</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="nakit-tahmin" onclick="modulNavigasyon('nakit-tahmin',this)"><i class="fa-solid fa-chart-area" aria-hidden="true"></i><span>Nakit Akış Tahmini</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="kdv-ozeti" onclick="modulNavigasyon('kdv-ozeti',this)"><i class="fa-solid fa-percent" aria-hidden="true"></i><span>KDV Durum Özeti</span></button>
           <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="csv-aktar" onclick="modulNavigasyon('csv-aktar',this)"><i class="fa-solid fa-file-csv" aria-hidden="true"></i><span>CSV Dışa Aktar</span></button>
         </div>
@@ -3337,7 +3422,7 @@
     const SON_BULUT_ESITLEME_ANAHTAR = "krom-takip-son-bulut-esitleme";
     const YEDEK_ANAHTAR = "krom-takip-otomatik-yedekler";
     const YEDEK_SINIR = 10;
-    const CANLI_UYGULAMA_URL = "https://metinsoylu-finans.netlify.app/";
+    const CANLI_UYGULAMA_URL = "https://metinsoylu-beep.github.io/krom-takip/";
     const API_URL       = "https://script.google.com/macros/s/AKfycbzkCdIzyRtk1IM1IJ9CT8jziuSVTUDyE8zNrQRIU_N4CDaaACB-BGtif4Cx6wV7ov8v3Q/exec";
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyAqIdRVFUIrreeyyj57PcM9fO_Iwv10idk",
@@ -4420,6 +4505,7 @@
         if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
         if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
         if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
+        if (document.getElementById("nakit-tahmin-overlay")?.classList.contains("aktif")) nakitAkisTahmininiGoster();
         if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
 
         if (Array.isArray(data) && data.length > 0) {
@@ -6826,6 +6912,7 @@
       if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
       if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
       if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
+      if (document.getElementById("nakit-tahmin-overlay")?.classList.contains("aktif")) nakitAkisTahmininiGoster();
       if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       return guvenliDurum;
     }
@@ -9389,6 +9476,165 @@
       syncGoster(`${satirlar.length} cari bakiye raporuna aktarıldı`, "#4ade80");
     }
 
+    function nakitAkisTahmininiHesapla(referans=new Date(), faturalar=faturaYukle(), cekler=cekleriYukle(), hesapOzetleri=finansHesapOzetleriniHesapla()) {
+      const yuvarla = deger => Math.round((Number(deger) || 0) * 100) / 100;
+      let referansTarihi = typeof referans === "string" && tarihGecerliMi(referans)
+        ? tarihOlusturYerel(referans)
+        : new Date(referans);
+      if (Number.isNaN(referansTarihi.getTime())) referansTarihi = new Date();
+      referansTarihi.setHours(12,0,0,0);
+      const referansMetni = bugununTarihi(referansTarihi);
+      const satirlar = [];
+      const kalemEkle = (vadeDegeri, kaynak, belge, cari, yon, tutar) => {
+        const vade = new Date(vadeDegeri);
+        vade.setHours(12,0,0,0);
+        const miktar = yuvarla(tutarSayiyaCevir(tutar));
+        if (Number.isNaN(vade.getTime()) || !(miktar > 0)) return;
+        const gun = Math.round((vade - referansTarihi) / 86400000);
+        if (gun > 90) return;
+        const donem = gun <= 30 ? 30 : gun <= 60 ? 60 : 90;
+        satirlar.push({
+          vadeTarihi:bugununTarihi(vade),
+          kaynak:String(kaynak || "Diğer"),
+          belge:String(belge || "—"),
+          cari:String(cari || "Belirtilmedi").trim() || "Belirtilmedi",
+          yon:yon === "giris" ? "giris" : "cikis",
+          tutar:miktar,
+          gun,
+          gecikmis:gun < 0,
+          donem
+        });
+      };
+
+      (Array.isArray(faturalar) ? faturalar : []).forEach(fatura=>{
+        if (!fatura || faturaTakibiKapali(fatura) || !tarihGecerliMi(fatura.tarih)) return;
+        const satisMi = faturaTurunuNormallestir(fatura.faturaTuru) === "satis";
+        kalemEkle(
+          vadeTarihi(fatura.tarih,fatura.vadeGun),
+          satisMi ? "Satış Faturası" : "Alış Faturası",
+          fatura.no || "Fatura no yok",
+          fatura.cari,
+          satisMi ? "giris" : "cikis",
+          fatura.tutar
+        );
+      });
+      (Array.isArray(cekler) ? cekler : []).filter(cek=>cek?.durum === "Verildi").forEach(cek=>{
+        if (!tarihGecerliMi(cek.vadeTarihi)) return;
+        kalemEkle(
+          tarihOlusturYerel(cek.vadeTarihi),
+          "Verilen Çek",
+          [cek.cekNo,cek.banka].filter(Boolean).join(" · ") || "Çek bilgisi yok",
+          cek.cari,
+          "cikis",
+          cek.tutar
+        );
+      });
+
+      satirlar.sort((a,b)=>a.vadeTarihi.localeCompare(b.vadeTarihi) || (a.yon === b.yon ? 0 : a.yon === "cikis" ? -1 : 1) || b.tutar-a.tutar || a.cari.localeCompare(b.cari,"tr"));
+      const mevcutNakit = yuvarla((Array.isArray(hesapOzetleri) ? hesapOzetleri : []).reduce((toplam,hesap)=>toplam+tutarSayiyaCevir(hesap?.bakiye),0));
+      let yuruyenNakit = mevcutNakit;
+      const donemler = [30,60,90].map((esik,sira)=>{
+        const donemSatirlari = satirlar.filter(satir=>satir.donem === esik);
+        const giris = yuvarla(donemSatirlari.filter(satir=>satir.yon === "giris").reduce((toplam,satir)=>toplam+satir.tutar,0));
+        const cikis = yuvarla(donemSatirlari.filter(satir=>satir.yon === "cikis").reduce((toplam,satir)=>toplam+satir.tutar,0));
+        const net = yuvarla(giris-cikis);
+        yuruyenNakit = yuvarla(yuruyenNakit+net);
+        const baslangic = new Date(referansTarihi);
+        baslangic.setDate(baslangic.getDate() + (sira === 0 ? 0 : [31,61][sira-1]));
+        const bitis = new Date(referansTarihi);
+        bitis.setDate(bitis.getDate()+esik);
+        return { esik, baslangic:bugununTarihi(baslangic), bitis:bugununTarihi(bitis), giris, cikis, net, kapanis:yuruyenNakit, kayit:donemSatirlari.length };
+      });
+      const toplamGiris = yuvarla(donemler.reduce((toplam,donem)=>toplam+donem.giris,0));
+      const toplamCikis = yuvarla(donemler.reduce((toplam,donem)=>toplam+donem.cikis,0));
+      return {
+        referans:referansMetni,
+        bitis:donemler[2].bitis,
+        mevcutNakit,
+        toplamGiris,
+        toplamCikis,
+        net:yuvarla(toplamGiris-toplamCikis),
+        tahminiNakit:yuvarla(mevcutNakit+toplamGiris-toplamCikis),
+        gecikmisSayisi:satirlar.filter(satir=>satir.gecikmis).length,
+        donemler,
+        satirlar
+      };
+    }
+
+    function nakitAkisTahminiSatirlariniFiltrele(satirlar, yon="tumu") {
+      const filtre = ["giris","cikis","gecikmis"].includes(yon) ? yon : "tumu";
+      return (Array.isArray(satirlar) ? satirlar : []).filter(satir=>
+        filtre === "tumu" || (filtre === "gecikmis" ? satir.gecikmis : satir.yon === filtre)
+      );
+    }
+
+    function nakitAkisTahmininiGoster() {
+      const tarihAlani = document.getElementById("nakit-tahmin-tarih");
+      const rapor = nakitAkisTahmininiHesapla(tarihAlani?.value || bugununTarihi());
+      if (tarihAlani) tarihAlani.value = rapor.referans;
+      document.getElementById("nakit-tahmin-mevcut").textContent = formatPara(rapor.mevcutNakit);
+      document.getElementById("nakit-tahmin-giris").textContent = formatPara(rapor.toplamGiris);
+      document.getElementById("nakit-tahmin-cikis").textContent = formatPara(rapor.toplamCikis);
+      document.getElementById("nakit-tahmin-son").textContent = formatPara(rapor.tahminiNakit);
+      document.getElementById("nakit-tahmin-son-kart")?.style.setProperty("--aylik-renk",rapor.tahminiNakit < 0 ? "#ff6b77" : rapor.tahminiNakit > 0 ? "#5eead4" : "#f6c95c");
+      document.getElementById("nakit-tahmin-kapsam").textContent = `${formatTarih(tarihOlusturYerel(rapor.referans))} – ${formatTarih(tarihOlusturYerel(rapor.bitis))} · ${rapor.satirlar.length} beklenen hareket · ${rapor.gecikmisSayisi} gecikmiş`;
+      rapor.donemler.forEach(donem=>{
+        const onEk = `nakit-tahmin-${donem.esik}`;
+        document.getElementById(`${onEk}-aralik`).textContent = `${formatTarih(tarihOlusturYerel(donem.baslangic))} – ${formatTarih(tarihOlusturYerel(donem.bitis))}`;
+        document.getElementById(`${onEk}-giris`).textContent = formatPara(donem.giris);
+        document.getElementById(`${onEk}-cikis`).textContent = formatPara(donem.cikis);
+        document.getElementById(`${onEk}-net`).textContent = formatPara(donem.net);
+        document.getElementById(`${onEk}-net`).style.color = donem.net < 0 ? "#ff6b77" : donem.net > 0 ? "#4ade80" : "#dce8f1";
+        document.getElementById(`${onEk}-son`).textContent = formatPara(donem.kapanis);
+        document.getElementById(`${onEk}-son`).style.color = donem.kapanis < 0 ? "#ff6b77" : "#dce8f1";
+      });
+      const yon = document.getElementById("nakit-tahmin-yon")?.value || "tumu";
+      const satirlar = nakitAkisTahminiSatirlariniFiltrele(rapor.satirlar,yon);
+      const tablo = document.getElementById("nakit-tahmin-tablo-wrap");
+      if (!tablo) return rapor;
+      tablo.innerHTML = satirlar.length ? `<table class="nakit-tahmin-tablo"><thead><tr><th>VADE TARİHİ</th><th>KAYNAK</th><th>CARİ / FİRMA</th><th>BELGE</th><th>YÖN</th><th>DÖNEM</th><th style="text-align:right">TUTAR</th></tr></thead><tbody>${satirlar.map(satir=>{
+        const vadeMetni = satir.gecikmis ? `Vadesi ${Math.abs(satir.gun)} gün geçti` : satir.gun === 0 ? "Bugün" : `${satir.gun} gün içinde`;
+        const donemMetni = satir.donem === 30 ? "İlk 30 gün" : satir.donem === 60 ? "31–60 gün" : "61–90 gün";
+        return `<tr><td><strong>${formatTarih(tarihOlusturYerel(satir.vadeTarihi))}</strong><span class="nakit-tahmin-vade ${satir.gecikmis ? "gecikmis" : ""}">${htmlGuvenli(vadeMetni)}</span></td><td>${htmlGuvenli(satir.kaynak)}</td><td>${cariLogosuHtml(satir.cari)}</td><td>${htmlGuvenli(satir.belge)}</td><td><span class="nakit-tahmin-yon ${satir.yon}"><i class="fa-solid fa-arrow-${satir.yon === "giris" ? "down" : "up"}" aria-hidden="true"></i>${satir.yon === "giris" ? "Giriş" : "Çıkış"}</span></td><td>${htmlGuvenli(donemMetni)}</td><td class="nakit-tahmin-tutar ${satir.yon}">${satir.yon === "giris" ? "+" : "−"}${formatPara(satir.tutar)}</td></tr>`;
+      }).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-chart-area" aria-hidden="true"></i><br>Seçilen kapsamda beklenen nakit hareketi bulunamadı.</div>';
+      return rapor;
+    }
+
+    function nakitAkisTahmininiAc() {
+      const tarih = document.getElementById("nakit-tahmin-tarih");
+      const yon = document.getElementById("nakit-tahmin-yon");
+      if (tarih) tarih.value = bugununTarihi();
+      if (yon) yon.value = "tumu";
+      nakitAkisTahmininiGoster();
+      document.getElementById("nakit-tahmin-overlay")?.classList.add("aktif");
+    }
+
+    function nakitAkisTahmininiKapat() {
+      document.getElementById("nakit-tahmin-overlay")?.classList.remove("aktif");
+    }
+
+    function nakitAkisTahminiCsvIndir() {
+      const rapor = nakitAkisTahmininiHesapla(document.getElementById("nakit-tahmin-tarih")?.value || bugununTarihi());
+      const satirlar = nakitAkisTahminiSatirlariniFiltrele(rapor.satirlar,document.getElementById("nakit-tahmin-yon")?.value || "tumu");
+      if (!satirlar.length) { syncGoster("CSV için beklenen nakit hareketi bulunamadı", "#f59e0b"); return; }
+      const csvSatirlari = [
+        ["Nakit Akış Tahmini",`${rapor.referans} / ${rapor.bitis}`],
+        ["Mevcut Kasa / Banka",rapor.mevcutNakit.toFixed(2).replace(".",",")],
+        ["90 Günde Tahmini Giriş",rapor.toplamGiris.toFixed(2).replace(".",",")],
+        ["90 Günde Tahmini Çıkış",rapor.toplamCikis.toFixed(2).replace(".",",")],
+        ["90. Gün Tahmini Nakit",rapor.tahminiNakit.toFixed(2).replace(".",",")],
+        [],
+        ["Vade Tarihi","Kaynak","Cari / Firma","Belge","Yön","Dönem","Tutar (TL)","Vade Durumu"],
+        ...satirlar.map(satir=>[satir.vadeTarihi,satir.kaynak,satir.cari,satir.belge,satir.yon === "giris" ? "Giriş" : "Çıkış",satir.donem,satir.tutar.toFixed(2).replace(".",","),satir.gecikmis ? "Vadesi Geçmiş" : "Vadeli"])
+      ];
+      const adres = URL.createObjectURL(new Blob(["\uFEFF" + csvSatirlari.map(satir=>satir.map(csvHucre).join(";")).join("\r\n")], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `nakit-akis-tahmini-${rapor.referans}.csv`;
+      document.body.appendChild(baglanti); baglanti.click(); baglanti.remove(); URL.revokeObjectURL(adres);
+      syncGoster(`${satirlar.length} beklenen nakit hareketi rapora aktarıldı`, "#4ade80");
+    }
+
     function gelirGiderKategoriSecenekleriniGuncelle() {
       const alan = document.getElementById("gelir-gider-kategorileri");
       const giris = document.getElementById("gelir-gider-kategori");
@@ -10663,6 +10909,7 @@
         case "cek-takibi": cekTakibiniAc(); break;
         case "fatura-raporu": raporAc(); break;
         case "cari-risk": cariRiskRaporunuAc(); break;
+        case "nakit-tahmin": nakitAkisTahmininiAc(); break;
         case "kdv-ozeti": kdvOzetiniAc(); break;
         case "csv-aktar": csvRaporIndir(); break;
         case "kullanicilar": kullaniciPaneliniAc(); break;
@@ -10739,6 +10986,9 @@
       document.getElementById("cari-risk-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cari-risk-overlay") cariRiskRaporunuKapat();
       });
+      document.getElementById("nakit-tahmin-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "nakit-tahmin-overlay") nakitAkisTahmininiKapat();
+      });
       document.getElementById("cek-takip-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cek-takip-overlay") cekTakibiniKapat();
       });
@@ -10775,6 +11025,7 @@
           aylikFinansOzetiniKapat();
           kdvOzetiniKapat();
           cariRiskRaporunuKapat();
+          nakitAkisTahmininiKapat();
           cekTakibiniKapat();
           cariKartFormunuKapat();
           cariEkstreKapat();

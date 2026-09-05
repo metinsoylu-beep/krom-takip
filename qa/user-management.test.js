@@ -15,7 +15,8 @@ assert.match(index, /function kullaniciYetkisiniKaldir\(/, "Yetki kaldırma işl
 assert.match(index, /class="kullanici-davet"/, "Her kullanıcı için davet mesajı düğmesi bulunmalı");
 assert.match(index, /function kullaniciDavetMetniOlustur\(/, "Hazır davet mesajı oluşturulmalı");
 assert.match(index, /function kullaniciDavetiniKopyala\(/, "Davet mesajı panoya kopyalanabilmeli");
-assert.match(index, /https:\/\/metinsoylu-finans\.netlify\.app\//, "Davet mesajı kalıcı canlı adresi kullanmalı");
+assert.match(index, /https:\/\/metinsoylu-beep\.github\.io\/krom-takip\//, "Davet mesajı GitHub Pages canlı adresini kullanmalı");
+assert.doesNotMatch(index, /metinsoylu-finans\.netlify\.app/, "Kullanıcı davetinde artık kullanılmayan Netlify adresi bulunmamalı");
 assert.match(index, /Başka bir hesap kullan/, "Davet mesajı alternatif Google hesabını açıklamalı");
 assert.match(index, /Tarayıcıda aç/, "Davet mesajı uygulama içi tarayıcı çözümünü açıklamalı");
 assert.match(index, /btn-cari-islem kullanicilar yalnizca-yonetici/, "Panel yalnızca yöneticilere gösterilmeli");
