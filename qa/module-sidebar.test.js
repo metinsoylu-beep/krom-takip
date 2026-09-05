@@ -96,7 +96,8 @@ const context = {
   csvRaporIndir() { cagrilar.push(["csvRaporIndir"]); },
   kullaniciPaneliniAc() { cagrilar.push(["kullaniciPaneliniAc"]); },
   islemGecmisiniAc() { cagrilar.push(["islemGecmisiniAc"]); },
-  bulutYedekleriniAc() { cagrilar.push(["bulutYedekleriniAc"]); }
+  bulutYedekleriniAc() { cagrilar.push(["bulutYedekleriniAc"]); },
+  modulEkraniniAnaAlanaAc(overlayId, baslik) { cagrilar.push(["modulEkraniniAnaAlanaAc", overlayId, baslik]); }
 };
 vm.createContext(context);
 vm.runInContext(index.slice(baslangic, bitis), context);
@@ -128,5 +129,7 @@ assert.ok(cagrilar.some(([ad]) => ad === "vadeAnaliziniAc"), "Borç/alacak vade 
 assert.ok(cagrilar.some(([ad]) => ad === "nakitAkisTahmininiAc"), "Nakit akış tahmini bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "kdvOzetiniAc"), "KDV durum özeti bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cekTakibiniAc"), "Çek bağlantısı mevcut ekrana bağlanmalı");
+assert.ok(cagrilar.some(([ad,overlay]) => ad === "modulEkraniniAnaAlanaAc" && overlay === "urun-stok-overlay"), "Stok ekranları ana çalışma alanında açılmalı");
+assert.ok(cagrilar.some(([ad,overlay]) => ad === "modulEkraniniAnaAlanaAc" && overlay === "genel-hareket-overlay"), "Rapor ekranları ana çalışma alanında açılmalı");
 
 console.log("Modüler ön muhasebe yan menüsü doğrulandı.");

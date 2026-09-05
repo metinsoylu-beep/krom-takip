@@ -225,6 +225,7 @@
     .navbar-tarih { color: #718398; font-size: 11px; white-space: nowrap; }
     .konteyner { width: min(1500px, calc(100vw - 40px)); padding: 10px 0 48px; }
     .dashboard-grid { display: block; }
+    .dashboard-grid[hidden] { display: none; }
 
     .filtre-panel {
       display: grid;
@@ -2150,9 +2151,51 @@
     .cikis-dugmesi:hover { color: #f1f5f9; }
     body[data-role="viewer"] .yalnizca-yonetici { display: none !important; }
     body[data-role="viewer"] #firma-adi-goster { cursor: default; border-bottom: 0; }
+    .modul-calisma-alani {
+      min-height: calc(100vh - 150px); margin-bottom: 24px; overflow: hidden;
+      border: 1px solid #294a66; border-top: 3px solid var(--altin); border-radius: 12px;
+      background: linear-gradient(180deg,#0b1d30,#071522); box-shadow: 0 18px 45px #02091455;
+    }
+    .modul-calisma-alani[hidden] { display: none; }
+    .modul-calisma-ust {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      min-height: 58px; padding: 11px 16px; border-bottom: 1px solid #294159; background: #0d2237;
+    }
+    .modul-calisma-kimlik { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .modul-calisma-ikon {
+      width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 34px;
+      border: 1px solid #e6a91f66; border-radius: 9px; background: #e6a91f15; color: #f6c95c;
+    }
+    .modul-calisma-kimlik small { display: block; color: #71869b; font: 700 8px "Segoe UI",Arial,sans-serif; letter-spacing: .8px; }
+    .modul-calisma-kimlik strong { display: block; margin-top: 3px; color: #f3f7fb; font: 700 15px Georgia,serif; }
+    .modul-ana-don {
+      min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 7px 11px; border: 1px solid #49647d; border-radius: 7px; background: #102a43;
+      color: #dce8f2; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer;
+    }
+    .modul-ana-don:hover { border-color: #e6a91f88; background: #193953; color: #fff3c4; }
+    .modul-calisma-icerik { min-width: 0; }
+    .modul-calisma-icerik > .popup-overlay.modul-sayfa {
+      position: static; inset: auto; z-index: auto; display: block; padding: 0;
+      background: transparent; overflow: visible;
+    }
+    .modul-calisma-icerik > .popup-overlay.modul-sayfa > .popup-kutu,
+    .modul-calisma-icerik > .popup-overlay.modul-sayfa > .form-card {
+      width: 100%; max-width: none; max-height: none; min-height: 0; margin: 0;
+      overflow: visible; border: 0; border-radius: 0; box-shadow: none; animation: none;
+    }
+    .modul-calisma-icerik > .popup-overlay.modul-sayfa .odeme-yonetim-ust,
+    .modul-calisma-icerik > .popup-overlay.modul-sayfa .rapor-ust { border-radius: 0; }
     @media (max-width: 760px) {
       .oturum-eposta { display: none; }
       .giris-kart { padding: 28px 22px; }
+      .modul-calisma-alani { min-height: calc(100vh - 115px); border-radius: 9px; }
+      .modul-calisma-ust { align-items: flex-start; padding: 10px 12px; }
+      .modul-calisma-kimlik strong { font-size: 13px; }
+      .modul-ana-don span { display: none; }
+      .modul-ana-don { width: 36px; padding: 7px; }
+      .modul-calisma-icerik > .popup-overlay.modul-sayfa > .popup-kutu,
+      .modul-calisma-icerik > .popup-overlay.modul-sayfa > .form-card { min-height: 0; max-height: none; border-radius: 0; }
     }
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
@@ -3328,7 +3371,19 @@
       <button class="btn-bildirim" onclick="bildirimIzniIste()">Bildirimlere İzin Ver</button>
     </div>
 
-    <div class="dashboard-grid">
+    <!-- MENÜDEN SEÇİLEN MODÜLÜ ANA SAYFADA GÖSTEREN ÇALIŞMA ALANI -->
+    <section class="modul-calisma-alani" id="modul-calisma-alani" aria-labelledby="modul-calisma-baslik" hidden>
+      <div class="modul-calisma-ust">
+        <div class="modul-calisma-kimlik">
+          <span class="modul-calisma-ikon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></span>
+          <span><small>ANA SAYFA · ÇALIŞMA ALANI</small><strong id="modul-calisma-baslik">Seçilen Modül</strong></span>
+        </div>
+        <button class="modul-ana-don" type="button" onclick="modulCalismaAlaniniKapat()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Ana Sayfaya Dön</span></button>
+      </div>
+      <div class="modul-calisma-icerik" id="modul-calisma-icerik"></div>
+    </section>
+
+    <div class="dashboard-grid" id="ana-dashboard">
       <main class="ana-icerik">
 
         <!-- ARAMA VE FİLTRELER -->
@@ -11378,6 +11433,87 @@
       document.getElementById("urun-stok-overlay")?.classList.remove("aktif");
     }
 
+    const modulOverlayKonumlari = new WeakMap();
+    let aktifModulOverlay = null;
+    let modulOverlayGozlemcisi = null;
+
+    function modulOverlayiniEskiYerineTasi(overlay) {
+      if (!overlay) return;
+      const konum = modulOverlayKonumlari.get(overlay);
+      if (konum?.ebeveyn) {
+        if (konum.sonraki?.parentNode === konum.ebeveyn) konum.ebeveyn.insertBefore(overlay, konum.sonraki);
+        else konum.ebeveyn.appendChild(overlay);
+      }
+      overlay.classList.remove("modul-sayfa");
+      const ekran = overlay.querySelector('[data-modul-onceki-role="1"]');
+      if (ekran) {
+        ekran.setAttribute("role", ekran.dataset.oncekiRole || "dialog");
+        if (ekran.dataset.oncekiAriaModal) ekran.setAttribute("aria-modal", ekran.dataset.oncekiAriaModal);
+        else ekran.removeAttribute("aria-modal");
+        delete ekran.dataset.oncekiRole;
+        delete ekran.dataset.oncekiAriaModal;
+        delete ekran.dataset.modulOncekiRole;
+      }
+      modulOverlayKonumlari.delete(overlay);
+    }
+
+    function modulCalismaAlaniniKapat(anaSayfayaGit=true) {
+      modulOverlayGozlemcisi?.disconnect();
+      modulOverlayGozlemcisi = null;
+      const oncekiOverlay = aktifModulOverlay;
+      aktifModulOverlay = null;
+      oncekiOverlay?.classList.remove("aktif");
+      modulOverlayiniEskiYerineTasi(oncekiOverlay);
+      const alan = document.getElementById("modul-calisma-alani");
+      const dashboard = document.getElementById("ana-dashboard");
+      if (alan) alan.hidden = true;
+      if (dashboard) dashboard.hidden = false;
+      document.body.classList.remove("modul-sayfa-acik");
+      if (anaSayfayaGit) setTimeout(() => document.querySelector(".kur-panel")?.scrollIntoView({ behavior:"smooth", block:"start" }), 30);
+    }
+
+    function modulEkraniniAnaAlanaAc(overlayId, baslik) {
+      const overlay = document.getElementById(overlayId);
+      const alan = document.getElementById("modul-calisma-alani");
+      const icerik = document.getElementById("modul-calisma-icerik");
+      const dashboard = document.getElementById("ana-dashboard");
+      if (!overlay?.classList.contains("aktif") || !alan || !icerik || !dashboard) return false;
+
+      modulOverlayGozlemcisi?.disconnect();
+      modulOverlayGozlemcisi = null;
+      if (aktifModulOverlay && aktifModulOverlay !== overlay) {
+        aktifModulOverlay.classList.remove("aktif");
+        modulOverlayiniEskiYerineTasi(aktifModulOverlay);
+      }
+      if (overlay.parentNode !== icerik) {
+        modulOverlayKonumlari.set(overlay, { ebeveyn:overlay.parentNode, sonraki:overlay.nextSibling });
+        icerik.appendChild(overlay);
+      }
+      overlay.classList.add("modul-sayfa", "aktif");
+      const ekran = overlay.querySelector('[role="dialog"]');
+      if (ekran) {
+        ekran.dataset.modulOncekiRole = "1";
+        ekran.dataset.oncekiRole = ekran.getAttribute("role") || "dialog";
+        ekran.dataset.oncekiAriaModal = ekran.getAttribute("aria-modal") || "";
+        ekran.setAttribute("role", "region");
+        ekran.removeAttribute("aria-modal");
+      }
+      const baslikAlani = document.getElementById("modul-calisma-baslik");
+      if (baslikAlani) baslikAlani.textContent = baslik || "Seçilen Modül";
+      dashboard.hidden = true;
+      alan.hidden = false;
+      document.body.classList.add("modul-sayfa-acik");
+      aktifModulOverlay = overlay;
+      if (typeof MutationObserver !== "undefined") {
+        modulOverlayGozlemcisi = new MutationObserver(() => {
+          if (aktifModulOverlay === overlay && !overlay.classList.contains("aktif")) modulCalismaAlaniniKapat();
+        });
+        modulOverlayGozlemcisi.observe(overlay, { attributes:true, attributeFilter:["class"] });
+      }
+      setTimeout(() => alan.scrollIntoView({ behavior:"smooth", block:"start" }), 30);
+      return true;
+    }
+
     // ── MODÜL MENÜSÜ ────────────────────────────────────────────────────────
     function modulPaneliniAc() {
       document.body.classList.add("modul-panel-acik");
@@ -11413,6 +11549,7 @@
     }
 
     function modulHedefineGit(secici, detayiAc=false) {
+      modulCalismaAlaniniKapat(false);
       const hedef = document.querySelector(secici);
       if (!hedef) return;
       if (detayiAc) {
@@ -11468,6 +11605,34 @@
         case "depolama": modulHedefineGit("#depolama-sagligi-panel", true); break;
         default: return;
       }
+      const modulSayfalari = {
+        "yeni-alis":["yeni-fatura-overlay","Yeni Alış Faturası"],
+        "yeni-satis":["yeni-fatura-overlay","Yeni Satış Faturası"],
+        "urun-kartlari":["urun-stok-overlay","Ürün / Hizmet Kartları"],
+        "stok-hareketleri":["urun-stok-overlay","Stok Hareketleri"],
+        "stok-sayimi":["urun-stok-overlay","Stok Sayımı"],
+        "kritik-stok":["urun-stok-overlay","Kritik Stok"],
+        "stok-degerleme":["urun-stok-overlay","Stok Değerleme"],
+        "stok-ekstresi":["urun-stok-overlay","Stok Kart Ekstresi"],
+        "cari-hesaplar":["cari-hesaplar-overlay","Cari Hesaplar ve Ekstre"],
+        "cari-islem":["odeme-yonetim-overlay","Tahsilat / Ödeme Girişi"],
+        "finans-hesaplari":["finans-hesaplari-overlay","Kasa / Banka Hesapları"],
+        "hesap-transferleri":["hesap-transfer-overlay","Hesap Transferleri"],
+        "gelir-gider":["gelir-gider-overlay","Gelir / Gider Fişleri"],
+        "aylik-ozet":["aylik-ozet-overlay","Aylık Finans Özeti"],
+        "cek-takibi":["cek-takip-overlay","Alınan / Verilen Çekler"],
+        "fatura-raporu":["rapor-overlay","Gelişmiş Fatura Raporu"],
+        "cari-risk":["cari-risk-overlay","Cari Bakiye Raporu"],
+        "genel-hareket":["genel-hareket-overlay","Genel Hareket Defteri"],
+        "vade-analizi":["vade-analiz-overlay","Borç / Alacak Vade Analizi"],
+        "nakit-tahmin":["nakit-tahmin-overlay","Nakit Akış Tahmini"],
+        "kdv-ozeti":["kdv-ozet-overlay","KDV Durum Özeti"],
+        "kullanicilar":["kullanici-yonetim-overlay","Kullanıcılar ve Yetkiler"],
+        "islem-gecmisi":["islem-gecmisi-overlay","İşlem Geçmişi"],
+        "bulut-yedekleri":["bulut-yedekleri-overlay","Bulut Yedekleri"]
+      };
+      const modulSayfasi = modulSayfalari[islem];
+      if (modulSayfasi) modulEkraniniAnaAlanaAc(modulSayfasi[0], modulSayfasi[1]);
       modulMenusuAktiflestir(dugme);
       modulPaneliniKapat();
     }
@@ -11592,6 +11757,7 @@
           islemGecmisiniKapat();
           bulutYedekleriniKapat();
           cakismaYedekleriniKapat();
+          modulCalismaAlaniniKapat(false);
           modulPaneliniKapat();
         }
       });
