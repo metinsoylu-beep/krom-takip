@@ -753,6 +753,22 @@
     .aylik-ozet-yon.giris { color:#4ade80; font-weight:750; }
     .aylik-ozet-yon.cikis { color:#ff6b77; font-weight:750; }
     .aylik-ozet-tutar { color:#eaf2f8; font-weight:750; text-align:right; }
+    .kdv-ozet-kart { width:min(1100px,100%); max-width:1100px; border-top-color:#60a5fa; }
+    .kdv-ozet-kart .odeme-yonetim-baslik i { color:#7dd3fc; }
+    .kdv-ozet-kart .aylik-ozet-filtre input[type=month]:focus { border-color:#60a5fa; box-shadow:0 0 0 2px #60a5fa1f; }
+    .kdv-sonuc.odenecek strong { color:#ff6b77; }
+    .kdv-sonuc.devreden strong { color:#4ade80; }
+    .kdv-sonuc.dengede strong { color:#7dd3fc; }
+    .kdv-eksik-uyari {
+      margin:12px 18px 0; padding:10px 12px; border:1px solid #f59e0b55; border-radius:7px;
+      background:#f59e0b10; color:#f8d27a; font-size:9px; line-height:1.5;
+    }
+    .kdv-eksik-uyari[hidden] { display:none; }
+    .kdv-eksik-uyari i { margin-right:6px; }
+    .kdv-oran-rozet { display:inline-flex; min-width:38px; justify-content:center; padding:4px 7px; border:1px solid #60a5fa55; border-radius:999px; background:#60a5fa12; color:#93c5fd; font-weight:800; }
+    .kdv-matrah { color:#cbd5e1; text-align:right; }
+    .kdv-hesaplanan { color:#ff8791; font-weight:750; text-align:right; }
+    .kdv-indirilecek { color:#68e394; font-weight:750; text-align:right; }
     .cek-takip-kart { width: min(1180px,100%); max-width: 1180px; border-top-color: #a78bfa; }
     .cek-takip-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .cek-takip-ust-islemler { display: flex; align-items: center; gap: 8px; }
@@ -1393,6 +1409,7 @@
       .aylik-ozet-kartlar .aylik-metrik:last-child { grid-column:1 / -1; }
       .aylik-ozet-not { margin:12px 12px 0; }
       .aylik-ozet-tablo-wrap { margin:12px; }
+      .kdv-eksik-uyari { margin:12px 12px 0; }
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
@@ -2324,6 +2341,39 @@
     </section>
   </div>
 
+  <!-- KDV DURUM ÖZETİ -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="kdv-ozet-overlay">
+    <section class="popup-kutu odeme-yonetim-kart kdv-ozet-kart" role="dialog" aria-modal="true" aria-labelledby="kdv-ozet-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="kdv-ozet-baslik"><i class="fa-solid fa-percent" aria-hidden="true"></i> KDV Durum Özeti</h2>
+          <p class="odeme-yonetim-alt">Alış ve satış faturalarındaki kalemlerden aylık tahmini KDV farkını hesaplar.</p>
+        </div>
+        <div class="cari-ust-islemler">
+          <button class="cek-takip-csv" type="button" onclick="kdvOzetiCsvIndir()"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV İndir</button>
+          <button class="modal-kapat" type="button" onclick="kdvOzetiniKapat()" aria-label="KDV durum özetini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="aylik-ozet-filtre">
+        <div class="odeme-form-alan"><label for="kdv-ozet-ay">RAPOR AYI</label><input id="kdv-ozet-ay" type="month" onchange="kdvOzetiniGoster()"/></div>
+        <div class="aylik-ozet-donem" id="kdv-ozet-donem">Fatura tarihine göre seçilen takvim ayı esas alınır.</div>
+      </div>
+      <div class="aylik-ozet-bolum">
+        <div class="aylik-ozet-bolum-baslik"><h3><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> Dönem KDV Karşılaştırması</h3><span>Yalnızca ürün/hizmet kalemi bulunan faturalar</span></div>
+        <div class="aylik-ozet-kartlar">
+          <div class="aylik-metrik" style="--aylik-renk:#67cdfa"><span>SATIŞ MATRAHI</span><strong id="kdv-satis-matrah">0 ₺</strong></div>
+          <div class="aylik-metrik" style="--aylik-renk:#ff8791"><span>HESAPLANAN KDV</span><strong id="kdv-hesaplanan">0 ₺</strong></div>
+          <div class="aylik-metrik" style="--aylik-renk:#f6c95c"><span>ALIŞ MATRAHI</span><strong id="kdv-alis-matrah">0 ₺</strong></div>
+          <div class="aylik-metrik" style="--aylik-renk:#68e394"><span>İNDİRİLECEK KDV</span><strong id="kdv-indirilecek">0 ₺</strong></div>
+          <div class="aylik-metrik kdv-sonuc dengede" id="kdv-sonuc-kart" style="--aylik-renk:#7dd3fc"><span id="kdv-sonuc-etiket">DÖNEM KDV FARKI</span><strong id="kdv-net">0 ₺</strong></div>
+        </div>
+      </div>
+      <div class="kdv-eksik-uyari" id="kdv-eksik-uyari" hidden><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span id="kdv-eksik-metin"></span></div>
+      <div class="aylik-ozet-tablo-wrap" id="kdv-ozet-tablo-wrap"></div>
+      <div class="aylik-ozet-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Bu özet ön muhasebe kontrolü içindir. Önceki dönem devreden KDV, istisna, iade ve mali müşavir düzeltmeleri hesaba katılmaz; resmi beyanname yerine kullanılamaz.</div>
+    </section>
+  </div>
+
   <!-- ÇEK TAKİP MERKEZİ -->
   <div class="popup-overlay odeme-yonetim-overlay" id="cek-takip-overlay">
     <section class="popup-kutu odeme-yonetim-kart cek-takip-kart" role="dialog" aria-modal="true" aria-labelledby="cek-takip-baslik">
@@ -2808,6 +2858,7 @@
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="hizli-istatistikler" onclick="modulNavigasyon('hizli-istatistikler',this)"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Hızlı İstatistikler</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="fatura-raporu" onclick="modulNavigasyon('fatura-raporu',this)"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Gelişmiş Fatura Raporu</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="kdv-ozeti" onclick="modulNavigasyon('kdv-ozeti',this)"><i class="fa-solid fa-percent" aria-hidden="true"></i><span>KDV Durum Özeti</span></button>
           <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="csv-aktar" onclick="modulNavigasyon('csv-aktar',this)"><i class="fa-solid fa-file-csv" aria-hidden="true"></i><span>CSV Dışa Aktar</span></button>
         </div>
       </details>
@@ -4268,6 +4319,7 @@
               id:      Number(row["id"]),
               no:      String(row["Fatura No"]  || row["no"]    || ""),
               cari:    String(row["Cari/Firma"] || row["Cari"] || row["cari"] || "").trim(),
+              faturaTuru:faturaTurunuNormallestir(row["Fatura Türü"] || row["faturaTuru"] || row["tur"]),
               tarih:   String(row["Tarih"]      || row["tarih"] || ""),
               vadeGun: vadeGunSayi,
               tutar:   String(row["Tutar"]      || row["tutar"] || "0"),
@@ -4276,6 +4328,9 @@
               takipKapali:takipKapaliMi(takipDurumu),
               kapanisTarihi:String(kapanisTarihi).split("T")[0],
               odemeler,
+              kalemler:Array.isArray(row["kalemler"])
+                ? row["kalemler"]
+                : (Array.isArray(row["Fatura Kalemleri"]) ? row["Fatura Kalemleri"] : []),
             };
           });
           const { liste, kaldirilan } = faturalariTekillestir(hamListe);
@@ -4284,6 +4339,7 @@
           localStorage.setItem(ANAHTAR, JSON.stringify(liste));
           cariSecenekleriniGuncelle();
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
+          if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
           if (kaldirilan > 0) {
             syncGoster(`${liste.length} fatura yüklendi · ${kaldirilan} yinelenen kayıt temizlendi`, "#4ade80", { bulutBasarili:true });
             if (yoneticiMi()) buludaKaydet(liste);
@@ -4295,6 +4351,7 @@
           syncGoster("Google Sheets'te fatura bulunamadı", "#94a3b8", { bulutBasarili:true });
           cariSecenekleriniGuncelle();
           listeyiGoster(); ozetGuncelle(); rozetGuncelle();
+          if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
         }
       } catch(e) {
         if (["AUTH_REQUIRED", "AUTH_INVALID", "ACCESS_DENIED"].includes(e?.code)) {
@@ -6577,6 +6634,7 @@
       if (document.getElementById("hesap-transfer-overlay")?.classList.contains("aktif")) hesapTransferleriniGoster();
       if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
       if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
+      if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
       if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       return guvenliDurum;
     }
@@ -8891,6 +8949,140 @@
       syncGoster(`${rapor.ay} aylık finans özeti indirildi`, "#4ade80");
     }
 
+    function kdvOzetiniHesapla(ay, faturalar=faturaYukle()) {
+      const bugunAyi = bugununTarihi().slice(0,7);
+      const ayMetni = /^\d{4}-(0[1-9]|1[0-2])$/.test(String(ay || "")) ? String(ay) : bugunAyi;
+      const [yil, ayNo] = ayMetni.split("-").map(Number);
+      const baslangic = `${ayMetni}-01`;
+      const sonrakiAy = bugununTarihi(new Date(yil, ayNo, 1)).slice(0,7) + "-01";
+      const bitis = bugununTarihi(new Date(yil, ayNo, 0));
+      const yuvarla = deger => Math.round((Number(deger) || 0) * 100) / 100;
+      const oranHaritasi = new Map([0,1,10,20].map(oran=>[oran,{ oran, satisMatrah:0, hesaplananKdv:0, alisMatrah:0, indirilecekKdv:0 }]));
+      let satisMatrah = 0;
+      let hesaplananKdv = 0;
+      let alisMatrah = 0;
+      let indirilecekKdv = 0;
+      let donemFaturaSayisi = 0;
+      let hesaplananFaturaSayisi = 0;
+      let eksikSayisi = 0;
+      let eksikBrutTutar = 0;
+
+      const faturaListesi = faturalariTekillestir(Array.isArray(faturalar) ? faturalar : []).liste;
+      faturaListesi.forEach(fatura=>{
+        const tarih = String(fatura.tarih || "").split("T")[0];
+        if (!tarihGecerliMi(tarih) || tarih < baslangic || tarih >= sonrakiAy) return;
+        donemFaturaSayisi += 1;
+        const kalemler = faturaKalemleriniNormallestir(fatura.kalemler);
+        if (!kalemler.length) {
+          eksikSayisi += 1;
+          eksikBrutTutar += tutarSayiyaCevir(fatura.tutar);
+          return;
+        }
+        hesaplananFaturaSayisi += 1;
+        const satisMi = faturaTurunuNormallestir(fatura.faturaTuru) === "satis";
+        kalemler.forEach(kalem=>{
+          const satir = oranHaritasi.get(kalem.kdvOrani) || { oran:kalem.kdvOrani, satisMatrah:0, hesaplananKdv:0, alisMatrah:0, indirilecekKdv:0 };
+          if (satisMi) {
+            satisMatrah += kalem.netTutar;
+            hesaplananKdv += kalem.kdvTutari;
+            satir.satisMatrah += kalem.netTutar;
+            satir.hesaplananKdv += kalem.kdvTutari;
+          } else {
+            alisMatrah += kalem.netTutar;
+            indirilecekKdv += kalem.kdvTutari;
+            satir.alisMatrah += kalem.netTutar;
+            satir.indirilecekKdv += kalem.kdvTutari;
+          }
+          oranHaritasi.set(kalem.kdvOrani,satir);
+        });
+      });
+
+      satisMatrah = yuvarla(satisMatrah);
+      hesaplananKdv = yuvarla(hesaplananKdv);
+      alisMatrah = yuvarla(alisMatrah);
+      indirilecekKdv = yuvarla(indirilecekKdv);
+      const net = yuvarla(hesaplananKdv - indirilecekKdv);
+      const sonucTuru = net > 0.005 ? "odenecek" : net < -0.005 ? "devreden" : "dengede";
+      const sonucEtiketi = sonucTuru === "odenecek" ? "TAHMİNİ ÖDENECEK KDV" : sonucTuru === "devreden" ? "TAHMİNİ DEVREDEN KDV" : "DÖNEM KDV FARKI";
+      const oranlar = [...oranHaritasi.values()]
+        .map(satir=>({
+          ...satir,
+          satisMatrah:yuvarla(satir.satisMatrah),
+          hesaplananKdv:yuvarla(satir.hesaplananKdv),
+          alisMatrah:yuvarla(satir.alisMatrah),
+          indirilecekKdv:yuvarla(satir.indirilecekKdv)
+        }))
+        .filter(satir=>satir.satisMatrah || satir.hesaplananKdv || satir.alisMatrah || satir.indirilecekKdv)
+        .sort((a,b)=>a.oran-b.oran);
+
+      return {
+        ay:ayMetni, baslangic, bitis,
+        satisMatrah, hesaplananKdv, alisMatrah, indirilecekKdv,
+        net, sonucTuru, sonucEtiketi, sonucTutar:Math.abs(net), oranlar,
+        donemFaturaSayisi, hesaplananFaturaSayisi, eksikSayisi, eksikBrutTutar:yuvarla(eksikBrutTutar)
+      };
+    }
+
+    function kdvOzetiniGoster() {
+      const ayAlani = document.getElementById("kdv-ozet-ay");
+      const rapor = kdvOzetiniHesapla(ayAlani?.value || "");
+      if (ayAlani) ayAlani.value = rapor.ay;
+      document.getElementById("kdv-ozet-donem").textContent = `${formatTarih(tarihOlusturYerel(rapor.baslangic))} – ${formatTarih(tarihOlusturYerel(rapor.bitis))} · ${rapor.hesaplananFaturaSayisi}/${rapor.donemFaturaSayisi} fatura hesaplandı`;
+      document.getElementById("kdv-satis-matrah").textContent = formatPara(rapor.satisMatrah);
+      document.getElementById("kdv-hesaplanan").textContent = formatPara(rapor.hesaplananKdv);
+      document.getElementById("kdv-alis-matrah").textContent = formatPara(rapor.alisMatrah);
+      document.getElementById("kdv-indirilecek").textContent = formatPara(rapor.indirilecekKdv);
+      document.getElementById("kdv-sonuc-etiket").textContent = rapor.sonucEtiketi;
+      document.getElementById("kdv-net").textContent = formatPara(rapor.sonucTutar);
+      const sonucKarti = document.getElementById("kdv-sonuc-kart");
+      if (sonucKarti) sonucKarti.className = `aylik-metrik kdv-sonuc ${rapor.sonucTuru}`;
+      const uyari = document.getElementById("kdv-eksik-uyari");
+      const uyariMetni = document.getElementById("kdv-eksik-metin");
+      if (uyari) uyari.hidden = rapor.eksikSayisi === 0;
+      if (uyariMetni) uyariMetni.textContent = rapor.eksikSayisi ? `${rapor.eksikSayisi} eski faturada ürün/hizmet kalemi bulunmadığı için ${formatPara(rapor.eksikBrutTutar)} tutarındaki kayıt KDV hesabına dahil edilmedi.` : "";
+      const tablo = document.getElementById("kdv-ozet-tablo-wrap");
+      if (!tablo) return rapor;
+      tablo.innerHTML = rapor.oranlar.length ? `<table class="aylik-ozet-tablo"><thead><tr><th>KDV ORANI</th><th style="text-align:right">SATIŞ MATRAHI</th><th style="text-align:right">HESAPLANAN KDV</th><th style="text-align:right">ALIŞ MATRAHI</th><th style="text-align:right">İNDİRİLECEK KDV</th></tr></thead><tbody>${rapor.oranlar.map(satir=>`<tr><td><span class="kdv-oran-rozet">%${satir.oran}</span></td><td class="kdv-matrah">${formatPara(satir.satisMatrah)}</td><td class="kdv-hesaplanan">${formatPara(satir.hesaplananKdv)}</td><td class="kdv-matrah">${formatPara(satir.alisMatrah)}</td><td class="kdv-indirilecek">${formatPara(satir.indirilecekKdv)}</td></tr>`).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-percent" aria-hidden="true"></i><br>Bu ay için kalem ayrıntılı fatura bulunamadı.</div>';
+      return rapor;
+    }
+
+    function kdvOzetiniAc() {
+      const ayAlani = document.getElementById("kdv-ozet-ay");
+      if (ayAlani && !/^\d{4}-(0[1-9]|1[0-2])$/.test(ayAlani.value)) ayAlani.value = bugununTarihi().slice(0,7);
+      kdvOzetiniGoster();
+      document.getElementById("kdv-ozet-overlay")?.classList.add("aktif");
+    }
+
+    function kdvOzetiniKapat() {
+      document.getElementById("kdv-ozet-overlay")?.classList.remove("aktif");
+    }
+
+    function kdvOzetiCsvIndir() {
+      const rapor = kdvOzetiniHesapla(document.getElementById("kdv-ozet-ay")?.value || "");
+      const satirlar = [
+        ["KDV Durum Özeti",rapor.ay],
+        ["Dönem",`${rapor.baslangic} / ${rapor.bitis}`],
+        ["Hesaplanan Fatura",`${rapor.hesaplananFaturaSayisi} / ${rapor.donemFaturaSayisi}`],
+        ["Kalemsiz Eski Fatura",rapor.eksikSayisi],
+        [],
+        ["ÖZET","Tutar (TL)"],
+        ["Satış Matrahı",rapor.satisMatrah.toFixed(2).replace(".",",")],
+        ["Hesaplanan KDV",rapor.hesaplananKdv.toFixed(2).replace(".",",")],
+        ["Alış Matrahı",rapor.alisMatrah.toFixed(2).replace(".",",")],
+        ["İndirilecek KDV",rapor.indirilecekKdv.toFixed(2).replace(".",",")],
+        [rapor.sonucEtiketi,rapor.sonucTutar.toFixed(2).replace(".",",")],
+        [],
+        ["KDV Oranı","Satış Matrahı","Hesaplanan KDV","Alış Matrahı","İndirilecek KDV"],
+        ...rapor.oranlar.map(satir=>[`%${satir.oran}`,satir.satisMatrah.toFixed(2).replace(".",","),satir.hesaplananKdv.toFixed(2).replace(".",","),satir.alisMatrah.toFixed(2).replace(".",","),satir.indirilecekKdv.toFixed(2).replace(".",",")])
+      ];
+      const adres = URL.createObjectURL(new Blob(["\uFEFF" + satirlar.map(satir=>satir.map(csvHucre).join(";")).join("\r\n")], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `kdv-durum-ozeti-${rapor.ay}.csv`;
+      document.body.appendChild(baglanti); baglanti.click(); baglanti.remove(); URL.revokeObjectURL(adres);
+      syncGoster(`${rapor.ay} KDV durum özeti indirildi`, "#4ade80");
+    }
+
     function gelirGiderKategoriSecenekleriniGuncelle() {
       const alan = document.getElementById("gelir-gider-kategorileri");
       const giris = document.getElementById("gelir-gider-kategori");
@@ -10038,6 +10230,7 @@
         case "aylik-ozet": aylikFinansOzetiniAc(); break;
         case "cek-takibi": cekTakibiniAc(); break;
         case "fatura-raporu": raporAc(); break;
+        case "kdv-ozeti": kdvOzetiniAc(); break;
         case "csv-aktar": csvRaporIndir(); break;
         case "kullanicilar": kullaniciPaneliniAc(); break;
         case "islem-gecmisi": islemGecmisiniAc(); break;
@@ -10107,6 +10300,9 @@
       document.getElementById("aylik-ozet-overlay")?.addEventListener("click", e => {
         if (e.target.id === "aylik-ozet-overlay") aylikFinansOzetiniKapat();
       });
+      document.getElementById("kdv-ozet-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "kdv-ozet-overlay") kdvOzetiniKapat();
+      });
       document.getElementById("cek-takip-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cek-takip-overlay") cekTakibiniKapat();
       });
@@ -10141,6 +10337,7 @@
           hesapHareketDokumunuKapat();
           gelirGiderMerkeziniKapat();
           aylikFinansOzetiniKapat();
+          kdvOzetiniKapat();
           cekTakibiniKapat();
           cariKartFormunuKapat();
           cariEkstreKapat();
