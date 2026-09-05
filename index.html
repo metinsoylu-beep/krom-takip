@@ -1666,10 +1666,22 @@
       color: #fff4c7; background: #5b4518; border-color: #e6a91f9c;
       filter: drop-shadow(0 0 6px #e6a91f55);
     }
-    .modul-grup { margin: 2px 0; border-top: 1px solid #13283c; }
+    .modul-grup {
+      --grup-renk: #38bdf8;
+      margin: 3px 0; border: 1px solid transparent; border-radius: 9px;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .modul-grup:nth-of-type(1) { --grup-renk: #38bdf8; }
+    .modul-grup:nth-of-type(2) { --grup-renk: #34d399; }
+    .modul-grup:nth-of-type(3) { --grup-renk: #a78bfa; }
+    .modul-grup:nth-of-type(4) { --grup-renk: #f6c453; }
+    .modul-grup:nth-of-type(5) { --grup-renk: #fb923c; }
+    .modul-grup:nth-of-type(6) { --grup-renk: #f472b6; }
+    .modul-grup:nth-of-type(7) { --grup-renk: #60a5fa; }
+    .modul-grup:nth-of-type(8) { --grup-renk: #94a3b8; }
     .modul-grup summary {
       min-height: 41px; display: flex; align-items: center; gap: 9px; padding: 8px 10px;
-      border-radius: 7px; color: #ffffff; font-size: 10.5px; font-weight: 780; letter-spacing: .5px;
+      border: 1px solid transparent; border-radius: 7px; color: #ffffff; font-size: 10.5px; font-weight: 780; letter-spacing: .5px;
       text-shadow: 0 0 8px #ffffff18;
       text-transform: uppercase; cursor: pointer; list-style: none; user-select: none;
       transition: background .16s ease, color .16s ease, box-shadow .16s ease;
@@ -1677,32 +1689,41 @@
     .modul-grup summary::-webkit-details-marker { display: none; }
     .modul-grup summary i:first-child {
       width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 25px;
-      border: 1px solid #46627b; border-radius: 7px; background: #17324c;
-      color: #d8e7f4; font-size: 13px; text-align: center;
+      border: 1px solid color-mix(in srgb,var(--grup-renk) 46%,#294159); border-radius: 7px;
+      background: color-mix(in srgb,var(--grup-renk) 12%,#17324c);
+      color: var(--grup-renk); font-size: 13px; text-align: center;
       box-shadow: inset 0 1px 0 #ffffff10, 0 3px 8px #02091435;
       transition: color .16s ease, background .16s ease, border-color .16s ease,
         transform .16s ease, filter .16s ease;
     }
     .modul-grup summary:hover {
-      background: linear-gradient(90deg, #e6a91f12, #112c46); color: #f2f6fa;
-      box-shadow: inset 2px 0 0 #e6a91f75;
+      background: linear-gradient(90deg, color-mix(in srgb,var(--grup-renk) 15%,transparent), #112c46);
+      border-color: color-mix(in srgb,var(--grup-renk) 35%,transparent); color: #fff;
+      box-shadow: inset 3px 0 0 var(--grup-renk), 0 4px 12px #02091438;
     }
     .modul-grup summary:hover i:first-child,
     .modul-grup[open] summary i:first-child {
-      color: #fff2c3; background: #5b4518; border-color: #e6a91f99;
-      transform: scale(1.1); filter: drop-shadow(0 0 7px #e6a91f62);
+      color: #fff; background: color-mix(in srgb,var(--grup-renk) 30%,#10243a);
+      border-color: var(--grup-renk); transform: scale(1.1);
+      filter: drop-shadow(0 0 7px color-mix(in srgb,var(--grup-renk) 55%,transparent));
+    }
+    .modul-grup[open] {
+      margin-block: 6px; background: color-mix(in srgb,var(--grup-renk) 8%,#071625);
+      border-color: color-mix(in srgb,var(--grup-renk) 58%,#294159);
+      box-shadow: 0 8px 22px #02091466, inset 0 0 18px color-mix(in srgb,var(--grup-renk) 6%,transparent);
     }
     .modul-grup[open] summary {
-      background: linear-gradient(90deg, #e6a91f18, #102a43); color: #ffffff;
-      box-shadow: inset 2px 0 0 var(--altin);
+      background: linear-gradient(90deg, color-mix(in srgb,var(--grup-renk) 28%,#102a43), #102a43);
+      border-color: color-mix(in srgb,var(--grup-renk) 42%,transparent); color: #ffffff;
+      box-shadow: inset 4px 0 0 var(--grup-renk), 0 5px 16px #02091455;
     }
     .modul-grup summary::after {
       content: "\f078"; margin-left: auto; color: #587086;
       font: 700 8px/1 "Font Awesome 6 Free"; transition: transform .18s ease;
     }
     .modul-grup:not([open]) summary::after { transform: rotate(-90deg); }
-    .modul-grup[open] summary::after { color: var(--menu-vurgu); }
-    .modul-grup-icerik { padding: 0 0 5px 9px; }
+    .modul-grup[open] summary::after { color: var(--grup-renk); }
+    .modul-grup-icerik { margin: 3px 7px 6px 17px; padding: 1px 0 1px 7px; border-left: 1px solid color-mix(in srgb,var(--grup-renk) 48%,transparent); }
     .modul-grup[open] .modul-grup-icerik { animation: modulAltMenuAc .16s ease-out; }
     @keyframes modulAltMenuAc {
       from { opacity: 0; transform: translateY(-3px); }
@@ -1710,7 +1731,21 @@
     }
     .modul-alt-baglanti { position: relative; min-height: 40px; padding-left: 14px; color: #ffffff; font-weight: 620; }
     .modul-alt-baglanti::before {
-      content: ""; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: #375069;
+      content: ""; position: absolute; left: -8px; top: 50%; width: 7px; height: 1px;
+      background: color-mix(in srgb,var(--grup-renk) 65%,#375069);
+    }
+    .modul-grup .modul-alt-baglanti:hover {
+      background: linear-gradient(90deg, color-mix(in srgb,var(--grup-renk) 14%,transparent), var(--menu-yuzey-hover));
+      border-color: color-mix(in srgb,var(--grup-renk) 38%,transparent);
+    }
+    .modul-grup .modul-alt-baglanti.aktif {
+      background: linear-gradient(90deg, color-mix(in srgb,var(--grup-renk) 24%,transparent), var(--menu-yuzey));
+      border-color: color-mix(in srgb,var(--grup-renk) 58%,transparent);
+      box-shadow: inset 3px 0 0 var(--grup-renk), 0 4px 12px #02091440;
+    }
+    .modul-grup .modul-alt-baglanti.aktif i {
+      color: #fff; background: color-mix(in srgb,var(--grup-renk) 32%,#10243a); border-color: var(--grup-renk);
+      filter: drop-shadow(0 0 6px color-mix(in srgb,var(--grup-renk) 52%,transparent));
     }
     .modul-alt-baglanti span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .modul-panel-alt {
@@ -10858,6 +10893,17 @@
       else modulPaneliniAc();
     }
 
+    function modulMenuGruplariniHazirla() {
+      document.querySelectorAll(".modul-grup").forEach(grup => {
+        grup.addEventListener("toggle", () => {
+          if (!grup.open) return;
+          document.querySelectorAll(".modul-grup[open]").forEach(digerGrup => {
+            if (digerGrup !== grup) digerGrup.removeAttribute("open");
+          });
+        });
+      });
+    }
+
     function modulMenusuAktiflestir(dugme) {
       if (!dugme) return;
       document.querySelectorAll(".modul-ana-baglanti,.modul-alt-baglanti").forEach(eleman => eleman.classList.remove("aktif"));
@@ -10932,6 +10978,7 @@
       uygulamaBaslatildi = true;
       firmaAdiniYukle();
       document.getElementById("navbar-tarih").textContent = new Date().toLocaleDateString("tr-TR",{day:"2-digit",month:"long",year:"numeric"});
+      modulMenuGruplariniHazirla();
       window.addEventListener("resize", () => { if (window.innerWidth > 1180) modulPaneliniKapat(); });
       cariSecenekleriniGuncelle();
       finansHesabiSecenekleriniGuncelle();

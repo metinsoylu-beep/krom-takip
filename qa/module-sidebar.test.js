@@ -40,15 +40,19 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
 
 assert.doesNotMatch(index, /<details class="modul-grup"\s+open>/, "Modül grupları uygulama açılışında kapalı olmalı");
 assert.match(index, /\.modul-ana-baglanti:hover, \.modul-alt-baglanti:hover[\s\S]*?transform: translateX\(3px\)/, "Menü bağlantıları imleçle belirgin geri bildirim vermeli");
-assert.match(index, /\.modul-grup summary:hover[\s\S]*?var\(--menu-vurgu\)/, "Menü grup başlıkları tema rengiyle hover hissi vermeli");
+assert.match(index, /\.modul-grup summary:hover[\s\S]*?var\(--grup-renk\)/, "Menü grup başlıkları kendi vurgu rengiyle hover hissi vermeli");
 assert.match(index, /--menu-metin: #ffffff/, "Açılır menü bağlantı metinleri beyaz olmalı");
 assert.match(index, /\.modul-grup summary \{[\s\S]*?color: #ffffff/, "Açılır menü grup başlıkları beyaz olmalı");
 assert.match(index, /\.modul-ana-baglanti \{[\s\S]*?font-size: 12px/, "Ana menü yazısı daha büyük ve okunaklı olmalı");
 assert.match(index, /\.modul-alt-baglanti \{[\s\S]*?min-height: 40px[\s\S]*?color: #ffffff/, "Alt menü yazısı parlak beyaz ve ferah olmalı");
 assert.match(index, /\.modul-ana-baglanti i, \.modul-alt-baglanti i \{[\s\S]*?width: 24px[\s\S]*?font-size: 13px/, "Menü simgeleri büyük ve belirgin olmalı");
-assert.match(index, /\.modul-grup summary i:first-child \{[\s\S]*?width: 25px[\s\S]*?background: #17324c/, "Grup simgeleri belirgin rozet görünümünde olmalı");
+assert.match(index, /\.modul-grup summary i:first-child \{[\s\S]*?width: 25px[\s\S]*?color: var\(--grup-renk\)/, "Grup simgeleri büyük ve ayırt edici renkte olmalı");
 assert.match(index, /\.modul-alt-baglanti \{[^}]*color: #ffffff/, "Açılan alt menü yazıları beyaz olmalı");
 assert.match(index, /prefers-reduced-motion: reduce/, "Menü hareketleri azaltılmış hareket tercihine saygı göstermeli");
+assert.match(index, /\.modul-grup:nth-of-type\(8\) \{ --grup-renk:/, "Her menü grubu ayırt edici bir vurgu rengine sahip olmalı");
+assert.match(index, /\.modul-grup\[open\] \{[\s\S]*?border-color:[\s\S]*?box-shadow:/, "Açık menü grubu yüzey, kenar ve gölge ile belirginleşmeli");
+assert.match(index, /\.modul-grup\[open\] summary \{[\s\S]*?inset 4px 0 0 var\(--grup-renk\)/, "Açık menü başlığı güçlü renk şeridiyle işaretlenmeli");
+assert.match(index, /function modulMenuGruplariniHazirla\(\)[\s\S]*?\.modul-grup\[open\][\s\S]*?removeAttribute\("open"\)/, "Bir grup açıldığında diğer açık gruplar kapanmalı");
 
 assert.match(index, /class="modul-alt-baglanti yalnizca-yonetici"[^>]+data-modul="kullanicilar"/, "Kullanıcı yönetimi yalnızca yöneticiye açık olmalı");
 assert.match(index, /@media \(max-width: 1180px\)[\s\S]*?body\.modul-panel-acik \.modul-panel/, "Panel küçük ekranlarda açılır menüye dönüşmeli");
