@@ -769,6 +769,34 @@
     .kdv-matrah { color:#cbd5e1; text-align:right; }
     .kdv-hesaplanan { color:#ff8791; font-weight:750; text-align:right; }
     .kdv-indirilecek { color:#68e394; font-weight:750; text-align:right; }
+    .cari-risk-kart { width:min(1180px,100%); max-width:1180px; border-top-color:#f59e0b; }
+    .cari-risk-kart .odeme-yonetim-baslik i { color:#f6c95c; }
+    .cari-risk-filtreler {
+      display:grid; grid-template-columns:minmax(220px,1fr) minmax(170px,220px); gap:10px;
+      padding:13px 18px; border-bottom:1px solid var(--cizgi-yumusak); background:#0a1a2b;
+    }
+    .cari-risk-filtreler input, .cari-risk-filtreler select {
+      width:100%; height:38px; padding:0 11px; border:1px solid var(--cizgi); border-radius:7px;
+      background:#10243a; color:#eef4fa; font:11px "Segoe UI",Arial,sans-serif; outline:none;
+    }
+    .cari-risk-filtreler input:focus, .cari-risk-filtreler select:focus { border-color:#f59e0b; box-shadow:0 0 0 2px #f59e0b1f; }
+    .cari-risk-kartlar { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:9px; padding:14px 18px 0; }
+    .cari-risk-tablo { min-width:930px; font:10px "Segoe UI",Arial,sans-serif; }
+    .cari-risk-tablo th, .cari-risk-tablo td { padding:10px 12px; vertical-align:middle; }
+    .cari-risk-firma { min-width:210px; }
+    .cari-risk-tutar { text-align:right; color:#d8e3ed; font-weight:700; }
+    .cari-risk-bekleyen { text-align:right; color:#c4b5fd; font-weight:750; }
+    .cari-risk-durum {
+      display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:999px;
+      border:1px solid var(--risk-renk); background:color-mix(in srgb,var(--risk-renk) 12%,transparent);
+      color:var(--risk-renk); font-weight:800; white-space:nowrap;
+    }
+    .cari-risk-durum::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; box-shadow:0 0 7px currentColor; }
+    .cari-risk-durum.borc { --risk-renk:#ff6b77; }
+    .cari-risk-durum.alacak { --risk-renk:#67cdfa; }
+    .cari-risk-durum.kapali { --risk-renk:#4ade80; }
+    .cari-risk-ekstre { min-height:30px; padding:5px 9px; border:1px solid #38bdf855; border-radius:6px; background:#38bdf810; color:#7dd3fc; font-weight:750; cursor:pointer; }
+    .cari-risk-ekstre:hover { background:#38bdf822; }
     .cek-takip-kart { width: min(1180px,100%); max-width: 1180px; border-top-color: #a78bfa; }
     .cek-takip-kart .odeme-yonetim-baslik i { color: #c4b5fd; }
     .cek-takip-ust-islemler { display: flex; align-items: center; gap: 8px; }
@@ -1410,6 +1438,9 @@
       .aylik-ozet-not { margin:12px 12px 0; }
       .aylik-ozet-tablo-wrap { margin:12px; }
       .kdv-eksik-uyari { margin:12px 12px 0; }
+      .cari-risk-filtreler { grid-template-columns:1fr; padding:12px; }
+      .cari-risk-kartlar { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
+      .cari-risk-kartlar .aylik-metrik:last-child { grid-column:1 / -1; }
       .ozet-kartlar { grid-template-columns: 1fr; }
       .hizli-kartlar { grid-template-columns: 1fr; }
       .hizli-kart { min-height: 72px; border-left: 4px solid var(--vurgu); }
@@ -2438,6 +2469,40 @@
     </section>
   </div>
 
+  <!-- CARİ BAKİYE RAPORU -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="cari-risk-overlay">
+    <section class="popup-kutu odeme-yonetim-kart cari-risk-kart" role="dialog" aria-modal="true" aria-labelledby="cari-risk-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="cari-risk-baslik"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i> Cari Bakiye Raporu</h2>
+          <p class="odeme-yonetim-alt">Firmaları toplam cari borç ve alacak bakiyesine göre karşılaştırır.</p>
+        </div>
+        <div class="cari-ust-islemler">
+          <button class="cek-takip-csv" type="button" onclick="cariRiskRaporuCsvIndir()"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV İndir</button>
+          <button class="modal-kapat" type="button" onclick="cariRiskRaporunuKapat()" aria-label="Cari bakiye raporunu kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="cari-risk-filtreler">
+        <input id="cari-risk-arama" type="search" placeholder="Cari veya firma ara" oninput="cariRiskRaporunuGoster()" aria-label="Cari bakiye raporunda ara"/>
+        <select id="cari-risk-durum" onchange="cariRiskRaporunuGoster()" aria-label="Bakiye durumunu seç">
+          <option value="tumu">Tüm bakiyeler</option>
+          <option value="borc">Borç bakiyesi olanlar</option>
+          <option value="alacak">Alacak bakiyesi olanlar</option>
+          <option value="kapali">Kapalı hesaplar</option>
+        </select>
+      </div>
+      <div class="cari-risk-kartlar">
+        <div class="aylik-metrik" style="--aylik-renk:#ff6b77"><span>TOPLAM BORÇ BAKİYESİ</span><strong id="cari-risk-borc">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#67cdfa"><span>TOPLAM ALACAK BAKİYESİ</span><strong id="cari-risk-alacak">0 ₺</strong></div>
+        <div class="aylik-metrik" id="cari-risk-net-kart" style="--aylik-renk:#f6c95c"><span id="cari-risk-net-etiket">NET CARİ BAKİYE</span><strong id="cari-risk-net">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#c4b5fd"><span>VADESİ BEKLEYEN ÇEK</span><strong id="cari-risk-cek">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#4ade80"><span>KAPALI HESAP</span><strong id="cari-risk-kapali">0</strong></div>
+      </div>
+      <div class="aylik-ozet-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Ödeme ve çekler tek tek faturalara dağıtılmaz; rapor firmanın tüm cari hareketlerinden oluşan net bakiyeyi esas alır.</div>
+      <div class="aylik-ozet-tablo-wrap" id="cari-risk-tablo-wrap"></div>
+    </section>
+  </div>
+
   <!-- ÇEK TAKİP MERKEZİ -->
   <div class="popup-overlay odeme-yonetim-overlay" id="cek-takip-overlay">
     <section class="popup-kutu odeme-yonetim-kart cek-takip-kart" role="dialog" aria-modal="true" aria-labelledby="cek-takip-baslik">
@@ -2924,6 +2989,7 @@
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="hizli-istatistikler" onclick="modulNavigasyon('hizli-istatistikler',this)"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Hızlı İstatistikler</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="fatura-raporu" onclick="modulNavigasyon('fatura-raporu',this)"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Gelişmiş Fatura Raporu</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="cari-risk" onclick="modulNavigasyon('cari-risk',this)"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>Cari Bakiye Raporu</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="kdv-ozeti" onclick="modulNavigasyon('kdv-ozeti',this)"><i class="fa-solid fa-percent" aria-hidden="true"></i><span>KDV Durum Özeti</span></button>
           <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="csv-aktar" onclick="modulNavigasyon('csv-aktar',this)"><i class="fa-solid fa-file-csv" aria-hidden="true"></i><span>CSV Dışa Aktar</span></button>
         </div>
@@ -4353,6 +4419,7 @@
         if (document.getElementById("hesap-transfer-overlay")?.classList.contains("aktif")) hesapTransferleriniGoster();
         if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
         if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
+        if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
         if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
 
         if (Array.isArray(data) && data.length > 0) {
@@ -6758,6 +6825,7 @@
       if (document.getElementById("hesap-dokum-overlay")?.classList.contains("aktif")) hesapHareketDokumunuGoster();
       if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
       if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
+      if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
       if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       return guvenliDurum;
     }
@@ -9206,6 +9274,121 @@
       syncGoster(`${rapor.ay} KDV durum özeti indirildi`, "#4ade80");
     }
 
+    function cariRiskRaporunuHesapla(hesaplar=cariOzetleriniHesapla()) {
+      const yuvarla = deger => Math.round((Number(deger) || 0) * 100) / 100;
+      const satirlar = (Array.isArray(hesaplar) ? hesaplar : []).map(hesap=>{
+        const bakiye = yuvarla(hesap?.bakiye);
+        const durum = bakiye > 0.005 ? "borc" : bakiye < -0.005 ? "alacak" : "kapali";
+        return {
+          cari:String(hesap?.cari || "Belirtilmedi").trim() || "Belirtilmedi",
+          kartId:String(hesap?.kartId || ""),
+          borcToplami:yuvarla(hesap?.borcToplami),
+          alacakToplami:yuvarla(hesap?.alacakToplami),
+          bekleyenCek:yuvarla(hesap?.bekleyenCek),
+          bakiye,
+          bakiyeTutari:yuvarla(Math.abs(bakiye)),
+          durum
+        };
+      }).sort((a,b)=>b.bakiyeTutari-a.bakiyeTutari || b.bekleyenCek-a.bekleyenCek || a.cari.localeCompare(b.cari,"tr"));
+      const toplamBorcBakiyesi = yuvarla(satirlar.reduce((toplam,satir)=>toplam+(satir.bakiye>0 ? satir.bakiye : 0),0));
+      const toplamAlacakBakiyesi = yuvarla(satirlar.reduce((toplam,satir)=>toplam+(satir.bakiye<0 ? Math.abs(satir.bakiye) : 0),0));
+      const netBakiye = yuvarla(toplamBorcBakiyesi-toplamAlacakBakiyesi);
+      return {
+        satirlar,
+        toplamBorcBakiyesi,
+        toplamAlacakBakiyesi,
+        netBakiye,
+        netBakiyeTutari:yuvarla(Math.abs(netBakiye)),
+        netDurum:netBakiye>0.005 ? "borc" : netBakiye<-0.005 ? "alacak" : "kapali",
+        bekleyenCekToplami:yuvarla(satirlar.reduce((toplam,satir)=>toplam+satir.bekleyenCek,0)),
+        kapaliHesapSayisi:satirlar.filter(satir=>satir.durum === "kapali").length
+      };
+    }
+
+    function cariRiskSatirlariniFiltrele(satirlar, arama="", durum="tumu") {
+      const aranan = String(arama || "").trim().toLocaleUpperCase("tr-TR");
+      const durumFiltresi = ["borc","alacak","kapali"].includes(durum) ? durum : "tumu";
+      return (Array.isArray(satirlar) ? satirlar : []).filter(satir=>
+        (!aranan || satir.cari.toLocaleUpperCase("tr-TR").includes(aranan)) &&
+        (durumFiltresi === "tumu" || satir.durum === durumFiltresi)
+      );
+    }
+
+    function cariRiskRaporunuGoster() {
+      const rapor = cariRiskRaporunuHesapla();
+      document.getElementById("cari-risk-borc").textContent = formatPara(rapor.toplamBorcBakiyesi);
+      document.getElementById("cari-risk-alacak").textContent = formatPara(rapor.toplamAlacakBakiyesi);
+      document.getElementById("cari-risk-net").textContent = formatPara(rapor.netBakiyeTutari);
+      document.getElementById("cari-risk-cek").textContent = formatPara(rapor.bekleyenCekToplami);
+      document.getElementById("cari-risk-kapali").textContent = rapor.kapaliHesapSayisi.toLocaleString("tr-TR");
+      const netEtiket = rapor.netDurum === "borc" ? "NET BORÇ BAKİYESİ" : rapor.netDurum === "alacak" ? "NET ALACAK BAKİYESİ" : "NET CARİ BAKİYE";
+      const netRenk = rapor.netDurum === "borc" ? "#ff6b77" : rapor.netDurum === "alacak" ? "#67cdfa" : "#4ade80";
+      document.getElementById("cari-risk-net-etiket").textContent = netEtiket;
+      document.getElementById("cari-risk-net-kart")?.style.setProperty("--aylik-renk",netRenk);
+      const arama = document.getElementById("cari-risk-arama")?.value || "";
+      const durum = document.getElementById("cari-risk-durum")?.value || "tumu";
+      const satirlar = cariRiskSatirlariniFiltrele(rapor.satirlar,arama,durum);
+      const tablo = document.getElementById("cari-risk-tablo-wrap");
+      if (!tablo) return rapor;
+      tablo.innerHTML = satirlar.length ? `<table class="cari-risk-tablo"><thead><tr><th>CARİ / FİRMA</th><th style="text-align:right">TOPLAM BORÇ</th><th style="text-align:right">TOPLAM ALACAK</th><th style="text-align:right">BEKLEYEN ÇEK</th><th>NET BAKİYE</th><th>EKSTRE</th></tr></thead><tbody>${satirlar.map(satir=>{
+        const bakiye = bakiyeBilgisi(satir.bakiye);
+        return `<tr><td class="cari-risk-firma">${cariLogosuHtml(satir.cari)}</td><td class="cari-risk-tutar">${formatPara(satir.borcToplami)}</td><td class="cari-risk-tutar">${formatPara(satir.alacakToplami)}</td><td class="cari-risk-bekleyen">${formatPara(satir.bekleyenCek)}</td><td><span class="cari-risk-durum ${satir.durum}">${formatPara(bakiye.tutar)} · ${htmlGuvenli(bakiye.etiket)}</span></td><td><button class="cari-risk-ekstre" type="button" data-cari="${htmlGuvenli(satir.cari)}" onclick="cariRiskEkstresiniAc(this.dataset.cari)">Ekstre</button></td></tr>`;
+      }).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><br>Filtreye uygun cari hesap bulunamadı.</div>';
+      return rapor;
+    }
+
+    function cariRiskRaporunuAc() {
+      const arama = document.getElementById("cari-risk-arama");
+      const durum = document.getElementById("cari-risk-durum");
+      if (arama) arama.value = "";
+      if (durum) durum.value = "tumu";
+      cariRiskRaporunuGoster();
+      document.getElementById("cari-risk-overlay")?.classList.add("aktif");
+    }
+
+    function cariRiskRaporunuKapat() {
+      document.getElementById("cari-risk-overlay")?.classList.remove("aktif");
+    }
+
+    function cariRiskEkstresiniAc(cari) {
+      cariRiskRaporunuKapat();
+      cariEkstreAc(cari);
+    }
+
+    function cariRiskRaporuCsvIndir() {
+      const rapor = cariRiskRaporunuHesapla();
+      const satirlar = cariRiskSatirlariniFiltrele(
+        rapor.satirlar,
+        document.getElementById("cari-risk-arama")?.value || "",
+        document.getElementById("cari-risk-durum")?.value || "tumu"
+      );
+      if (!satirlar.length) { syncGoster("CSV için cari hesap bulunamadı", "#f59e0b"); return; }
+      const csvSatirlari = [
+        ["Cari Bakiye Raporu",bugununTarihi()],
+        ["Toplam Borç Bakiyesi",rapor.toplamBorcBakiyesi.toFixed(2).replace(".",",")],
+        ["Toplam Alacak Bakiyesi",rapor.toplamAlacakBakiyesi.toFixed(2).replace(".",",")],
+        ["Net Cari Bakiye",rapor.netBakiye.toFixed(2).replace(".",",")],
+        ["Vadesi Bekleyen Çek",rapor.bekleyenCekToplami.toFixed(2).replace(".",",")],
+        ["Kapalı Hesap",rapor.kapaliHesapSayisi],
+        [],
+        ["Cari / Firma","Toplam Borç","Toplam Alacak","Bekleyen Çek","Net Bakiye","Durum"],
+        ...satirlar.map(satir=>[
+          satir.cari,
+          satir.borcToplami.toFixed(2).replace(".",","),
+          satir.alacakToplami.toFixed(2).replace(".",","),
+          satir.bekleyenCek.toFixed(2).replace(".",","),
+          satir.bakiyeTutari.toFixed(2).replace(".",","),
+          satir.durum === "borc" ? "Borç Bakiyesi" : satir.durum === "alacak" ? "Alacak Bakiyesi" : "Kapalı Hesap"
+        ])
+      ];
+      const adres = URL.createObjectURL(new Blob(["\uFEFF" + csvSatirlari.map(satir=>satir.map(csvHucre).join(";")).join("\r\n")], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `cari-bakiye-raporu-${bugununTarihi()}.csv`;
+      document.body.appendChild(baglanti); baglanti.click(); baglanti.remove(); URL.revokeObjectURL(adres);
+      syncGoster(`${satirlar.length} cari bakiye raporuna aktarıldı`, "#4ade80");
+    }
+
     function gelirGiderKategoriSecenekleriniGuncelle() {
       const alan = document.getElementById("gelir-gider-kategorileri");
       const giris = document.getElementById("gelir-gider-kategori");
@@ -10479,6 +10662,7 @@
         case "aylik-ozet": aylikFinansOzetiniAc(); break;
         case "cek-takibi": cekTakibiniAc(); break;
         case "fatura-raporu": raporAc(); break;
+        case "cari-risk": cariRiskRaporunuAc(); break;
         case "kdv-ozeti": kdvOzetiniAc(); break;
         case "csv-aktar": csvRaporIndir(); break;
         case "kullanicilar": kullaniciPaneliniAc(); break;
@@ -10552,6 +10736,9 @@
       document.getElementById("kdv-ozet-overlay")?.addEventListener("click", e => {
         if (e.target.id === "kdv-ozet-overlay") kdvOzetiniKapat();
       });
+      document.getElementById("cari-risk-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "cari-risk-overlay") cariRiskRaporunuKapat();
+      });
       document.getElementById("cek-takip-overlay")?.addEventListener("click", e => {
         if (e.target.id === "cek-takip-overlay") cekTakibiniKapat();
       });
@@ -10587,6 +10774,7 @@
           gelirGiderMerkeziniKapat();
           aylikFinansOzetiniKapat();
           kdvOzetiniKapat();
+          cariRiskRaporunuKapat();
           cekTakibiniKapat();
           cariKartFormunuKapat();
           cariEkstreKapat();

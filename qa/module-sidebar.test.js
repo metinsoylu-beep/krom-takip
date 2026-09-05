@@ -30,6 +30,7 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
   "Tahsilat / Ödeme Girişi",
   "Hesap Transferleri",
   "Aylık Finans Özeti",
+  "Cari Bakiye Raporu",
   "KDV Durum Özeti",
   "Kullanıcılar &amp; Yetkiler",
   "Veri Kontrol Merkezi",
@@ -78,6 +79,7 @@ const context = {
   urunStokMerkeziniAc(gorunum) { cagrilar.push(["urunStokMerkeziniAc", gorunum]); },
   gelirGiderMerkeziniAc() { cagrilar.push(["gelirGiderMerkeziniAc"]); },
   aylikFinansOzetiniAc() { cagrilar.push(["aylikFinansOzetiniAc"]); },
+  cariRiskRaporunuAc() { cagrilar.push(["cariRiskRaporunuAc"]); },
   kdvOzetiniAc() { cagrilar.push(["kdvOzetiniAc"]); },
   cekTakibiniAc() { cagrilar.push(["cekTakibiniAc"]); },
   raporAc() { cagrilar.push(["raporAc"]); },
@@ -98,6 +100,7 @@ context.modulNavigasyon("stok-ekstresi", dugme);
 context.modulNavigasyon("hesap-transferleri", dugme);
 context.modulNavigasyon("gelir-gider", dugme);
 context.modulNavigasyon("aylik-ozet", dugme);
+context.modulNavigasyon("cari-risk", dugme);
 context.modulNavigasyon("kdv-ozeti", dugme);
 context.modulNavigasyon("cek-takibi", dugme);
 
@@ -106,6 +109,7 @@ assert.deepEqual(cagrilar.filter(([ad]) => ad === "urunStokMerkeziniAc").map(([,
 assert.ok(cagrilar.some(([ad]) => ad === "hesapTransferleriniAc"), "Transfer bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "gelirGiderMerkeziniAc"), "Gelir/gider bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "aylikFinansOzetiniAc"), "Aylık özet bağlantısı mevcut ekrana bağlanmalı");
+assert.ok(cagrilar.some(([ad]) => ad === "cariRiskRaporunuAc"), "Cari bakiye raporu bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "kdvOzetiniAc"), "KDV durum özeti bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cekTakibiniAc"), "Çek bağlantısı mevcut ekrana bağlanmalı");
 
