@@ -32,6 +32,7 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
   "Aylık Finans Özeti",
   "Cari Bakiye Raporu",
   "Genel Hareket Defteri",
+  "Borç / Alacak Vade Analizi",
   "Nakit Akış Tahmini",
   "KDV Durum Özeti",
   "Kullanıcılar &amp; Yetkiler",
@@ -87,6 +88,7 @@ const context = {
   aylikFinansOzetiniAc() { cagrilar.push(["aylikFinansOzetiniAc"]); },
   cariRiskRaporunuAc() { cagrilar.push(["cariRiskRaporunuAc"]); },
   genelHareketDefteriniAc() { cagrilar.push(["genelHareketDefteriniAc"]); },
+  vadeAnaliziniAc() { cagrilar.push(["vadeAnaliziniAc"]); },
   nakitAkisTahmininiAc() { cagrilar.push(["nakitAkisTahmininiAc"]); },
   kdvOzetiniAc() { cagrilar.push(["kdvOzetiniAc"]); },
   cekTakibiniAc() { cagrilar.push(["cekTakibiniAc"]); },
@@ -110,6 +112,7 @@ context.modulNavigasyon("gelir-gider", dugme);
 context.modulNavigasyon("aylik-ozet", dugme);
 context.modulNavigasyon("cari-risk", dugme);
 context.modulNavigasyon("genel-hareket", dugme);
+context.modulNavigasyon("vade-analizi", dugme);
 context.modulNavigasyon("nakit-tahmin", dugme);
 context.modulNavigasyon("kdv-ozeti", dugme);
 context.modulNavigasyon("cek-takibi", dugme);
@@ -121,6 +124,7 @@ assert.ok(cagrilar.some(([ad]) => ad === "gelirGiderMerkeziniAc"), "Gelir/gider 
 assert.ok(cagrilar.some(([ad]) => ad === "aylikFinansOzetiniAc"), "Aylık özet bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cariRiskRaporunuAc"), "Cari bakiye raporu bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "genelHareketDefteriniAc"), "Genel hareket defteri bağlantısı mevcut ekrana bağlanmalı");
+assert.ok(cagrilar.some(([ad]) => ad === "vadeAnaliziniAc"), "Borç/alacak vade analizi bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "nakitAkisTahmininiAc"), "Nakit akış tahmini bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "kdvOzetiniAc"), "KDV durum özeti bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cekTakibiniAc"), "Çek bağlantısı mevcut ekrana bağlanmalı");

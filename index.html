@@ -843,6 +843,49 @@
     .genel-hareket-belge strong { display:block; color:#eaf2f8; }
     .genel-hareket-belge span { display:block; margin-top:2px; color:#71869a; font-size:8px; }
     .genel-hareket-aciklama { max-width:260px; overflow:hidden; text-overflow:ellipsis; color:#aebdcc; }
+    .vade-analiz-kart { width:min(1180px,100%); max-width:1180px; border-top-color:#f59e0b; }
+    .vade-analiz-kart .odeme-yonetim-baslik i { color:#fbbf24; }
+    .vade-analiz-filtreler {
+      display:grid; grid-template-columns:minmax(220px,1fr) 155px 170px 160px; gap:9px;
+      align-items:end; padding:13px 18px; border-bottom:1px solid var(--cizgi-yumusak); background:#0a1a2b;
+    }
+    .vade-analiz-filtreler .odeme-form-alan { min-width:0; }
+    .vade-analiz-filtreler input, .vade-analiz-filtreler select {
+      width:100%; height:38px; padding:0 10px; border:1px solid var(--cizgi); border-radius:7px;
+      background:#10243a; color:#eef4fa; font:10px "Segoe UI",Arial,sans-serif; outline:none;
+    }
+    .vade-analiz-filtreler input:focus, .vade-analiz-filtreler select:focus { border-color:#f59e0b; box-shadow:0 0 0 2px #f59e0b1f; }
+    .vade-analiz-ozetler { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; padding:14px 18px 0; }
+    .vade-analiz-dilimler { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; padding:12px 18px 0; }
+    .vade-analiz-dilim {
+      min-width:0; padding:10px; text-align:left; border:1px solid var(--cizgi); border-radius:8px;
+      background:#10243a; color:#dce8f2; cursor:pointer; transition:border-color .18s,transform .18s,background .18s;
+    }
+    .vade-analiz-dilim:hover { transform:translateY(-1px); border-color:#f59e0b99; background:#142b43; }
+    .vade-analiz-dilim.aktif { border-color:#f59e0b; box-shadow:inset 0 3px 0 #f59e0b,0 0 0 1px #f59e0b22; }
+    .vade-analiz-dilim > span { display:block; color:#f7c85d; font:800 9px "Segoe UI",Arial,sans-serif; }
+    .vade-analiz-dilim > small { display:block; min-height:15px; margin-top:3px; color:#7890a7; font-size:8px; }
+    .vade-analiz-dilim-satir { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:7px; }
+    .vade-analiz-dilim-satir em { color:#8ea2b6; font:700 8px "Segoe UI",Arial,sans-serif; font-style:normal; }
+    .vade-analiz-dilim-satir strong { color:#eef4fa; font-size:10px; white-space:nowrap; }
+    .vade-analiz-dilim-satir.alacak strong { color:#7dd3fc; }
+    .vade-analiz-dilim-satir.borc strong { color:#f6c95c; }
+    .vade-analiz-tablo-wrap { max-height:43vh; overflow:auto; margin:12px 18px 18px; border:1px solid var(--cizgi); border-radius:8px; }
+    .vade-analiz-tablo { min-width:990px; font:10px "Segoe UI",Arial,sans-serif; }
+    .vade-analiz-tablo th, .vade-analiz-tablo td { padding:10px 11px; vertical-align:middle; }
+    .vade-analiz-yon, .vade-analiz-durum {
+      display:inline-flex; align-items:center; gap:5px; padding:4px 7px; border:1px solid currentColor;
+      border-radius:999px; font-weight:800; white-space:nowrap;
+    }
+    .vade-analiz-yon.borc { color:#f6c95c; background:#f6c95c10; }
+    .vade-analiz-yon.alacak { color:#7dd3fc; background:#38bdf810; }
+    .vade-analiz-durum.gecikmis { color:#ff8791; background:#ff6b7710; }
+    .vade-analiz-durum.bugun7 { color:#fbbf24; background:#f59e0b10; }
+    .vade-analiz-durum.sekiz30 { color:#7dd3fc; background:#38bdf810; }
+    .vade-analiz-durum.otuzbir60 { color:#c4b5fd; background:#a78bfa10; }
+    .vade-analiz-durum.altmisUstu { color:#aebdcc; background:#94a3b810; }
+    .vade-analiz-tutar { text-align:right; color:#eef4fa; font-weight:800; }
+    .vade-analiz-cari { min-width:190px; color:#e9f1f8; font-weight:700; }
     .nakit-tahmin-kart { width:min(1180px,100%); max-width:1180px; border-top-color:#14b8a6; }
     .nakit-tahmin-kart .odeme-yonetim-baslik i { color:#5eead4; }
     .nakit-tahmin-filtreler {
@@ -1529,6 +1572,12 @@
       .genel-hareket-sifirla { width:100%; }
       .genel-hareket-ozetler { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
       .genel-hareket-tablo-wrap { margin:12px; }
+      .vade-analiz-filtreler { grid-template-columns:1fr 1fr; padding:12px; }
+      .vade-analiz-filtreler .vade-analiz-arama { grid-column:1 / -1; }
+      .vade-analiz-ozetler { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
+      .vade-analiz-dilimler { display:flex; overflow-x:auto; padding:12px 12px 2px; scroll-snap-type:x mandatory; }
+      .vade-analiz-dilim { min-width:170px; scroll-snap-align:start; }
+      .vade-analiz-tablo-wrap { margin:12px; }
       .nakit-tahmin-filtreler { grid-template-columns:1fr; padding:12px; }
       .nakit-tahmin-kapsam { text-align:left; }
       .nakit-tahmin-ozetler { grid-template-columns:1fr 1fr; padding:12px 12px 0; }
@@ -2662,6 +2711,37 @@
     </section>
   </div>
 
+  <!-- BORÇ / ALACAK VADE ANALİZİ -->
+  <div class="popup-overlay odeme-yonetim-overlay" id="vade-analiz-overlay">
+    <section class="popup-kutu odeme-yonetim-kart vade-analiz-kart" role="dialog" aria-modal="true" aria-labelledby="vade-analiz-baslik">
+      <div class="odeme-yonetim-ust">
+        <div>
+          <h2 class="odeme-yonetim-baslik" id="vade-analiz-baslik"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> Borç / Alacak Vade Analizi</h2>
+          <p class="odeme-yonetim-alt" id="vade-analiz-alt">Takibi açık faturaları vade yakınlığına göre gruplandırır.</p>
+        </div>
+        <div class="cari-ust-islemler">
+          <button class="cek-takip-csv" type="button" onclick="vadeAnaliziCsvIndir()"><i class="fa-solid fa-file-csv" aria-hidden="true"></i> CSV İndir</button>
+          <button class="modal-kapat" type="button" onclick="vadeAnaliziniKapat()" aria-label="Vade analizini kapat"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="vade-analiz-filtreler">
+        <div class="odeme-form-alan vade-analiz-arama"><label for="vade-analiz-arama">ARAMA</label><input id="vade-analiz-arama" type="search" placeholder="Cari veya fatura no ara" oninput="vadeAnaliziniGoster()"/></div>
+        <div class="odeme-form-alan"><label for="vade-analiz-yon">HESAP TÜRÜ</label><select id="vade-analiz-yon" onchange="vadeAnaliziniGoster()"><option value="tumu">Borç + Alacak</option><option value="borc">Alış / Borç</option><option value="alacak">Satış / Alacak</option></select></div>
+        <div class="odeme-form-alan"><label for="vade-analiz-dilim">VADE DİLİMİ</label><select id="vade-analiz-dilim" onchange="vadeAnaliziniGoster()"><option value="tumu">Tüm vadeler</option><option value="gecikmis">Vadesi geçen</option><option value="bugun7">Bugün – 7 gün</option><option value="sekiz30">8 – 30 gün</option><option value="otuzbir60">31 – 60 gün</option><option value="altmisUstu">61 gün ve sonrası</option></select></div>
+        <div class="odeme-form-alan"><label for="vade-analiz-tarih">REFERANS TARİHİ</label><input id="vade-analiz-tarih" type="date" onchange="vadeAnaliziniGoster()"/></div>
+      </div>
+      <div class="vade-analiz-ozetler">
+        <div class="aylik-metrik" style="--aylik-renk:#f6c95c"><span>AÇIK FATURA BORCU</span><strong id="vade-analiz-borc">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#7dd3fc"><span>AÇIK FATURA ALACAĞI</span><strong id="vade-analiz-alacak">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#ff6b77"><span>GECİKEN BORÇ</span><strong id="vade-analiz-geciken-borc">0 ₺</strong></div>
+        <div class="aylik-metrik" style="--aylik-renk:#f472b6"><span>GECİKEN ALACAK</span><strong id="vade-analiz-geciken-alacak">0 ₺</strong></div>
+      </div>
+      <div class="vade-analiz-dilimler" id="vade-analiz-dilimler"></div>
+      <div class="aylik-ozet-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Yalnızca takibi açık faturalar hesaplanır. Cari ödeme ve tahsilatlar faturalara otomatik dağıtılmaz; ödenen faturaların takibi kullanıcı tarafından kapatılmalıdır.</div>
+      <div class="vade-analiz-tablo-wrap" id="vade-analiz-tablo-wrap"></div>
+    </section>
+  </div>
+
   <!-- NAKİT AKIŞ TAHMİNİ -->
   <div class="popup-overlay odeme-yonetim-overlay" id="nakit-tahmin-overlay">
     <section class="popup-kutu odeme-yonetim-kart nakit-tahmin-kart" role="dialog" aria-modal="true" aria-labelledby="nakit-tahmin-baslik">
@@ -3190,6 +3270,7 @@
         <summary><i class="fa-solid fa-chart-pie" aria-hidden="true"></i>Raporlar</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="genel-hareket" onclick="modulNavigasyon('genel-hareket',this)"><i class="fa-solid fa-book" aria-hidden="true"></i><span>Genel Hareket Defteri</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="vade-analizi" onclick="modulNavigasyon('vade-analizi',this)"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span>Borç / Alacak Vade Analizi</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="hizli-istatistikler" onclick="modulNavigasyon('hizli-istatistikler',this)"><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>Hızlı İstatistikler</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="fatura-raporu" onclick="modulNavigasyon('fatura-raporu',this)"><i class="fa-solid fa-chart-column" aria-hidden="true"></i><span>Gelişmiş Fatura Raporu</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="cari-risk" onclick="modulNavigasyon('cari-risk',this)"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span>Cari Bakiye Raporu</span></button>
@@ -4625,6 +4706,7 @@
         if (document.getElementById("aylik-ozet-overlay")?.classList.contains("aktif")) aylikFinansOzetiniGoster();
         if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
         if (document.getElementById("genel-hareket-overlay")?.classList.contains("aktif")) genelHareketDefteriniGoster();
+        if (document.getElementById("vade-analiz-overlay")?.classList.contains("aktif")) vadeAnaliziniGoster();
         if (document.getElementById("nakit-tahmin-overlay")?.classList.contains("aktif")) nakitAkisTahmininiGoster();
         if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
 
@@ -7033,6 +7115,7 @@
       if (document.getElementById("kdv-ozet-overlay")?.classList.contains("aktif")) kdvOzetiniGoster();
       if (document.getElementById("cari-risk-overlay")?.classList.contains("aktif")) cariRiskRaporunuGoster();
       if (document.getElementById("genel-hareket-overlay")?.classList.contains("aktif")) genelHareketDefteriniGoster();
+      if (document.getElementById("vade-analiz-overlay")?.classList.contains("aktif")) vadeAnaliziniGoster();
       if (document.getElementById("nakit-tahmin-overlay")?.classList.contains("aktif")) nakitAkisTahmininiGoster();
       if (document.getElementById("urun-stok-overlay")?.classList.contains("aktif")) urunStokMerkeziniGoster();
       return guvenliDurum;
@@ -9794,6 +9877,141 @@
       syncGoster(`${liste.length} muhasebe hareketi CSV raporuna aktarıldı`, "#4ade80");
     }
 
+    function vadeAnaliziniHesapla(referans=new Date(), faturalar=faturaYukle()) {
+      let referansTarihi = typeof referans === "string" && tarihGecerliMi(referans)
+        ? tarihOlusturYerel(referans)
+        : new Date(referans);
+      if (Number.isNaN(referansTarihi.getTime())) referansTarihi = new Date();
+      referansTarihi.setHours(12,0,0,0);
+      const referansMetni = bugununTarihi(referansTarihi);
+      const dilimTanimlari = [
+        { id:"gecikmis", etiket:"Vadesi Geçen", altEtiket:"Referans tarihinden önce" },
+        { id:"bugun7", etiket:"Bugün – 7 Gün", altEtiket:"Bugün dahil" },
+        { id:"sekiz30", etiket:"8 – 30 Gün", altEtiket:"Yaklaşan vadeler" },
+        { id:"otuzbir60", etiket:"31 – 60 Gün", altEtiket:"Orta vadeli" },
+        { id:"altmisUstu", etiket:"61 Gün ve Sonrası", altEtiket:"İleri vadeli" }
+      ];
+      const dilimHaritasi = new Map(dilimTanimlari.map((dilim,sira)=>[dilim.id,{ ...dilim, sira, borcSayisi:0, borcTutari:0, alacakSayisi:0, alacakTutari:0 }]));
+      const satirlar = [];
+      const faturaListesi = faturalariTekillestir(Array.isArray(faturalar) ? faturalar : []).liste;
+      faturaListesi.forEach(fatura=>{
+        const tarih = String(fatura?.tarih || "").split("T")[0];
+        const tutar = tutarSayiyaCevir(fatura?.tutar);
+        if (!tarihGecerliMi(tarih) || !(tutar>0) || faturaTakibiKapali(fatura)) return;
+        const vade = vadeTarihi(tarih,fatura?.vadeGun);
+        vade.setHours(12,0,0,0);
+        if (Number.isNaN(vade.getTime())) return;
+        const gun = Math.round((vade-referansTarihi)/86400000);
+        const dilimId = gun<0 ? "gecikmis" : gun<=7 ? "bugun7" : gun<=30 ? "sekiz30" : gun<=60 ? "otuzbir60" : "altmisUstu";
+        const satisMi = faturaTurunuNormallestir(fatura?.faturaTuru) === "satis";
+        const yon = satisMi ? "alacak" : "borc";
+        const dilim = dilimHaritasi.get(dilimId);
+        if (yon === "borc") { dilim.borcSayisi += 1; dilim.borcTutari += tutar; }
+        else { dilim.alacakSayisi += 1; dilim.alacakTutari += tutar; }
+        satirlar.push({
+          id:String(fatura?.id || ""), no:String(fatura?.no || "Fatura no yok"),
+          cari:String(fatura?.cari || "Belirtilmedi").trim() || "Belirtilmedi",
+          tarih, vadeTarihi:bugununTarihi(vade), gun, dilimId, dilimEtiketi:dilim.etiket,
+          yon, yonEtiketi:satisMi ? "Satış / Alacak" : "Alış / Borç", tutar,
+          durum:gun<0 ? `${Math.abs(gun)} gün gecikti` : gun===0 ? "Vade bugün" : gun===1 ? "Vade yarın" : `${gun} gün kaldı`
+        });
+      });
+      satirlar.sort((a,b)=>dilimHaritasi.get(a.dilimId).sira-dilimHaritasi.get(b.dilimId).sira || a.vadeTarihi.localeCompare(b.vadeTarihi) || a.cari.localeCompare(b.cari,"tr") || a.no.localeCompare(b.no,"tr"));
+      const yuvarla = deger => Math.round((Number(deger) || 0)*100)/100;
+      const toplamBorc = yuvarla(satirlar.filter(satir=>satir.yon === "borc").reduce((toplam,satir)=>toplam+satir.tutar,0));
+      const toplamAlacak = yuvarla(satirlar.filter(satir=>satir.yon === "alacak").reduce((toplam,satir)=>toplam+satir.tutar,0));
+      const gecikenBorc = yuvarla(satirlar.filter(satir=>satir.yon === "borc" && satir.dilimId === "gecikmis").reduce((toplam,satir)=>toplam+satir.tutar,0));
+      const gecikenAlacak = yuvarla(satirlar.filter(satir=>satir.yon === "alacak" && satir.dilimId === "gecikmis").reduce((toplam,satir)=>toplam+satir.tutar,0));
+      const dilimler = [...dilimHaritasi.values()].map(dilim=>({
+        ...dilim,
+        borcTutari:yuvarla(dilim.borcTutari), alacakTutari:yuvarla(dilim.alacakTutari),
+        toplamSayisi:dilim.borcSayisi+dilim.alacakSayisi,
+        toplamTutari:yuvarla(dilim.borcTutari+dilim.alacakTutari)
+      }));
+      return { referans:referansMetni, satirlar, dilimler, toplamBorc, toplamAlacak, gecikenBorc, gecikenAlacak };
+    }
+
+    function vadeAnaliziSatirlariniFiltrele(rapor, arama="", yon="tumu", dilim="tumu") {
+      const aranan = String(arama || "").trim().toLocaleUpperCase("tr-TR");
+      const yonFiltresi = ["borc","alacak"].includes(yon) ? yon : "tumu";
+      const dilimFiltresi = ["gecikmis","bugun7","sekiz30","otuzbir60","altmisUstu"].includes(dilim) ? dilim : "tumu";
+      return (Array.isArray(rapor?.satirlar) ? rapor.satirlar : []).filter(satir=>
+        (yonFiltresi === "tumu" || satir.yon === yonFiltresi) &&
+        (dilimFiltresi === "tumu" || satir.dilimId === dilimFiltresi) &&
+        (!aranan || [satir.cari,satir.no,satir.tarih,satir.vadeTarihi,satir.yonEtiketi,satir.durum].join(" ").toLocaleUpperCase("tr-TR").includes(aranan))
+      );
+    }
+
+    function vadeAnaliziFiltreliListe(rapor) {
+      return vadeAnaliziSatirlariniFiltrele(
+        rapor,
+        document.getElementById("vade-analiz-arama")?.value || "",
+        document.getElementById("vade-analiz-yon")?.value || "tumu",
+        document.getElementById("vade-analiz-dilim")?.value || "tumu"
+      );
+    }
+
+    function vadeAnalizDiliminiSec(dilimId) {
+      const alan = document.getElementById("vade-analiz-dilim");
+      if (alan) alan.value = alan.value === dilimId ? "tumu" : dilimId;
+      vadeAnaliziniGoster();
+    }
+
+    function vadeAnaliziniGoster() {
+      const tarihAlani = document.getElementById("vade-analiz-tarih");
+      const rapor = vadeAnaliziniHesapla(tarihAlani?.value || new Date());
+      if (tarihAlani) tarihAlani.value = rapor.referans;
+      const liste = vadeAnaliziFiltreliListe(rapor);
+      document.getElementById("vade-analiz-borc").textContent = formatPara(rapor.toplamBorc);
+      document.getElementById("vade-analiz-alacak").textContent = formatPara(rapor.toplamAlacak);
+      document.getElementById("vade-analiz-geciken-borc").textContent = formatPara(rapor.gecikenBorc);
+      document.getElementById("vade-analiz-geciken-alacak").textContent = formatPara(rapor.gecikenAlacak);
+      document.getElementById("vade-analiz-alt").textContent = `${formatTarih(tarihOlusturYerel(rapor.referans))} referanslı · ${liste.length}/${rapor.satirlar.length} açık fatura gösteriliyor`;
+      const seciliDilim = document.getElementById("vade-analiz-dilim")?.value || "tumu";
+      const dilimAlani = document.getElementById("vade-analiz-dilimler");
+      if (dilimAlani) dilimAlani.innerHTML = rapor.dilimler.map(dilim=>`<button class="vade-analiz-dilim ${seciliDilim === dilim.id ? "aktif" : ""}" type="button" onclick="vadeAnalizDiliminiSec('${dilim.id}')"><span>${htmlGuvenli(dilim.etiket)}</span><small>${htmlGuvenli(dilim.altEtiket)} · ${dilim.toplamSayisi} fatura</small><div class="vade-analiz-dilim-satir borc"><em>BORÇ · ${dilim.borcSayisi}</em><strong>${formatPara(dilim.borcTutari)}</strong></div><div class="vade-analiz-dilim-satir alacak"><em>ALACAK · ${dilim.alacakSayisi}</em><strong>${formatPara(dilim.alacakTutari)}</strong></div></button>`).join("");
+      const tablo = document.getElementById("vade-analiz-tablo-wrap");
+      if (!tablo) return rapor;
+      tablo.innerHTML = liste.length ? `<table class="vade-analiz-tablo"><thead><tr><th>HESAP TÜRÜ</th><th>CARİ / FİRMA</th><th>FATURA NO</th><th>FATURA TARİHİ</th><th>VADE TARİHİ</th><th>VADE DURUMU</th><th style="text-align:right">TUTAR</th></tr></thead><tbody>${liste.map(satir=>`<tr><td><span class="vade-analiz-yon ${satir.yon}">${htmlGuvenli(satir.yonEtiketi)}</span></td><td class="vade-analiz-cari">${cariLogosuHtml(satir.cari)}</td><td>${htmlGuvenli(satir.no)}</td><td>${htmlGuvenli(formatTarih(tarihOlusturYerel(satir.tarih)))}</td><td>${htmlGuvenli(formatTarih(tarihOlusturYerel(satir.vadeTarihi)))}</td><td><span class="vade-analiz-durum ${satir.dilimId}">${htmlGuvenli(satir.durum)}</span></td><td class="vade-analiz-tutar">${formatPara(satir.tutar)}</td></tr>`).join("")}</tbody></table>` : '<div class="odeme-gecmisi-bos"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><br>Filtreye uygun takibi açık fatura bulunamadı.</div>';
+      return rapor;
+    }
+
+    function vadeAnaliziniAc() {
+      const degerler = { "vade-analiz-arama":"", "vade-analiz-yon":"tumu", "vade-analiz-dilim":"tumu", "vade-analiz-tarih":bugununTarihi() };
+      Object.entries(degerler).forEach(([id,deger])=>{ const alan=document.getElementById(id); if (alan) alan.value=deger; });
+      vadeAnaliziniGoster();
+      document.getElementById("vade-analiz-overlay")?.classList.add("aktif");
+    }
+
+    function vadeAnaliziniKapat() {
+      document.getElementById("vade-analiz-overlay")?.classList.remove("aktif");
+    }
+
+    function vadeAnaliziCsvIndir() {
+      const rapor = vadeAnaliziniHesapla(document.getElementById("vade-analiz-tarih")?.value || new Date());
+      const liste = vadeAnaliziFiltreliListe(rapor);
+      if (!liste.length) { syncGoster("CSV için takibi açık fatura bulunamadı", "#f59e0b"); return; }
+      const satirlar = [
+        ["Borç / Alacak Vade Analizi",rapor.referans],
+        ["Açık Fatura Borcu",rapor.toplamBorc.toFixed(2).replace(".",",")],
+        ["Açık Fatura Alacağı",rapor.toplamAlacak.toFixed(2).replace(".",",")],
+        ["Geciken Borç",rapor.gecikenBorc.toFixed(2).replace(".",",")],
+        ["Geciken Alacak",rapor.gecikenAlacak.toFixed(2).replace(".",",")],
+        [],
+        ["Vade Dilimi","Borç Fatura","Borç Tutarı","Alacak Fatura","Alacak Tutarı"],
+        ...rapor.dilimler.map(dilim=>[dilim.etiket,dilim.borcSayisi,dilim.borcTutari.toFixed(2).replace(".",","),dilim.alacakSayisi,dilim.alacakTutari.toFixed(2).replace(".",",")]),
+        [],
+        ["Hesap Türü","Cari / Firma","Fatura No","Fatura Tarihi","Vade Tarihi","Vade Durumu","Tutar","Kayıt Kimliği"],
+        ...liste.map(satir=>[satir.yonEtiketi,satir.cari,satir.no,satir.tarih,satir.vadeTarihi,satir.durum,satir.tutar.toFixed(2).replace(".",","),satir.id])
+      ];
+      const adres = URL.createObjectURL(new Blob(["\uFEFF" + satirlar.map(satir=>satir.map(csvHucre).join(";")).join("\r\n")], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      baglanti.href = adres;
+      baglanti.download = `borc-alacak-vade-analizi-${rapor.referans}.csv`;
+      document.body.appendChild(baglanti); baglanti.click(); baglanti.remove(); URL.revokeObjectURL(adres);
+      syncGoster(`${liste.length} açık fatura vade raporuna aktarıldı`, "#4ade80");
+    }
+
     function nakitAkisTahmininiHesapla(referans=new Date(), faturalar=faturaYukle(), cekler=cekleriYukle(), hesapOzetleri=finansHesapOzetleriniHesapla()) {
       const yuvarla = deger => Math.round((Number(deger) || 0) * 100) / 100;
       let referansTarihi = typeof referans === "string" && tarihGecerliMi(referans)
@@ -11239,6 +11457,7 @@
         case "fatura-raporu": raporAc(); break;
         case "cari-risk": cariRiskRaporunuAc(); break;
         case "genel-hareket": genelHareketDefteriniAc(); break;
+        case "vade-analizi": vadeAnaliziniAc(); break;
         case "nakit-tahmin": nakitAkisTahmininiAc(); break;
         case "kdv-ozeti": kdvOzetiniAc(); break;
         case "csv-aktar": csvRaporIndir(); break;
@@ -11320,6 +11539,9 @@
       document.getElementById("genel-hareket-overlay")?.addEventListener("click", e => {
         if (e.target.id === "genel-hareket-overlay") genelHareketDefteriniKapat();
       });
+      document.getElementById("vade-analiz-overlay")?.addEventListener("click", e => {
+        if (e.target.id === "vade-analiz-overlay") vadeAnaliziniKapat();
+      });
       document.getElementById("nakit-tahmin-overlay")?.addEventListener("click", e => {
         if (e.target.id === "nakit-tahmin-overlay") nakitAkisTahmininiKapat();
       });
@@ -11360,6 +11582,7 @@
           kdvOzetiniKapat();
           cariRiskRaporunuKapat();
           genelHareketDefteriniKapat();
+          vadeAnaliziniKapat();
           nakitAkisTahmininiKapat();
           cekTakibiniKapat();
           cariKartFormunuKapat();
