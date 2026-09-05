@@ -31,6 +31,7 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
   "Hesap Transferleri",
   "Aylık Finans Özeti",
   "Cari Bakiye Raporu",
+  "Genel Hareket Defteri",
   "Nakit Akış Tahmini",
   "KDV Durum Özeti",
   "Kullanıcılar &amp; Yetkiler",
@@ -85,6 +86,7 @@ const context = {
   gelirGiderMerkeziniAc() { cagrilar.push(["gelirGiderMerkeziniAc"]); },
   aylikFinansOzetiniAc() { cagrilar.push(["aylikFinansOzetiniAc"]); },
   cariRiskRaporunuAc() { cagrilar.push(["cariRiskRaporunuAc"]); },
+  genelHareketDefteriniAc() { cagrilar.push(["genelHareketDefteriniAc"]); },
   nakitAkisTahmininiAc() { cagrilar.push(["nakitAkisTahmininiAc"]); },
   kdvOzetiniAc() { cagrilar.push(["kdvOzetiniAc"]); },
   cekTakibiniAc() { cagrilar.push(["cekTakibiniAc"]); },
@@ -107,6 +109,7 @@ context.modulNavigasyon("hesap-transferleri", dugme);
 context.modulNavigasyon("gelir-gider", dugme);
 context.modulNavigasyon("aylik-ozet", dugme);
 context.modulNavigasyon("cari-risk", dugme);
+context.modulNavigasyon("genel-hareket", dugme);
 context.modulNavigasyon("nakit-tahmin", dugme);
 context.modulNavigasyon("kdv-ozeti", dugme);
 context.modulNavigasyon("cek-takibi", dugme);
@@ -117,6 +120,7 @@ assert.ok(cagrilar.some(([ad]) => ad === "hesapTransferleriniAc"), "Transfer ba�
 assert.ok(cagrilar.some(([ad]) => ad === "gelirGiderMerkeziniAc"), "Gelir/gider bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "aylikFinansOzetiniAc"), "Aylık özet bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cariRiskRaporunuAc"), "Cari bakiye raporu bağlantısı mevcut ekrana bağlanmalı");
+assert.ok(cagrilar.some(([ad]) => ad === "genelHareketDefteriniAc"), "Genel hareket defteri bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "nakitAkisTahmininiAc"), "Nakit akış tahmini bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "kdvOzetiniAc"), "KDV durum özeti bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "cekTakibiniAc"), "Çek bağlantısı mevcut ekrana bağlanmalı");
