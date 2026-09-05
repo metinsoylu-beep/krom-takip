@@ -1517,8 +1517,10 @@
     .modul-panel {
       position: fixed; z-index: 70; inset: 34px auto 0 0; width: 246px;
       display: flex; flex-direction: column; overflow: hidden;
-      background: linear-gradient(180deg, #091a2d 0%, #061321 100%);
-      border-right: 1px solid #294159; box-shadow: 10px 0 30px #02091438;
+      --menu-yuzey: #102a43; --menu-yuzey-hover: #173b5c; --menu-cizgi: #294a66;
+      --menu-metin: #b9c8d7; --menu-vurgu: var(--altin-acik);
+      background: linear-gradient(180deg, #0a1d31 0%, #061321 100%);
+      border-right: 1px solid var(--menu-cizgi); box-shadow: 10px 0 30px #02091438;
     }
     .modul-panel-ust {
       display: flex; align-items: center; gap: 10px; padding: 16px 15px 14px;
@@ -1539,31 +1541,69 @@
     .modul-nav { flex: 1; overflow-y: auto; padding: 10px 9px 16px; scrollbar-width: thin; scrollbar-color: #294159 transparent; }
     .modul-ana-baglanti, .modul-alt-baglanti {
       width: 100%; min-height: 35px; display: flex; align-items: center; gap: 10px;
-      padding: 8px 10px; border: 0; border-radius: 7px; background: transparent;
-      color: #aab9c8; font: 600 10px "Segoe UI",Arial,sans-serif; text-align: left; cursor: pointer;
+      padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent;
+      color: var(--menu-metin); font: 600 10px "Segoe UI",Arial,sans-serif; text-align: left; cursor: pointer;
+      transition: background .16s ease, border-color .16s ease, color .16s ease,
+        transform .16s ease, box-shadow .16s ease;
     }
     .modul-ana-baglanti { min-height: 39px; margin-bottom: 6px; color: #e9f0f6; font-size: 11px; }
-    .modul-ana-baglanti i, .modul-alt-baglanti i { width: 18px; color: #7f94a8; text-align: center; }
-    .modul-ana-baglanti:hover, .modul-alt-baglanti:hover { background: #16304a; color: #fff; }
+    .modul-ana-baglanti i, .modul-alt-baglanti i {
+      width: 18px; color: #7f94a8; text-align: center;
+      transition: color .16s ease, transform .16s ease, filter .16s ease;
+    }
+    .modul-ana-baglanti:hover, .modul-alt-baglanti:hover {
+      background: linear-gradient(90deg, #e6a91f16, var(--menu-yuzey-hover));
+      border-color: #d7a62e38; color: #fff; transform: translateX(3px);
+      box-shadow: 0 5px 14px #02091442;
+    }
+    .modul-ana-baglanti:hover i, .modul-alt-baglanti:hover i {
+      color: var(--menu-vurgu); transform: scale(1.1); filter: drop-shadow(0 0 5px #e6a91f45);
+    }
+    .modul-ana-baglanti:focus-visible, .modul-alt-baglanti:focus-visible,
+    .modul-grup summary:focus-visible {
+      outline: 2px solid var(--menu-vurgu); outline-offset: 1px;
+    }
     .modul-ana-baglanti.aktif, .modul-alt-baglanti.aktif {
-      background: linear-gradient(90deg, #e6a91f20, #16304a); color: #fff;
-      box-shadow: inset 3px 0 0 var(--altin);
+      background: linear-gradient(90deg, #e6a91f24, var(--menu-yuzey)); color: #fff;
+      border-color: #e6a91f35; box-shadow: inset 3px 0 0 var(--altin), 0 4px 12px #02091430;
     }
     .modul-ana-baglanti.aktif i, .modul-alt-baglanti.aktif i { color: var(--altin-acik); }
     .modul-grup { margin: 2px 0; border-top: 1px solid #13283c; }
     .modul-grup summary {
       min-height: 37px; display: flex; align-items: center; gap: 9px; padding: 8px 10px;
-      color: #8194a7; font-size: 9px; font-weight: 750; letter-spacing: .55px;
+      border-radius: 7px; color: #8fa3b7; font-size: 9px; font-weight: 750; letter-spacing: .55px;
       text-transform: uppercase; cursor: pointer; list-style: none; user-select: none;
+      transition: background .16s ease, color .16s ease, box-shadow .16s ease;
     }
     .modul-grup summary::-webkit-details-marker { display: none; }
-    .modul-grup summary i:first-child { width: 18px; color: #6e8397; text-align: center; }
+    .modul-grup summary i:first-child {
+      width: 18px; color: #71879a; text-align: center;
+      transition: color .16s ease, transform .16s ease, filter .16s ease;
+    }
+    .modul-grup summary:hover {
+      background: linear-gradient(90deg, #e6a91f12, #112c46); color: #f2f6fa;
+      box-shadow: inset 2px 0 0 #e6a91f75;
+    }
+    .modul-grup summary:hover i:first-child,
+    .modul-grup[open] summary i:first-child {
+      color: var(--menu-vurgu); transform: scale(1.08); filter: drop-shadow(0 0 5px #e6a91f3d);
+    }
+    .modul-grup[open] summary {
+      background: linear-gradient(90deg, #e6a91f18, #102a43); color: #f1cd77;
+      box-shadow: inset 2px 0 0 var(--altin);
+    }
     .modul-grup summary::after {
       content: "\f078"; margin-left: auto; color: #587086;
       font: 700 8px/1 "Font Awesome 6 Free"; transition: transform .18s ease;
     }
     .modul-grup:not([open]) summary::after { transform: rotate(-90deg); }
+    .modul-grup[open] summary::after { color: var(--menu-vurgu); }
     .modul-grup-icerik { padding: 0 0 5px 9px; }
+    .modul-grup[open] .modul-grup-icerik { animation: modulAltMenuAc .16s ease-out; }
+    @keyframes modulAltMenuAc {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .modul-alt-baglanti { position: relative; padding-left: 14px; font-weight: 550; }
     .modul-alt-baglanti::before {
       content: ""; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: #375069;
@@ -1577,6 +1617,14 @@
     .modul-panel-alt span { display: block; color: #a8b7c6; font-size: 9px; }
     .modul-panel-alt small { display: block; margin-top: 2px; color: #62778b; font-size: 8px; }
     .modul-panel-perde { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .modul-ana-baglanti, .modul-alt-baglanti, .modul-grup summary,
+      .modul-grup summary i:first-child, .modul-grup summary::after {
+        transition: none;
+      }
+      .modul-ana-baglanti:hover, .modul-alt-baglanti:hover { transform: none; }
+      .modul-grup[open] .modul-grup-icerik { animation: none; }
+    }
     .konteyner {
       width: min(1500px, calc(100vw - 286px)); margin-left: 266px; margin-right: 20px;
     }
@@ -2705,7 +2753,7 @@
     <nav class="modul-nav" aria-label="Uygulama bölümleri">
       <button class="modul-ana-baglanti aktif" type="button" data-modul="genel-bakis" onclick="modulNavigasyon('genel-bakis',this)"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Genel Bakış</span></button>
 
-      <details class="modul-grup" open>
+      <details class="modul-grup">
         <summary><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i>Alış &amp; Satış</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="fatura-listesi" onclick="modulNavigasyon('fatura-listesi',this)"><i class="fa-solid fa-list" aria-hidden="true"></i><span>Fatura Listesi</span></button>
@@ -2714,7 +2762,7 @@
         </div>
       </details>
 
-      <details class="modul-grup" open>
+      <details class="modul-grup">
         <summary><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>Ürün &amp; Stok</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="urun-kartlari" onclick="modulNavigasyon('urun-kartlari',this)"><i class="fa-solid fa-box" aria-hidden="true"></i><span>Ürün / Hizmet Kartları</span></button>
@@ -2724,7 +2772,7 @@
         </div>
       </details>
 
-      <details class="modul-grup" open>
+      <details class="modul-grup">
         <summary><i class="fa-solid fa-address-book" aria-hidden="true"></i>Cari Yönetimi</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="cari-hesaplar" onclick="modulNavigasyon('cari-hesaplar',this)"><i class="fa-solid fa-building" aria-hidden="true"></i><span>Cari Hesaplar &amp; Ekstre</span></button>
@@ -2732,7 +2780,7 @@
         </div>
       </details>
 
-      <details class="modul-grup" open>
+      <details class="modul-grup">
         <summary><i class="fa-solid fa-building-columns" aria-hidden="true"></i>Kasa &amp; Banka</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="finans-hesaplari" onclick="modulNavigasyon('finans-hesaplari',this)"><i class="fa-solid fa-wallet" aria-hidden="true"></i><span>Kasa / Banka Hesapları</span></button>
@@ -2740,7 +2788,7 @@
         </div>
       </details>
 
-      <details class="modul-grup" open>
+      <details class="modul-grup">
         <summary><i class="fa-solid fa-receipt" aria-hidden="true"></i>Gelir &amp; Gider</summary>
         <div class="modul-grup-icerik">
           <button class="modul-alt-baglanti" type="button" data-modul="gelir-gider" onclick="modulNavigasyon('gelir-gider',this)"><i class="fa-solid fa-receipt" aria-hidden="true"></i><span>Gelir / Gider Fişleri</span></button>

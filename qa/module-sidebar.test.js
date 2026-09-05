@@ -33,6 +33,11 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
   "Depolama Sağlığı"
 ].forEach(altBaslik => assert.ok(index.includes(altBaslik), `${altBaslik} alt başlığı bulunmalı`));
 
+assert.doesNotMatch(index, /<details class="modul-grup"\s+open>/, "Modül grupları uygulama açılışında kapalı olmalı");
+assert.match(index, /\.modul-ana-baglanti:hover, \.modul-alt-baglanti:hover[\s\S]*?transform: translateX\(3px\)/, "Menü bağlantıları imleçle belirgin geri bildirim vermeli");
+assert.match(index, /\.modul-grup summary:hover[\s\S]*?var\(--menu-vurgu\)/, "Menü grup başlıkları tema rengiyle hover hissi vermeli");
+assert.match(index, /prefers-reduced-motion: reduce/, "Menü hareketleri azaltılmış hareket tercihine saygı göstermeli");
+
 assert.match(index, /class="modul-alt-baglanti yalnizca-yonetici"[^>]+data-modul="kullanicilar"/, "Kullanıcı yönetimi yalnızca yöneticiye açık olmalı");
 assert.match(index, /@media \(max-width: 1180px\)[\s\S]*?body\.modul-panel-acik \.modul-panel/, "Panel küçük ekranlarda açılır menüye dönüşmeli");
 
