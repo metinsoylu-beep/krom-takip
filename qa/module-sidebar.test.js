@@ -41,6 +41,10 @@ assert.match(index, /\.modul-ana-baglanti:hover, \.modul-alt-baglanti:hover[\s\S
 assert.match(index, /\.modul-grup summary:hover[\s\S]*?var\(--menu-vurgu\)/, "Menü grup başlıkları tema rengiyle hover hissi vermeli");
 assert.match(index, /--menu-metin: #ffffff/, "Açılır menü bağlantı metinleri beyaz olmalı");
 assert.match(index, /\.modul-grup summary \{[\s\S]*?color: #ffffff/, "Açılır menü grup başlıkları beyaz olmalı");
+assert.match(index, /\.modul-ana-baglanti \{[\s\S]*?font-size: 12px/, "Ana menü yazısı daha büyük ve okunaklı olmalı");
+assert.match(index, /\.modul-alt-baglanti \{[\s\S]*?min-height: 40px[\s\S]*?color: #ffffff/, "Alt menü yazısı parlak beyaz ve ferah olmalı");
+assert.match(index, /\.modul-ana-baglanti i, \.modul-alt-baglanti i \{[\s\S]*?width: 24px[\s\S]*?font-size: 13px/, "Menü simgeleri büyük ve belirgin olmalı");
+assert.match(index, /\.modul-grup summary i:first-child \{[\s\S]*?width: 25px[\s\S]*?background: #17324c/, "Grup simgeleri belirgin rozet görünümünde olmalı");
 assert.match(index, /\.modul-alt-baglanti \{[^}]*color: #ffffff/, "Açılan alt menü yazıları beyaz olmalı");
 assert.match(index, /prefers-reduced-motion: reduce/, "Menü hareketleri azaltılmış hareket tercihine saygı göstermeli");
 

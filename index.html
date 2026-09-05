@@ -1559,14 +1559,19 @@
     .modul-ana-baglanti, .modul-alt-baglanti {
       width: 100%; min-height: 35px; display: flex; align-items: center; gap: 10px;
       padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; background: transparent;
-      color: var(--menu-metin); font: 600 10px "Segoe UI",Arial,sans-serif; text-align: left; cursor: pointer;
+      color: #ffffff; font: 650 11px "Segoe UI",Arial,sans-serif; text-align: left; cursor: pointer;
+      text-shadow: 0 0 8px #ffffff18;
       transition: background .16s ease, border-color .16s ease, color .16s ease,
         transform .16s ease, box-shadow .16s ease;
     }
-    .modul-ana-baglanti { min-height: 39px; margin-bottom: 6px; color: #e9f0f6; font-size: 11px; }
+    .modul-ana-baglanti { min-height: 42px; margin-bottom: 6px; color: #ffffff; font-size: 12px; }
     .modul-ana-baglanti i, .modul-alt-baglanti i {
-      width: 18px; color: #7f94a8; text-align: center;
-      transition: color .16s ease, transform .16s ease, filter .16s ease;
+      width: 24px; height: 24px; display: grid; place-items: center; flex: 0 0 24px;
+      border: 1px solid #46627b; border-radius: 7px; background: #17324c;
+      color: #d8e7f4; font-size: 13px; text-align: center;
+      box-shadow: inset 0 1px 0 #ffffff10, 0 3px 8px #02091435;
+      transition: color .16s ease, background .16s ease, border-color .16s ease,
+        transform .16s ease, filter .16s ease;
     }
     .modul-ana-baglanti:hover, .modul-alt-baglanti:hover {
       background: linear-gradient(90deg, #e6a91f16, var(--menu-yuzey-hover));
@@ -1574,7 +1579,8 @@
       box-shadow: 0 5px 14px #02091442;
     }
     .modul-ana-baglanti:hover i, .modul-alt-baglanti:hover i {
-      color: var(--menu-vurgu); transform: scale(1.1); filter: drop-shadow(0 0 5px #e6a91f45);
+      color: #fff2c3; background: #5b4518; border-color: #e6a91f99;
+      transform: scale(1.12); filter: drop-shadow(0 0 7px #e6a91f62);
     }
     .modul-ana-baglanti:focus-visible, .modul-alt-baglanti:focus-visible,
     .modul-grup summary:focus-visible {
@@ -1584,18 +1590,26 @@
       background: linear-gradient(90deg, #e6a91f24, var(--menu-yuzey)); color: #fff;
       border-color: #e6a91f35; box-shadow: inset 3px 0 0 var(--altin), 0 4px 12px #02091430;
     }
-    .modul-ana-baglanti.aktif i, .modul-alt-baglanti.aktif i { color: var(--altin-acik); }
+    .modul-ana-baglanti.aktif i, .modul-alt-baglanti.aktif i {
+      color: #fff4c7; background: #5b4518; border-color: #e6a91f9c;
+      filter: drop-shadow(0 0 6px #e6a91f55);
+    }
     .modul-grup { margin: 2px 0; border-top: 1px solid #13283c; }
     .modul-grup summary {
-      min-height: 37px; display: flex; align-items: center; gap: 9px; padding: 8px 10px;
-      border-radius: 7px; color: #ffffff; font-size: 9px; font-weight: 750; letter-spacing: .55px;
+      min-height: 41px; display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+      border-radius: 7px; color: #ffffff; font-size: 10.5px; font-weight: 780; letter-spacing: .5px;
+      text-shadow: 0 0 8px #ffffff18;
       text-transform: uppercase; cursor: pointer; list-style: none; user-select: none;
       transition: background .16s ease, color .16s ease, box-shadow .16s ease;
     }
     .modul-grup summary::-webkit-details-marker { display: none; }
     .modul-grup summary i:first-child {
-      width: 18px; color: #71879a; text-align: center;
-      transition: color .16s ease, transform .16s ease, filter .16s ease;
+      width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 25px;
+      border: 1px solid #46627b; border-radius: 7px; background: #17324c;
+      color: #d8e7f4; font-size: 13px; text-align: center;
+      box-shadow: inset 0 1px 0 #ffffff10, 0 3px 8px #02091435;
+      transition: color .16s ease, background .16s ease, border-color .16s ease,
+        transform .16s ease, filter .16s ease;
     }
     .modul-grup summary:hover {
       background: linear-gradient(90deg, #e6a91f12, #112c46); color: #f2f6fa;
@@ -1603,7 +1617,8 @@
     }
     .modul-grup summary:hover i:first-child,
     .modul-grup[open] summary i:first-child {
-      color: var(--menu-vurgu); transform: scale(1.08); filter: drop-shadow(0 0 5px #e6a91f3d);
+      color: #fff2c3; background: #5b4518; border-color: #e6a91f99;
+      transform: scale(1.1); filter: drop-shadow(0 0 7px #e6a91f62);
     }
     .modul-grup[open] summary {
       background: linear-gradient(90deg, #e6a91f18, #102a43); color: #ffffff;
@@ -1621,7 +1636,7 @@
       from { opacity: 0; transform: translateY(-3px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .modul-alt-baglanti { position: relative; padding-left: 14px; color: #ffffff; font-weight: 550; }
+    .modul-alt-baglanti { position: relative; min-height: 40px; padding-left: 14px; color: #ffffff; font-weight: 620; }
     .modul-alt-baglanti::before {
       content: ""; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: #375069;
     }
