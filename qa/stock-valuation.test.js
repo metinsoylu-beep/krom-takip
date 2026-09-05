@@ -26,7 +26,8 @@ function fonksiyonuAl(kaynak, ad) {
 assert.match(index, /data-modul="stok-degerleme"/, "Stok değerleme sol menüde bulunmalı");
 assert.match(index, /case "stok-degerleme": urunStokMerkeziniAc\("degerleme"\)/, "Stok değerleme menüsü doğru görünüme bağlanmalı");
 assert.match(index, /option value="degerleme">Stok değerleme<\/option>/, "Stok merkezinden değerleme seçilebilmeli");
-assert.match(index, /id="urun-stok-csv"[^>]*onclick="stokDegerlemeCsvIndir\(\)"/, "Değerleme CSV olarak indirilebilmeli");
+assert.match(index, /id="urun-stok-csv"[^>]*onclick="urunStokRaporCsvIndir\(\)"/, "Stok raporları CSV olarak indirilebilmeli");
+assert.match(index, /\.urun-stok-csv\[hidden\] \{ display: none; \}/, "Rapor düğmesi diğer stok görünümlerinde gizlenmeli");
 assert.match(index, /ağırlıklı ortalama veya geçmiş maliyet yöntemi uygulanmaz/, "Değerleme yönteminin sınırı kullanıcıya açıklanmalı");
 
 const context = {

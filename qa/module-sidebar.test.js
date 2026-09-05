@@ -25,6 +25,7 @@ assert.match(index, /<aside class="modul-panel" id="modul-panel" aria-label="Ön
   "Stok Hareketleri",
   "Kritik Stok",
   "Stok Değerleme",
+  "Stok Kart Ekstresi",
   "Cari Hesaplar &amp; Ekstre",
   "Tahsilat / Ödeme Girişi",
   "Hesap Transferleri",
@@ -89,6 +90,7 @@ context.modulNavigasyon("urun-kartlari", dugme);
 context.modulNavigasyon("stok-hareketleri", dugme);
 context.modulNavigasyon("kritik-stok", dugme);
 context.modulNavigasyon("stok-degerleme", dugme);
+context.modulNavigasyon("stok-ekstresi", dugme);
 context.modulNavigasyon("hesap-transferleri", dugme);
 context.modulNavigasyon("gelir-gider", dugme);
 context.modulNavigasyon("aylik-ozet", dugme);
@@ -96,7 +98,7 @@ context.modulNavigasyon("kdv-ozeti", dugme);
 context.modulNavigasyon("cek-takibi", dugme);
 
 assert.ok(cagrilar.some(([ad]) => ad === "finansHesaplariniAc"), "Kasa/banka bağlantısı mevcut ekrana bağlanmalı");
-assert.deepEqual(cagrilar.filter(([ad]) => ad === "urunStokMerkeziniAc").map(([,gorunum]) => gorunum), ["kartlar", "hareketler", "kritik", "degerleme"], "Ürün ve stok alt menüleri doğru görünüme bağlanmalı");
+assert.deepEqual(cagrilar.filter(([ad]) => ad === "urunStokMerkeziniAc").map(([,gorunum]) => gorunum), ["kartlar", "hareketler", "kritik", "degerleme", "ekstre"], "Ürün ve stok alt menüleri doğru görünüme bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "hesapTransferleriniAc"), "Transfer bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "gelirGiderMerkeziniAc"), "Gelir/gider bağlantısı mevcut ekrana bağlanmalı");
 assert.ok(cagrilar.some(([ad]) => ad === "aylikFinansOzetiniAc"), "Aylık özet bağlantısı mevcut ekrana bağlanmalı");

@@ -1718,11 +1718,13 @@
       padding: 0 13px; border: 1px solid #4ade8066; border-radius: 6px; background: #4ade8012;
       color: #79e79d; font: 700 10px "Segoe UI",Arial,sans-serif; cursor: pointer; white-space: nowrap;
     }
+    .urun-stok-csv[hidden] { display: none; }
     .urun-stok-csv:hover { background: #4ade8024; border-color: #4ade80aa; }
     .stok-degerleme-paneli { padding: 14px; }
     .stok-degerleme-ozet {
       display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; margin-bottom: 12px;
     }
+    .stok-degerleme-ozet.stok-ekstre-ozet { grid-template-columns: repeat(4,minmax(0,1fr)); }
     .stok-degerleme-metrik {
       padding: 10px 12px; border: 1px solid #294159; border-left: 3px solid var(--deger-renk);
       border-radius: 7px; background: #10243a;
@@ -1737,6 +1739,27 @@
     .stok-degerleme-not i { margin-top: 2px; color: #f3be3e; }
     .stok-degerleme-uyari { color: #f6c95c; font-weight: 750; }
     .stok-degerleme-toplam td { border-top: 2px solid #4ade8055; background: #10243a; color: #eef4fa; font-weight: 750; }
+    .stok-ekstre-toolbar {
+      display: grid; grid-template-columns: minmax(230px,.65fr) 1fr; align-items: end; gap: 12px;
+      margin-bottom: 12px; padding: 12px; border: 1px solid #294159; border-radius: 7px; background: #0d2034;
+    }
+    .stok-ekstre-alan label { display: block; margin-bottom: 5px; color: #91a3b5; font-size: 8px; font-weight: 700; }
+    .stok-ekstre-alan select {
+      width: 100%; height: 38px; padding: 0 10px; border: 1px solid #37526b; border-radius: 6px;
+      background: #10243a; color: #ffffff; font: 650 10px "Segoe UI",Arial,sans-serif;
+    }
+    .stok-ekstre-kimlik { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .stok-ekstre-kimlik i {
+      width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 34px;
+      border-radius: 8px; background: #38bdf814; color: #7dd3fc;
+    }
+    .stok-ekstre-kimlik span { display: block; overflow: hidden; color: #8294a7; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .stok-ekstre-kimlik strong { display: block; margin-top: 3px; overflow: hidden; color: #eef4fa; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .stok-ekstre-iptal { opacity: .58; }
+    .stok-ekstre-iptal td { text-decoration: line-through; text-decoration-color: #64748b88; }
+    .stok-ekstre-giris { color: #79e79d; font-weight: 750; }
+    .stok-ekstre-cikis { color: #ff7a85; font-weight: 750; }
+    .stok-ekstre-bakiye { color: #f3be3e; font-weight: 800; white-space: nowrap; }
     .urun-stok-tablo-wrap { min-height: 220px; margin: 0 18px 18px; overflow: auto; border: 1px solid #294159; border-radius: 7px; }
     .urun-stok-tablo { min-width: 1030px; font: 11px "Segoe UI",Arial,sans-serif; }
     .urun-stok-tablo th { height: 35px; padding: 0 12px; }
@@ -1838,7 +1861,8 @@
       .urun-stok-ust-islemler .urun-stok-aksiyon { padding-inline: 8px; }
       .urun-stok-ozetler { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 12px 12px 0; }
       .urun-stok-form { margin: 12px 12px 0; }
-      .urun-stok-form-grid, .urun-stok-filtreler, .stok-degerleme-ozet { grid-template-columns: 1fr; }
+      .urun-stok-form-grid, .urun-stok-filtreler, .stok-degerleme-ozet,
+      .stok-degerleme-ozet.stok-ekstre-ozet, .stok-ekstre-toolbar { grid-template-columns: 1fr; }
       .urun-stok-form-grid .odeme-form-alan.genis { grid-column: 1; }
       .stok-sayim-ozeti { grid-template-columns: 1fr; }
       .urun-stok-form-islem { align-items: stretch; flex-direction: column; }
@@ -2171,8 +2195,8 @@
       </div>
       <div class="urun-stok-filtreler">
         <input id="urun-stok-arama" type="search" placeholder="Kod, ürün veya hizmet ara" oninput="urunStokMerkeziniGoster()"/>
-        <select id="urun-stok-gorunum" onchange="urunStokMerkeziniGoster()"><option value="kartlar">Tüm kartlar</option><option value="kritik">Kritik stoklar</option><option value="hareketler">Stok hareketleri</option><option value="degerleme">Stok değerleme</option></select>
-        <button class="urun-stok-csv" id="urun-stok-csv" type="button" onclick="stokDegerlemeCsvIndir()" hidden><i class="fa-solid fa-file-csv" aria-hidden="true"></i> Değerlemeyi İndir</button>
+        <select id="urun-stok-gorunum" onchange="urunStokMerkeziniGoster()"><option value="kartlar">Tüm kartlar</option><option value="kritik">Kritik stoklar</option><option value="hareketler">Stok hareketleri</option><option value="degerleme">Stok değerleme</option><option value="ekstre">Stok kart ekstresi</option></select>
+        <button class="urun-stok-csv" id="urun-stok-csv" type="button" onclick="urunStokRaporCsvIndir()" hidden><i class="fa-solid fa-file-csv" aria-hidden="true"></i> <span>Raporu İndir</span></button>
       </div>
       <div class="urun-stok-tablo-wrap" id="urun-stok-tablo-wrap"></div>
     </section>
@@ -2845,6 +2869,7 @@
           <button class="modul-alt-baglanti yalnizca-yonetici" type="button" data-modul="stok-sayimi" onclick="modulNavigasyon('stok-sayimi',this)"><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i><span>Stok Sayımı</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="kritik-stok" onclick="modulNavigasyon('kritik-stok',this)"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Kritik Stok</span></button>
           <button class="modul-alt-baglanti" type="button" data-modul="stok-degerleme" onclick="modulNavigasyon('stok-degerleme',this)"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span>Stok Değerleme</span></button>
+          <button class="modul-alt-baglanti" type="button" data-modul="stok-ekstresi" onclick="modulNavigasyon('stok-ekstresi',this)"><i class="fa-solid fa-rectangle-list" aria-hidden="true"></i><span>Stok Kart Ekstresi</span></button>
         </div>
       </details>
 
@@ -3254,6 +3279,7 @@
     let bulutYuklemeDevamEdiyor = false;
     let faturaEklemeKilidi = false;
     let yeniFaturaKalemleri = [];
+    let aktifStokEkstreUrunId = "";
     let cariHareketKayitKilidi = false;
     let duzenlenenCariHareket = null;
     const kayitliBulutSurumMetni = localStorage.getItem(BULUT_SURUM_ANAHTAR);
@@ -4888,6 +4914,35 @@
         toplamBrutFark:satirlar.reduce((toplam,satir)=>toplam+satir.tahminiBrutFark,0),
         fiyatEksikSayisi:satirlar.filter(satir=>satir.fiyatEksik).length,
         pasifStokSayisi:satirlar.filter(satir=>satir.durum === "Pasif" && satir.miktar > 0).length
+      };
+    }
+
+    function stokKartEkstresiniHesapla(urunId, urunler=urunKartlariniYukle(), hareketler=stokHareketleriniYukle()) {
+      const urun = urunKartlariniNormallestir(urunler).find(kart=>kart.tur === "urun" && String(kart.id) === String(urunId)) || null;
+      if (!urun) return { urun:null, acilisStogu:0, mevcutStok:0, toplamGiris:0, toplamCikis:0, iptalSayisi:0, satirlar:[] };
+      let bakiye = tutarSayiyaCevir(urun.acilisStogu);
+      let toplamGiris = 0;
+      let toplamCikis = 0;
+      const ilgiliHareketler = stokHareketleriniNormallestir(hareketler)
+        .filter(hareket=>String(hareket.urunId) === String(urun.id))
+        .sort((a,b)=>a.tarih.localeCompare(b.tarih) || String(a.kayitZamani).localeCompare(String(b.kayitZamani)) || String(a.id).localeCompare(String(b.id),"tr"));
+      const satirlar = ilgiliHareketler.map(hareket=>{
+        const aktif = stokHareketiAktifMi(hareket);
+        const giris = aktif && hareket.tur === "giris" ? hareket.miktar : 0;
+        const cikis = aktif && hareket.tur === "cikis" ? hareket.miktar : 0;
+        toplamGiris += giris;
+        toplamCikis += cikis;
+        bakiye = Math.round((bakiye+giris-cikis)*1000)/1000;
+        return { ...hareket, aktif, giris, cikis, bakiye };
+      });
+      return {
+        urun,
+        acilisStogu:tutarSayiyaCevir(urun.acilisStogu),
+        mevcutStok:bakiye,
+        toplamGiris,
+        toplamCikis,
+        iptalSayisi:satirlar.filter(satir=>!satir.aktif).length,
+        satirlar
       };
     }
 
@@ -10200,6 +10255,47 @@
       syncGoster(`${satirlar.length} ürün stok değerleme raporuna aktarıldı`, "#4ade80");
     }
 
+    function stokEkstreUrunuDegisti(urunId) {
+      aktifStokEkstreUrunId = String(urunId || "");
+      urunStokMerkeziniGoster();
+    }
+
+    function stokKartEkstresiCsvIndir() {
+      const rapor = stokKartEkstresiniHesapla(aktifStokEkstreUrunId);
+      if (!rapor.urun) {
+        syncGoster("Ekstresi indirilecek stok kartı bulunamadı", "#f59e0b");
+        return;
+      }
+      const aranan = String(document.getElementById("urun-stok-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
+      const satirlar = rapor.satirlar.filter(satir=>!aranan || [satir.tarih,satir.tur,satir.belgeNo,satir.aciklama,satir.kaynakTuru,satir.durum].join(" ").toLocaleUpperCase("tr-TR").includes(aranan));
+      const basliklar = ["Tarih","İşlem","Giriş","Çıkış","Kalan","Birim","Belge No","Kaynak","Açıklama","Durum"];
+      const miktar = deger=>deger ? stokMiktariniFormatla(deger) : "";
+      const acilis = ["","Açılış Stoğu",stokMiktariniFormatla(rapor.acilisStogu),"",stokMiktariniFormatla(rapor.acilisStogu),rapor.urun.birim,"","Kart","Kart açılış miktarı","Aktif"];
+      const hareketSatirlari = satirlar.map(satir=>[
+        satir.tarih,satir.tur === "giris" ? "Giriş" : "Çıkış",
+        satir.tur === "giris" ? miktar(satir.miktar) : "",satir.tur === "cikis" ? miktar(satir.miktar) : "",
+        stokMiktariniFormatla(satir.bakiye),rapor.urun.birim,satir.belgeNo || "",
+        satir.kaynakTuru === "fatura" ? "Fatura" : "Manuel",satir.aciklama || "",satir.durum
+      ]);
+      const icerik = "\uFEFF" + [basliklar,acilis,...hareketSatirlari].map(satir=>satir.map(csvHucre).join(";")).join("\r\n");
+      const adres = URL.createObjectURL(new Blob([icerik], { type:"text/csv;charset=utf-8" }));
+      const baglanti = document.createElement("a");
+      const guvenliKod = rapor.urun.kod.replace(/[\\/:*?"<>|]/g,"-");
+      baglanti.href = adres;
+      baglanti.download = `arlinoks-stok-ekstresi-${guvenliKod}-${bugununTarihi()}.csv`;
+      document.body.appendChild(baglanti);
+      baglanti.click();
+      baglanti.remove();
+      setTimeout(()=>URL.revokeObjectURL(adres),1000);
+      syncGoster(`${rapor.urun.kod} stok kart ekstresi indirildi`, "#4ade80");
+    }
+
+    function urunStokRaporCsvIndir() {
+      const gorunum = document.getElementById("urun-stok-gorunum")?.value;
+      if (gorunum === "ekstre") stokKartEkstresiCsvIndir();
+      else if (gorunum === "degerleme") stokDegerlemeCsvIndir();
+    }
+
     function urunStokMerkeziniGoster() {
       const tablo = document.getElementById("urun-stok-tablo-wrap");
       if (!tablo) return;
@@ -10213,7 +10309,37 @@
       const arama = String(document.getElementById("urun-stok-arama")?.value || "").trim().toLocaleUpperCase("tr-TR");
       const gorunum = document.getElementById("urun-stok-gorunum")?.value || "kartlar";
       const csvDugmesi = document.getElementById("urun-stok-csv");
-      if (csvDugmesi) csvDugmesi.hidden = gorunum !== "degerleme";
+      if (csvDugmesi) {
+        csvDugmesi.hidden = !["degerleme","ekstre"].includes(gorunum);
+        const etiket = csvDugmesi.querySelector("span");
+        if (etiket) etiket.textContent = gorunum === "ekstre" ? "Ekstreyi İndir" : "Değerlemeyi İndir";
+      }
+      if (gorunum === "ekstre") {
+        const urunKartlari = urunler.filter(kart=>kart.tur === "urun").sort((a,b)=>a.ad.localeCompare(b.ad,"tr"));
+        if (!urunKartlari.some(kart=>kart.id === aktifStokEkstreUrunId)) aktifStokEkstreUrunId = urunKartlari[0]?.id || "";
+        const rapor = stokKartEkstresiniHesapla(aktifStokEkstreUrunId,urunler,hareketler);
+        const satirlar = rapor.satirlar.filter(satir=>!arama || [satir.tarih,satir.tur,satir.belgeNo,satir.aciklama,satir.kaynakTuru,satir.durum].join(" ").toLocaleUpperCase("tr-TR").includes(arama));
+        const secenekler = urunKartlari.map(kart=>`<option value="${htmlGuvenli(kart.id)}" ${kart.id === aktifStokEkstreUrunId ? "selected" : ""}>${htmlGuvenli(kart.kod)} · ${htmlGuvenli(kart.ad)}${kart.durum === "Pasif" ? " (Pasif)" : ""}</option>`).join("");
+        tablo.innerHTML = rapor.urun ? `<div class="stok-degerleme-paneli">
+          <div class="stok-ekstre-toolbar">
+            <div class="stok-ekstre-alan"><label for="stok-ekstre-urun">STOK KARTI</label><select id="stok-ekstre-urun" onchange="stokEkstreUrunuDegisti(this.value)">${secenekler}</select></div>
+            <div class="stok-ekstre-kimlik"><i class="fa-solid fa-box" aria-hidden="true"></i><div><span>${htmlGuvenli(rapor.urun.kod)} · ${htmlGuvenli(rapor.urun.birim)} · ${htmlGuvenli(rapor.urun.durum)}</span><strong>${htmlGuvenli(rapor.urun.ad)}</strong></div></div>
+          </div>
+          <div class="stok-degerleme-ozet stok-ekstre-ozet">
+            <div class="stok-degerleme-metrik" style="--deger-renk:#67cdfa"><span>AÇILIŞ STOĞU</span><strong>${stokMiktariniFormatla(rapor.acilisStogu)} ${htmlGuvenli(rapor.urun.birim)}</strong></div>
+            <div class="stok-degerleme-metrik" style="--deger-renk:#79e79d"><span>TOPLAM GİRİŞ</span><strong>+${stokMiktariniFormatla(rapor.toplamGiris)} ${htmlGuvenli(rapor.urun.birim)}</strong></div>
+            <div class="stok-degerleme-metrik" style="--deger-renk:#ff7a85"><span>TOPLAM ÇIKIŞ</span><strong>−${stokMiktariniFormatla(rapor.toplamCikis)} ${htmlGuvenli(rapor.urun.birim)}</strong></div>
+            <div class="stok-degerleme-metrik" style="--deger-renk:#f3be3e"><span>GÜNCEL STOK</span><strong>${stokMiktariniFormatla(rapor.mevcutStok)} ${htmlGuvenli(rapor.urun.birim)}</strong></div>
+          </div>
+          <p class="stok-degerleme-not"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>İptal edilen hareketler denetim amacıyla gösterilir ancak giriş, çıkış ve kalan stok hesabını etkilemez.${rapor.iptalSayisi ? ` <span class="stok-degerleme-uyari">${rapor.iptalSayisi} iptal kayıt var.</span>` : ""}</span></p>
+          <table class="urun-stok-tablo"><thead><tr><th>TARİH</th><th>HAREKET</th><th>GİRİŞ</th><th>ÇIKIŞ</th><th>KALAN</th><th>BELGE NO</th><th>KAYNAK</th><th>AÇIKLAMA</th><th>DURUM</th></tr></thead><tbody>
+            <tr><td>—</td><td><span class="urun-tur-rozet">Açılış</span></td><td class="stok-ekstre-giris">+${stokMiktariniFormatla(rapor.acilisStogu)}</td><td>—</td><td class="stok-ekstre-bakiye">${stokMiktariniFormatla(rapor.acilisStogu)} ${htmlGuvenli(rapor.urun.birim)}</td><td>—</td><td>Kart</td><td>Kart açılış miktarı</td><td><span class="stok-durum-rozet aktif">Aktif</span></td></tr>
+            ${satirlar.map(satir=>`<tr class="${satir.aktif ? "" : "stok-ekstre-iptal"}"><td>${htmlGuvenli(formatTarih(tarihOlusturYerel(satir.tarih)))}</td><td><span class="urun-tur-rozet ${satir.tur}">${satir.tur === "giris" ? "Giriş" : "Çıkış"}</span></td><td class="stok-ekstre-giris">${satir.tur === "giris" ? `+${stokMiktariniFormatla(satir.miktar)}` : "—"}</td><td class="stok-ekstre-cikis">${satir.tur === "cikis" ? `−${stokMiktariniFormatla(satir.miktar)}` : "—"}</td><td class="stok-ekstre-bakiye">${stokMiktariniFormatla(satir.bakiye)} ${htmlGuvenli(rapor.urun.birim)}</td><td>${htmlGuvenli(satir.belgeNo || "—")}</td><td>${satir.kaynakTuru === "fatura" ? "Fatura" : "Manuel"}</td><td>${htmlGuvenli(satir.aciklama || "—")}</td><td><span class="stok-durum-rozet ${satir.aktif ? "aktif" : "iptal"}">${htmlGuvenli(satir.durum)}</span></td></tr>`).join("")}
+          </tbody></table>
+          ${satirlar.length ? "" : '<div class="urun-stok-bos">Bu stok kartında aramaya uygun hareket bulunamadı.</div>'}
+        </div>` : '<div class="urun-stok-bos"><i class="fa-solid fa-box-open" aria-hidden="true"></i><br>Ekstre oluşturmak için önce bir ürün kartı ekleyin.</div>';
+        return;
+      }
       if (gorunum === "degerleme") {
         const degerleme = stokDegerlemeRaporunuHesapla(urunler,hareketler);
         const satirlar = stokDegerlemeSatirlariniFiltrele(degerleme.satirlar,arama);
@@ -10261,7 +10387,7 @@
       const arama = document.getElementById("urun-stok-arama");
       const secim = document.getElementById("urun-stok-gorunum");
       if (arama) arama.value = "";
-      if (secim) secim.value = ["kartlar","kritik","hareketler","degerleme"].includes(gorunum) ? gorunum : "kartlar";
+      if (secim) secim.value = ["kartlar","kritik","hareketler","degerleme","ekstre"].includes(gorunum) ? gorunum : "kartlar";
       urunStokMerkeziniGoster();
       document.getElementById("urun-stok-overlay")?.classList.add("aktif");
       if (gorunum === "sayim") stokSayimFormunuAc();
@@ -10329,6 +10455,7 @@
         case "stok-sayimi": urunStokMerkeziniAc("sayim"); break;
         case "kritik-stok": urunStokMerkeziniAc("kritik"); break;
         case "stok-degerleme": urunStokMerkeziniAc("degerleme"); break;
+        case "stok-ekstresi": urunStokMerkeziniAc("ekstre"); break;
         case "cari-hesaplar": cariHesaplariAc(); break;
         case "cari-islem": odemeYonetiminiAc(); break;
         case "finans-hesaplari": finansHesaplariniAc(); break;
