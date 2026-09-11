@@ -558,6 +558,27 @@
     .odeme-form-alan input:focus, .odeme-form-alan select:focus { border-color: #39c56b; }
     .odeme-form-alan.genis { grid-column: span 2; }
     .odeme-form-alan.tam { grid-column: 1 / -1; }
+    .odeme-fatura-kapatma {
+      grid-column: 1 / -1; padding: 12px; border: 1px solid #39c56b55; border-radius: 8px;
+      background: linear-gradient(135deg,#123022aa,#10253a 72%);
+    }
+    .odeme-fatura-kapatma[hidden] { display: none; }
+    .odeme-fatura-kapatma-ust { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+    .odeme-fatura-kapatma-baslik { display: block; color: #eefbf3; font-size: 10px; font-weight: 800; letter-spacing: .03em; }
+    .odeme-fatura-kapatma-aciklama { display: block; margin-top: 3px; color: #91a99b; font-size: 9px; line-height: 1.45; }
+    .odeme-fatura-kapatma-ozet { flex: 0 0 auto; color: #75e39a; font-size: 9px; font-weight: 700; text-align: right; }
+    .odeme-fatura-kapatma-liste { display: grid; gap: 6px; max-height: 175px; overflow-y: auto; }
+    .odeme-fatura-secimi {
+      display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 9px;
+      padding: 8px 10px; border: 1px solid #2a465c; border-radius: 7px; background: #0b1c2c;
+      color: #dce8e1; cursor: pointer; transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .odeme-fatura-secimi:hover { border-color: #39c56b88; background: #102a32; transform: translateY(-1px); }
+    .odeme-fatura-secimi input { width: 15px; height: 15px; margin: 0; accent-color: #39c56b; }
+    .odeme-fatura-secimi strong { display: block; color: #f5fbf7; font-size: 10px; }
+    .odeme-fatura-secimi small { display: block; margin-top: 2px; color: #849aab; font-size: 8px; }
+    .odeme-fatura-secimi-tutar { color: #f6c95c; font: 700 11px Georgia,serif; white-space: nowrap; }
+    .odeme-fatura-kapatma-bos { padding: 9px; color: #8294a7; font-size: 9px; text-align: center; }
     .odeme-form-islem { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
     .odeme-form-mesaj { min-height: 18px; margin-right: auto; color: #ff7a85; font-size: 10px; }
     .odeme-kaydet-btn {
@@ -3118,6 +3139,16 @@
           <div class="odeme-form-alan" id="cek-odeme-tarihi-alani" hidden><label for="cek-odeme-tarihi">ÖDEME TARİHİ</label><input id="cek-odeme-tarihi" type="date"/></div>
         </div>
         <div class="odeme-form-alan genis"><label for="odeme-aciklama">AÇIKLAMA</label><input id="odeme-aciklama" type="text" maxlength="500" placeholder="İsteğe bağlı ödeme notu"/></div>
+        <section class="odeme-fatura-kapatma" id="odeme-fatura-kapatma-alani" hidden aria-labelledby="odeme-fatura-kapatma-baslik">
+          <div class="odeme-fatura-kapatma-ust">
+            <div>
+              <strong class="odeme-fatura-kapatma-baslik" id="odeme-fatura-kapatma-baslik">BU ÖDEMEYLE KAPATILACAK FATURALAR (İSTEĞE BAĞLI)</strong>
+              <span class="odeme-fatura-kapatma-aciklama">Tutar faturalara otomatik dağıtılmaz. Yalnızca sizin seçtiğiniz faturalar “Ödendi” durumuna alınır.</span>
+            </div>
+            <span class="odeme-fatura-kapatma-ozet" id="odeme-fatura-kapatma-ozet">0 fatura seçildi</span>
+          </div>
+          <div class="odeme-fatura-kapatma-liste" id="odeme-fatura-kapatma-liste"></div>
+        </section>
         <div class="odeme-form-islem">
           <span class="odeme-form-mesaj" id="odeme-form-mesaj" role="status"></span>
           <button class="odeme-duzenleme-vazgec" id="odeme-duzenleme-vazgec" type="button" onclick="cariHareketDuzenlemeyiIptalEt()" hidden><i class="fa-solid fa-xmark" aria-hidden="true"></i> Düzenlemeyi İptal Et</button>
@@ -4906,6 +4937,22 @@
       return cariHareketTurunuNormallestir(deger) === "tahsilat" ? "Tahsilat" : "Ödeme";
     }
 
+    function faturaKimlikleriniNormallestir(deger) {
+      let liste = deger;
+      if (typeof liste === "string") {
+        const metin = liste.trim();
+        if (!metin) liste = [];
+        else {
+          try { liste = JSON.parse(metin); }
+          catch { liste = metin.split(/[;,\n]+/); }
+        }
+      }
+      const gorulen = new Set();
+      return (Array.isArray(liste) ? liste : [])
+        .map(kimlik => String(kimlik ?? "").trim().slice(0,160))
+        .filter(kimlik => kimlik && !gorulen.has(kimlik) && gorulen.add(kimlik));
+    }
+
     function cariHareketiniNormallestir(ham, sira=0) {
       if (!ham || typeof ham !== "object") return null;
       const tarih = String(ham.tarih || ham.islemTarihi || "").split("T")[0];
@@ -4924,6 +4971,7 @@
         referans:String(ham.referans || "").trim().slice(0,160),
         aciklama:String(ham.aciklama || "").trim().slice(0,500),
         kaynakFaturaId:Number(ham.kaynakFaturaId) || null,
+        kapatilanFaturaIds:faturaKimlikleriniNormallestir(ham.kapatilanFaturaIds || ham.kapatilanFaturalar),
         gecisKaydi:ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
         kayitZamani:String(ham.kayitZamani || "").trim().slice(0,80),
         durum,
@@ -8209,6 +8257,101 @@
       document.getElementById("odeme-cari").value = seciliCari;
     }
 
+    function duzenlenenOdemeHareketiniGetir() {
+      if (duzenlenenCariHareket?.kaynak !== "hareket") return null;
+      return cariHareketleriYukle().find(hareket => hareket.id === duzenlenenCariHareket.kimlik) || null;
+    }
+
+    function secilenFaturaKimlikleriniGetir() {
+      return faturaKimlikleriniNormallestir(Array.from(
+        document.querySelectorAll('#odeme-fatura-kapatma-liste input[type="checkbox"]:checked')
+      ).map(secim => secim.value));
+    }
+
+    function odemeFaturaSecimOzetiniGuncelle() {
+      const secimler = Array.from(document.querySelectorAll('#odeme-fatura-kapatma-liste input[type="checkbox"]:checked'));
+      const toplam = secimler.reduce((sonuc,secim) => sonuc+tutarSayiyaCevir(secim.dataset.tutar),0);
+      const ozet = document.getElementById("odeme-fatura-kapatma-ozet");
+      if (ozet) ozet.textContent = secimler.length
+        ? `${secimler.length} fatura · ${formatPara(toplam)}`
+        : "0 fatura seçildi";
+    }
+
+    function odemeyleKapatilabilirFaturalar(cari, dahilEdilecekKimlikler=[]) {
+      const anahtar = cariAdiAnahtari(cari);
+      const dahil = new Set(faturaKimlikleriniNormallestir(dahilEdilecekKimlikler));
+      return faturaYukle()
+        .filter(inv => cariAdiAnahtari(inv.cari) === anahtar &&
+          faturaTurunuNormallestir(inv.faturaTuru) === "alis" &&
+          (!faturaTakibiKapali(inv) || dahil.has(String(inv.id))))
+        .sort((a,b) => vadeTarihi(a.tarih,a.vadeGun)-vadeTarihi(b.tarih,b.vadeGun) || String(a.no).localeCompare(String(b.no),"tr"));
+    }
+
+    function odemeFaturaSecenekleriniGuncelle(seciliKimlikler=null) {
+      const alan = document.getElementById("odeme-fatura-kapatma-alani");
+      const listeAlani = document.getElementById("odeme-fatura-kapatma-liste");
+      if (!alan || !listeAlani) return;
+      const tur = document.getElementById("odeme-tur")?.value || "odeme";
+      const cari = document.getElementById("odeme-cari")?.value.trim() || "";
+      const duzenlenen = duzenlenenOdemeHareketiniGetir();
+      const varsayilanKimlikler = duzenlenen && cariHareketTurunuNormallestir(duzenlenen.islemTuru) === "odeme"
+        ? duzenlenen.kapatilanFaturaIds
+        : [];
+      const secili = new Set(faturaKimlikleriniNormallestir(
+        seciliKimlikler === null ? (secilenFaturaKimlikleriniGetir().length ? secilenFaturaKimlikleriniGetir() : varsayilanKimlikler) : seciliKimlikler
+      ));
+      const gorunur = tur === "odeme" && Boolean(cari);
+      alan.hidden = !gorunur;
+      if (!gorunur) {
+        listeAlani.innerHTML = "";
+        odemeFaturaSecimOzetiniGuncelle();
+        return;
+      }
+      const faturalar = odemeyleKapatilabilirFaturalar(cari,varsayilanKimlikler);
+      listeAlani.innerHTML = faturalar.length
+        ? faturalar.map(inv => {
+            const kimlik = String(inv.id);
+            const vade = vadeTarihi(inv.tarih,inv.vadeGun);
+            const gun = kalanGun(vade);
+            const vadeDurumu = faturaTakibiKapali(inv) && secili.has(kimlik)
+              ? "Bu ödeme hareketiyle kapatıldı"
+              : gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vadesi bugün" : `Vadeye ${gun} gün`;
+            return `<label class="odeme-fatura-secimi">
+              <input type="checkbox" value="${htmlGuvenli(kimlik)}" data-tutar="${tutarSayiyaCevir(inv.tutar)}" ${secili.has(kimlik)?"checked":""} onchange="odemeFaturaSecimOzetiniGuncelle()"/>
+              <span><strong>${htmlGuvenli(inv.no || "Fatura no belirtilmedi")}</strong><small>${formatTarih(vade)} · ${htmlGuvenli(vadeDurumu)}</small></span>
+              <span class="odeme-fatura-secimi-tutar">${formatPara(inv.tutar)}</span>
+            </label>`;
+          }).join("")
+        : '<div class="odeme-fatura-kapatma-bos">Bu cariye ait açık alış faturası bulunmuyor.</div>';
+      odemeFaturaSecimOzetiniGuncelle();
+    }
+
+    function odemeFaturaKimlikleriniDogrula(cari, kimlikler, mevcutBaglantilar=[]) {
+      const izinli = new Set(odemeyleKapatilabilirFaturalar(cari,mevcutBaglantilar).map(inv => String(inv.id)));
+      return faturaKimlikleriniNormallestir(kimlikler).filter(kimlik => izinli.has(kimlik));
+    }
+
+    function faturaTakipBaglantilariniUygula(faturalar, etkilenenKimlikler, hareketler) {
+      const etkilenen = new Set(faturaKimlikleriniNormallestir(etkilenenKimlikler));
+      if (!etkilenen.size) return faturalariTekillestir(faturalar).liste;
+      const aktifBaglantilar = new Map();
+      cariHareketleriNormallestir(hareketler)
+        .filter(hareket => cariHareketAktifMi(hareket) && cariHareketTurunuNormallestir(hareket.islemTuru) === "odeme")
+        .forEach(hareket => faturaKimlikleriniNormallestir(hareket.kapatilanFaturaIds).forEach(kimlik => {
+          const tarihler = aktifBaglantilar.get(kimlik) || [];
+          tarihler.push(hareket.tarih);
+          aktifBaglantilar.set(kimlik,tarihler);
+        }));
+      return faturalariTekillestir(faturalar).liste.map(inv => {
+        const kimlik = String(inv.id);
+        if (!etkilenen.has(kimlik)) return inv;
+        const tarihler = aktifBaglantilar.get(kimlik) || [];
+        return tarihler.length
+          ? { ...inv, takipKapali:true, kapanisTarihi:tarihler.sort().slice(-1)[0] }
+          : { ...inv, takipKapali:false, kapanisTarihi:"" };
+      });
+    }
+
     function odemeYonetiminiAc(cari="", varsayilanTur="odeme") {
       duzenlenenCariHareket = null;
       cariListesiniDoldur(cari);
@@ -8225,6 +8368,7 @@
       document.getElementById("cek-odeme-tarihi").value = "";
       document.getElementById("odeme-form-mesaj").textContent = "";
       odemeTuruDegisti();
+      odemeFaturaSecenekleriniGuncelle([]);
       finansHesabiSecenekleriniGuncelle("");
       odemeYonetiminiGuncelle();
       document.getElementById("odeme-yonetim-overlay").classList.add("aktif");
@@ -8252,6 +8396,7 @@
         : `<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> ${duzenlemeMi ? `${hareketEtiketi} Değişikliklerini Kaydet` : `${tur === "tahsilat" ? "Tahsilatı" : "Ödemeyi"} Kaydet`}`;
       finansHesabiSecenekleriniGuncelle(document.getElementById("odeme-hesap")?.value || "");
       cekOdemeTarihiAlaniniGuncelle(false);
+      odemeFaturaSecenekleriniGuncelle();
     }
 
     function finansHesabiSecimiDegisti() {
@@ -8299,13 +8444,14 @@
     function cariEkstreHareketleriniOlustur(cari) {
       const anahtar = cariAdiAnahtari(cari);
       const satirlar = [];
+      const faturalar = faturaYukle();
       const kart = cariKartiniBul(cari);
       if (kart?.acilisTarihi && (kart.acilisBorc>0 || kart.acilisAlacak>0)) satirlar.push({
         id:`acilis-${kart.id}`, tarih:kart.acilisTarihi, tur:"Açılış Bakiyesi",
         detay:kart.acilisBorc>0 ? "Devir borç bakiyesi" : "Devir alacak bakiyesi",
         borc:tutarSayiyaCevir(kart.acilisBorc), alacak:tutarSayiyaCevir(kart.acilisAlacak), silinebilir:false, kayitZamani:""
       });
-      faturaYukle().filter(inv => cariAdiAnahtari(inv.cari) === anahtar).forEach(inv => satirlar.push({
+      faturalar.filter(inv => cariAdiAnahtari(inv.cari) === anahtar).forEach(inv => satirlar.push({
         id:`fatura-${inv.id}`, tarih:inv.tarih, tur:`${faturaTuruEtiketi(inv.faturaTuru)} Faturası`, detay:`${inv.no} · Vade ${formatTarih(vadeTarihi(inv.tarih,inv.vadeGun))}`,
         borc:faturaTurunuNormallestir(inv.faturaTuru) === "alis" ? tutarSayiyaCevir(inv.tutar) : 0,
         alacak:faturaTurunuNormallestir(inv.faturaTuru) === "satis" ? tutarSayiyaCevir(inv.tutar) : 0,
@@ -8314,7 +8460,8 @@
       cariHareketleriYukle().filter(h => cariAdiAnahtari(h.cari) === anahtar).forEach(h => {
         const iptalMi = !cariHareketAktifMi(h);
         const hesap = finansHesabiniBul(h.hesapId);
-        const detay = [h.hesapId ? `Hesap: ${hesap?.ad || "Silinmiş hesap"}` : "Hesap belirtilmedi",h.referans ? `Ref: ${h.referans}` : "",h.aciklama,iptalMi ? `İptal nedeni: ${h.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
+        const kapatilanFaturalar = faturaKimlikleriniNormallestir(h.kapatilanFaturaIds).map(kimlik => faturalar.find(inv => String(inv.id) === kimlik)?.no || kimlik);
+        const detay = [h.hesapId ? `Hesap: ${hesap?.ad || "Silinmiş hesap"}` : "Hesap belirtilmedi",h.referans ? `Ref: ${h.referans}` : "",kapatilanFaturalar.length ? `Kapatılan faturalar: ${kapatilanFaturalar.join(", ")}` : "",h.aciklama,iptalMi ? `İptal nedeni: ${h.iptalNedeni || "Belirtilmedi"}` : ""].filter(Boolean).join(" · ");
         satirlar.push({
           id:h.id, tarih:h.tarih, tur:iptalMi ? `${cariHareketTuruEtiketi(h.islemTuru)} · İptal` : `${cariHareketTuruEtiketi(h.islemTuru)} · ${h.yontem}`,
           detay:detay || `Cari ${cariHareketTuruEtiketi(h.islemTuru).toLocaleLowerCase("tr-TR")}`,
@@ -8600,6 +8747,7 @@
       document.getElementById("odeme-bakiye-etiket").textContent = bakiye.etiket.toLocaleUpperCase("tr-TR");
       document.getElementById("odeme-kalan-tutar").textContent = formatPara(bakiye.tutar);
       document.getElementById("odeme-bakiye-kart")?.style.setProperty("--odeme-renk", bakiye.sinif === "bakiye-borc" ? "#ff6b77" : bakiye.sinif === "bakiye-alacak" ? "#4ade80" : "#94a3b8");
+      odemeFaturaSecenekleriniGuncelle();
       const ekstre = cari ? cariEkstreHareketleriniOlustur(cari) : [];
       document.getElementById("odeme-gecmisi-sayisi").textContent = `${ekstre.length} hareket`;
       document.getElementById("odeme-gecmisi-liste").innerHTML = ekstre.length
@@ -8619,10 +8767,15 @@
 
     function cariVerileriniKaydet(hareketler, cekler, mesaj, secenekler={}) {
       if (!yoneticiGerekli()) return false;
-      otomatikYedekOlustur(faturaYukle(), mesaj || "Cari hesap değiştirildi");
+      const mevcutFaturalar = faturaYukle();
+      const kaydedilecekFaturalar = Array.isArray(secenekler.faturalar)
+        ? faturalariTekillestir(secenekler.faturalar).liste
+        : mevcutFaturalar;
+      otomatikYedekOlustur(mevcutFaturalar, mesaj || "Cari hesap değiştirildi");
+      localStorage.setItem(ANAHTAR, JSON.stringify(kaydedilecekFaturalar));
       localStorage.setItem(CARI_HAREKET_ANAHTAR, JSON.stringify(cariHareketleriNormallestir(hareketler)));
       localStorage.setItem(CEK_ANAHTAR, JSON.stringify(cekleriNormallestir(cekler)));
-      buludaKaydet(faturaYukle(), {
+      buludaKaydet(kaydedilecekFaturalar, {
         auditAction:mesaj || "Cari hesap değiştirildi",
         allowDuplicateRecordIds:secenekler.allowDuplicateRecordIds
       });
@@ -8683,6 +8836,7 @@
         const hesapId = document.getElementById("odeme-hesap")?.value || "";
         const referans = document.getElementById("odeme-referans").value.trim();
         const aciklama = document.getElementById("odeme-aciklama").value.trim();
+        const secilenFaturaKimlikleri = tur === "odeme" ? secilenFaturaKimlikleriniGetir() : [];
         const mesaj = document.getElementById("odeme-form-mesaj");
         mesaj.style.color = "#ff7a85";
         if (!cari) { mesaj.textContent = "Cari/firma seçin."; return; }
@@ -8707,6 +8861,10 @@
           }
           if (!hesapId && mevcut.hesapId) { mesaj.textContent = "Bu kayıt için kasa/banka hesabını seçin."; return; }
           let guncellenen;
+          const oncekiFaturaKimlikleri = kaynak === "hareket" ? faturaKimlikleriniNormallestir(mevcut.kapatilanFaturaIds) : [];
+          const kapatilanFaturaIds = kaynak === "hareket" && tur === "odeme"
+            ? odemeFaturaKimlikleriniDogrula(cari,secilenFaturaKimlikleri,oncekiFaturaKimlikleri)
+            : [];
           if (kaynak === "cek") {
             const cekNo = document.getElementById("cek-no").value.trim();
             const banka = document.getElementById("cek-banka").value.trim();
@@ -8722,7 +8880,7 @@
             guncellenen = cekiNormallestir({ ...mevcut, cari, tarih, vadeTarihi, tutar, cekNo, banka, hesapId, durum, odemeTarihi, referans, aciklama, iptalZamani:"", iptalNedeni:"", iptalOncesiDurum:"" });
           } else {
             const yontem = document.getElementById("odeme-yontem").value.trim();
-            guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, islemTuru:tur, hesapId, yontem, referans, aciklama, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
+            guncellenen = cariHareketiniNormallestir({ ...mevcut, cari, tarih, tutar, islemTuru:tur, hesapId, yontem, referans, aciklama, kapatilanFaturaIds, durum:"Aktif", iptalZamani:"", iptalNedeni:"" });
           }
           if (!guncellenen) { mesaj.textContent = "Güncellenen kayıt doğrulanamadı."; return; }
           const turAdi = kaynak === "cek" ? "çek" : cariHareketTuruEtiketi(guncellenen.islemTuru).toLocaleLowerCase("tr-TR");
@@ -8736,7 +8894,10 @@
             mesaj.textContent = "Benzer kayıt nedeniyle değişiklik durduruldu; hiçbir veri değiştirilmedi.";
             return;
           }
-          if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki ${turAdi} kaydı ${formatPara(guncellenen.tutar)} olarak güncellensin mi? Değişiklikten önce otomatik yedek alınacaktır.`)) return;
+          const faturaBaglantiNotu = kaynak === "hareket" && cariHareketTurunuNormallestir(guncellenen.islemTuru) === "odeme"
+            ? ` Bu ödemeye ${kapatilanFaturaIds.length} fatura bağlanacak.`
+            : "";
+          if (!confirm(`${formatPara(mevcut.tutar)} tutarındaki ${turAdi} kaydı ${formatPara(guncellenen.tutar)} olarak güncellensin mi?${faturaBaglantiNotu} Değişiklikten önce otomatik yedek alınacaktır.`)) return;
           cari = cariKartiniGarantiEt(cari)?.cari || cari;
           guncellenen = kaynak === "cek"
             ? cekiNormallestir({ ...guncellenen, cari })
@@ -8747,16 +8908,20 @@
           const cekler = kaynak === "cek"
             ? mevcutCekler.map(cek => cek.id === kimlik ? guncellenen : cek)
             : mevcutCekler;
+          const etkilenenFaturaKimlikleri = faturaKimlikleriniNormallestir([...oncekiFaturaKimlikleri,...kapatilanFaturaIds]);
+          const faturalar = kaynak === "hareket"
+            ? faturaTakipBaglantilariniUygula(faturaYukle(),etkilenenFaturaKimlikleri,hareketler)
+            : faturaYukle();
           cariVerileriniKaydet(
             hareketler,
             cekler,
             kaynak === "cek" ? "Çek kaydı düzenlendi" : `${cariHareketTuruEtiketi(guncellenen.islemTuru)} kaydı düzenlendi`,
-            { allowDuplicateRecordIds:benzerKayit ? [kimlik] : [] }
+            { allowDuplicateRecordIds:benzerKayit ? [kimlik] : [], faturalar }
           );
           odemeYonetiminiAc(cari);
           const basariMesaji = document.getElementById("odeme-form-mesaj");
           basariMesaji.style.color = "#4ade80";
-          basariMesaji.textContent = `${formatPara(tutar)} tutarındaki ${turAdi} kaydı güncellendi.`;
+          basariMesaji.textContent = `${formatPara(tutar)} tutarındaki ${turAdi} kaydı güncellendi.${kapatilanFaturaIds.length ? ` ${kapatilanFaturaIds.length} fatura ödendi olarak kapatıldı.` : ""}`;
           return;
         }
         cari = cariKartiniGarantiEt(cari)?.cari || cari;
@@ -8795,26 +8960,30 @@
         } else {
           const yontem = document.getElementById("odeme-yontem").value.trim();
           const hareketEtiketi = tur === "tahsilat" ? "tahsilat" : "ödeme";
-          const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, islemTuru:tur, hesapId, yontem, referans, aciklama, kayitZamani });
+          const kapatilanFaturaIds = tur === "odeme" ? odemeFaturaKimlikleriniDogrula(cari,secilenFaturaKimlikleri) : [];
+          const yeniHareket = cariHareketiniNormallestir({ id:cariHareketKimligiOlustur("chr"), cari, tarih, tutar, islemTuru:tur, hesapId, yontem, referans, aciklama, kapatilanFaturaIds, kayitZamani });
           const benzerOdeme = benzerCariHareketiBul("hareket",yeniHareket,mevcutHareketler,mevcutCekler);
           if (benzerOdeme && !confirm(`Aynı bilgilerle aktif bir ${hareketEtiketi} kaydı zaten var. Bu işlem yeni bir kayıt olarak yine de kaydedilsin mi?`)) {
             mesaj.textContent = `Benzer ${hareketEtiketi} kaydı nedeniyle işlem durduruldu; hiçbir veri değiştirilmedi.`;
             return;
           }
+          const hareketler = [...mevcutHareketler,yeniHareket];
+          const faturalar = faturaTakipBaglantilariniUygula(faturaYukle(),kapatilanFaturaIds,hareketler);
           cariVerileriniKaydet(
-            [...mevcutHareketler,yeniHareket],
+            hareketler,
             mevcutCekler,
             `${cari} hesabına ${hareketEtiketi} kaydedildi`,
-            { allowDuplicateRecordIds:benzerOdeme ? [yeniHareket.id] : [] }
+            { allowDuplicateRecordIds:benzerOdeme ? [yeniHareket.id] : [], faturalar }
           );
         }
         mesaj.style.color = "#4ade80";
         mesaj.textContent = tur === "tahsilat"
           ? `${formatPara(tutar)} tahsilat olarak cari hesabın borç tarafına kaydedildi.`
-          : `${formatPara(tutar)} cari hesabın alacak tarafına kaydedildi.`;
+          : `${formatPara(tutar)} cari hesabın alacak tarafına kaydedildi.${secilenFaturaKimlikleri.length ? ` ${secilenFaturaKimlikleri.length} fatura ödendi olarak kapatıldı.` : ""}`;
         document.getElementById("odeme-tutar").value = "";
         document.getElementById("odeme-referans").value = "";
         document.getElementById("odeme-aciklama").value = "";
+        odemeFaturaSecenekleriniGuncelle([]);
         odemeYonetiminiGuncelle();
       } finally {
         setTimeout(() => {
@@ -8862,7 +9031,10 @@
         ? hareketler.some(hareket => hareket.id === kimlik && hareket.durum === "İptal")
         : cekler.some(cek => cek.id === kimlik && cek.durum === "İptal");
       if (!bulundu) { mesaj.textContent = "İptal edilecek hareket bulunamadı."; return; }
-      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı iptal edildi" : `${hareketAdi} kaydı iptal edildi`);
+      const faturalar = mevcutHareket
+        ? faturaTakipBaglantilariniUygula(faturaYukle(),mevcutHareket.kapatilanFaturaIds,hareketler)
+        : faturaYukle();
+      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek kaydı iptal edildi" : `${hareketAdi} kaydı iptal edildi`, { faturalar });
       cariHareketIptaliniKapat();
       odemeYonetiminiGuncelle();
     }
@@ -8889,7 +9061,10 @@
       const cekler = kaynak === "cek"
         ? cekleriYukle().map(cek => cek.id === kimlik ? geriAlinan : cek)
         : cekleriYukle();
-      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek iptali geri alındı" : `${cariHareketTuruEtiketi(mevcut.islemTuru)} iptali geri alındı`);
+      const faturalar = kaynak === "hareket"
+        ? faturaTakipBaglantilariniUygula(faturaYukle(),geriAlinan.kapatilanFaturaIds,hareketler)
+        : faturaYukle();
+      cariVerileriniKaydet(hareketler, cekler, kaynak === "cek" ? "Çek iptali geri alındı" : `${cariHareketTuruEtiketi(mevcut.islemTuru)} iptali geri alındı`, { faturalar });
       odemeYonetiminiGuncelle();
     }
 

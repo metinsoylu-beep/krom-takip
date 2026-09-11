@@ -36,6 +36,11 @@ assert.deepEqual({ ...context.bakiyeBilgisi(hesap.bakiye) }, { etiket:"Alacak Ba
 hesap = context.cariOzetleriniHesapla(faturalar, [...hareketler,iptalEdilenHareket], [])[0];
 assert.equal(hesap.bakiye, -50, "İptal edilen ödeme bakiyeyi değiştirmemeli");
 assert.equal(context.cariHareketiniNormallestir(iptalEdilenHareket).iptalNedeni, "Mükerrer kayıt", "İptal nedeni korunmalı");
+assert.deepEqual(
+  [...context.cariHareketiniNormallestir({ ...hareketler[0], kapatilanFaturaIds:[1,"1",2] }).kapatilanFaturaIds],
+  ["1","2"],
+  "Ödemeyle kapatılan fatura kimlikleri tekil ve kalıcı olmalı"
+);
 
 hesap = context.cariOzetleriniHesapla(faturalar, [], verildi)[0];
 assert.equal(hesap.bakiye, 75, "Verilen çek cari borçtan bir kez düşmeli");

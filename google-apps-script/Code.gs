@@ -63,7 +63,8 @@ const CARI_HAREKET_BASLIK = [
   "Kayıt Zamanı",
   "Durum",
   "İptal Zamanı",
-  "İptal Nedeni"
+  "İptal Nedeni",
+  "Kapatılan Fatura ID'leri"
 ];
 const CEK_BASLIK = [
   "Çek ID",
@@ -820,6 +821,26 @@ function takipKapaliMi(deger) {
     metin === "kapalı" || metin === "kapali" || metin === "ödendi" || metin === "odendi";
 }
 
+function faturaKimlikleriniNormallestir(deger) {
+  var liste = deger;
+  if (typeof liste === "string") {
+    var metin = liste.trim();
+    if (!metin) liste = [];
+    else {
+      try { liste = JSON.parse(metin); }
+      catch (hata) { liste = metin.split(/[;,\n]+/); }
+    }
+  }
+  var gorulen = {};
+  return (Array.isArray(liste) ? liste : []).map(function(kimlik) {
+    return String(kimlik === null || kimlik === undefined ? "" : kimlik).trim().slice(0, 160);
+  }).filter(function(kimlik) {
+    if (!kimlik || gorulen[kimlik]) return false;
+    gorulen[kimlik] = true;
+    return true;
+  });
+}
+
 function odemeKaydiniNormallestir(ham, faturaId, sira) {
   if (!ham || typeof ham !== "object") return null;
   const tutar = tutarSayisi(ham.tutar);
@@ -1048,6 +1069,7 @@ function cariHareketiniNormallestir(ham, sira) {
     referans: String(ham.referans || "").trim().slice(0, 160),
     aciklama: String(ham.aciklama || "").trim().slice(0, 500),
     kaynakFaturaId: Number(ham.kaynakFaturaId) || null,
+    kapatilanFaturaIds: faturaKimlikleriniNormallestir(ham.kapatilanFaturaIds || ham.kapatilanFaturalar),
     gecisKaydi: ham.gecisKaydi === true || String(ham.gecisKaydi || "").trim().toLocaleLowerCase("tr-TR") === "evet",
     kayitZamani: String(ham.kayitZamani || "").trim().slice(0, 80),
     durum: durum,
@@ -1934,7 +1956,8 @@ function cariHareketVerileriniOku() {
       kayitZamani: row[konum("Kayıt Zamanı")],
       durum: row[konum("Durum")],
       iptalZamani: row[konum("İptal Zamanı")],
-      iptalNedeni: row[konum("İptal Nedeni")]
+      iptalNedeni: row[konum("İptal Nedeni")],
+      kapatilanFaturaIds: row[konum("Kapatılan Fatura ID'leri")]
     };
   }));
 }
@@ -2625,7 +2648,8 @@ function doPost(e) {
         hareket.kayitZamani,
         hareket.durum,
         hareket.iptalZamani,
-        hareket.iptalNedeni
+        hareket.iptalNedeni,
+        JSON.stringify(hareket.kapatilanFaturaIds || [])
       ]);
     });
     const cekSatirlari = [CEK_BASLIK];
