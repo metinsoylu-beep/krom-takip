@@ -2327,11 +2327,12 @@
           <div id="duzenle-vade-hint"></div>
         </div>
         <div class="duzenle-alan">
-          <label>VADE TAKİBİ</label>
+          <label>ÖDEME DURUMU</label>
           <select id="d-takip-durumu">
-            <option value="acik">Açık</option>
-            <option value="kapali">Kapalı</option>
+            <option value="acik">Ödenmedi</option>
+            <option value="kapali">Ödendi</option>
           </select>
+          <small class="hint">Ödendi seçilen faturalar listenin altında, üstü çizili gösterilir.</small>
         </div>
       </div>
       <input type="hidden" id="d-id"/>
@@ -7442,7 +7443,7 @@
     }
     function siralamaAciklamasi(tur=aktifSiralamaTuru()) {
       const aciklamalar = {
-        "durum-vade": "Duruma göre · Yaklaşan vade önce",
+        "durum-vade": "Ödenmemişler önce · Yaklaşan vade",
         "tarih-yeni": "Fatura tarihi · Yeni tarih önce",
         "tarih-eski": "Fatura tarihi · Eski tarih önce",
         "tutar-buyuk": "Tutar · Büyük tutar önce",
@@ -7452,6 +7453,9 @@
     }
     function faturaListeSirasiniKarsilastir(a,b,tur="durum-vade") {
       const kimlikFarki = Number(b.id) - Number(a.id);
+      const aTakipKapali = faturaTakibiKapali(a);
+      const bTakipKapali = faturaTakibiKapali(b);
+      if (aTakipKapali !== bTakipKapali) return aTakipKapali ? 1 : -1;
       if (tur === "tarih-yeni") {
         return tarihOlusturYerel(b.tarih) - tarihOlusturYerel(a.tarih) || kimlikFarki;
       }
@@ -7466,9 +7470,6 @@
           String(b.cari || "Belirtilmedi"), "tr", { sensitivity:"base" }
         ) || kimlikFarki;
       }
-      const aTakipKapali = faturaTakibiKapali(a);
-      const bTakipKapali = faturaTakibiKapali(b);
-      if (aTakipKapali !== bTakipKapali) return aTakipKapali ? 1 : -1;
       const vadeFarki = vadeTarihi(a.tarih,a.vadeGun) - vadeTarihi(b.tarih,b.vadeGun);
       return vadeFarki || kimlikFarki;
     }
@@ -7659,7 +7660,7 @@
       const satirlar = liste.map(inv=>{
         const vade = vadeTarihi(inv.tarih, inv.vadeGun);
         const gun = kalanGun(vade);
-        const vadeDurumu = faturaTakibiKapali(inv) ? "Takip kapalı" : gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vade bugün" : `Vadeye ${gun} gün`;
+        const vadeDurumu = faturaTakibiKapali(inv) ? "Ödendi" : gun < 0 ? `Vadesi ${Math.abs(gun)} gün geçti` : gun === 0 ? "Vade bugün" : `Vadeye ${gun} gün`;
         const bakiye = bakiyeBilgisi(cariOzetiniGetir(inv.cari).bakiye);
         return [
           inv.cari || "Belirtilmedi",
@@ -7749,7 +7750,7 @@
     }
 
     function raporDurumBilgisi(inv, referans=new Date()) {
-      if (faturaTakibiKapali(inv)) return { metin:"Takip kapalı", renk:"#4ade80" };
+      if (faturaTakibiKapali(inv)) return { metin:"Ödendi", renk:"#4ade80" };
       const bugun = new Date(referans);
       bugun.setHours(0,0,0,0);
       const vade = vadeTarihi(inv.tarih, inv.vadeGun);
@@ -8109,7 +8110,7 @@
     }
 
     function durumBilgi(g, takipKapali=false) {
-      if(takipKapali) return{label:"Takip kapalı",renk:"#4ade80",bg:"#22c55e22"};
+      if(takipKapali) return{label:"Ödendi",renk:"#4ade80",bg:"#22c55e22"};
       if(g<0)   return{label:"Vadesi "+Math.abs(g)+" gün geçti",renk:"#ef4444",bg:"#ef444422"};
       if(g===0) return{label:"Vade bugün",renk:"#f97316",bg:"#f9731622"};
       if(g<=7)  return{label:"Vadeye "+g+" gün",renk:"#f59e0b",bg:"#f59e0b22"};

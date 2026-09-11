@@ -41,13 +41,14 @@ const sirala = tur => Array.from(
   faturalar.slice().sort((a,b) => context.faturaListeSirasiniKarsilastir(a,b,tur)),
   fatura => fatura.id
 );
-assert.deepEqual(sirala("tarih-yeni"), [2, 4, 3, 1], "Yeni tarih önce sıralaması çalışmalı");
-assert.deepEqual(sirala("tarih-eski"), [1, 4, 3, 2], "Eski tarih önce sıralaması çalışmalı");
+assert.deepEqual(sirala("tarih-yeni"), [2, 4, 3, 1], "Yeni tarih önce sıralaması çalışmalı ve ödenmişler altta kalmalı");
+assert.deepEqual(sirala("tarih-eski"), [4, 3, 2, 1], "Eski tarih önce sıralaması çalışmalı ve ödenmişler altta kalmalı");
 assert.deepEqual(sirala("tutar-buyuk"), [2, 3, 4, 1], "Büyük tutar önce sıralaması çalışmalı");
 assert.deepEqual(sirala("cari-az"), [2, 4, 3, 1], "Türkçe cari adına göre sıralama çalışmalı");
 assert.doesNotMatch(index, /id="filtre-siralama"/, "Gereksiz sıralama seçicisi arayüzden kaldırılmalı");
 assert.doesNotMatch(index, /id="filtre-vade-baslangic"|id="filtre-vade-bitis"/, "Vade aralığı alanları arayüzden kaldırılmalı");
 assert.doesNotMatch(index, /id="filtre-tutar-min"|id="filtre-tutar-max"/, "Tutar aralığı alanları arayüzden kaldırılmalı");
 assert.equal(context.siralamaAciklamasi("tutar-buyuk"), "Tutar · Büyük tutar önce");
+assert.equal(context.siralamaAciklamasi("durum-vade"), "Ödenmemişler önce · Yaklaşan vade");
 
 console.log("Kullanıcı seçilebilir fatura sıralama testleri başarılı.");

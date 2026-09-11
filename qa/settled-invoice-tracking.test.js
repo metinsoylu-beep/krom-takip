@@ -63,6 +63,9 @@ assert.equal(kayitliHareketler.length, 1, "Takibi önceden kapalı eski fatura d
 
 assert.match(index, /filtre==='geciken'\) return !takipKapali && gun<0/, "Kapalı fatura geciken filtresine girmemeli");
 assert.match(index, /durumBilgi\(g, takipKapali\)/, "Tablo kapalı takip durumunu göstermeli");
+assert.match(index, /if\(takipKapali\) return\{label:"Ödendi"/, "Takibi kapatılan fatura ekranda ödendi görünmeli");
+assert.match(index, /tbody tr\.odendi-satir td:not\(\.secim-hucre\):not\(:last-child\) \{ text-decoration: line-through; \}/, "Ödenmiş fatura satırı üstü çizili görünmeli");
+assert.match(index, /<label>ÖDEME DURUMU<\/label>[\s\S]*?<option value="acik">Ödenmedi<\/option>[\s\S]*?<option value="kapali">Ödendi<\/option>/, "Fatura düzenleme ekranı ödeme durumunu açıkça seçtirmeli");
 assert.match(code, /"Takip Durumu",\s*"Kapanış Tarihi"/, "Takip durumu Google Sheets'te kalıcı olmalı");
 assert.match(code, /"Geçiş Kaydı"/, "Geçmiş düzeltmeler aylık ödeme istatistiğinden ayrılmalı");
 assert.match(code, /durumHesapla\(item\.tarih, item\.vadeGun, item\.takipKapali\)/, "Apps Script kapalı faturayı gecikmiş göstermemeli");
