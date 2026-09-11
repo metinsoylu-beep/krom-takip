@@ -45,6 +45,16 @@ const context = {
   listeyiGoster() {}, rozetGuncelle() {}, ozetGuncelle() {}, cariHesaplariniGoster() {}, syncGoster() {}
 };
 vm.createContext(context);
+const hizliDurumBaslangic = index.indexOf("function faturayiOdendiDurumunaGetir");
+const hizliDurumBitis = index.indexOf("function odemeKimligiOlustur", hizliDurumBaslangic);
+assert.ok(hizliDurumBaslangic >= 0 && hizliDurumBitis > hizliDurumBaslangic, "Hızlı Ödendi durum işlevi bulunamadı");
+vm.runInContext(index.slice(hizliDurumBaslangic, hizliDurumBitis), context);
+const hizliKapatilan = context.faturayiOdendiDurumunaGetir({ id:8, takipKapali:false }, "2026-09-11");
+assert.deepEqual(
+  { id:hizliKapatilan.id, takipKapali:hizliKapatilan.takipKapali, kapanisTarihi:hizliKapatilan.kapanisTarihi },
+  { id:8, takipKapali:true, kapanisTarihi:"2026-09-11" },
+  "Hızlı Ödendi işlemi açık faturayı tarih bilgisiyle kapatmalı"
+);
 vm.runInContext(index.slice(baslangic, bitis), context);
 context.secilenGecmisOdemeleriDuzelt();
 
@@ -65,6 +75,9 @@ assert.match(index, /filtre==='geciken'\) return !takipKapali && gun<0/, "Kapal�
 assert.match(index, /durumBilgi\(g, takipKapali\)/, "Tablo kapalı takip durumunu göstermeli");
 assert.match(index, /if\(takipKapali\) return\{label:"Ödendi"/, "Takibi kapatılan fatura ekranda ödendi görünmeli");
 assert.match(index, /tbody tr\.odendi-satir td:not\(\.secim-hucre\):not\(:last-child\) \{ text-decoration: line-through; \}/, "Ödenmiş fatura satırı üstü çizili görünmeli");
+assert.match(index, /!takipKapali \? `<button class="btn-odendi"[\s\S]*?faturayiOdendiIsaretle\(this\.dataset\.faturaId\)/, "Açık faturada hızlı Ödendi düğmesi görünmeli");
+assert.match(index, /function faturayiOdendiIsaretle\(kimlik\)[\s\S]*?cari hesaba yeni bir ödeme kaydı eklemez/, "Hızlı işlem yeni cari ödeme üretmediğini açıkça belirtmeli");
+assert.match(index, /function faturayiOdendiDurumunaGetir\(inv,[\s\S]*?takipKapali:true, kapanisTarihi/, "Hızlı işlem fatura takibini kapanış tarihiyle kapatmalı");
 assert.match(index, /<label>ÖDEME DURUMU<\/label>[\s\S]*?<option value="acik">Ödenmedi<\/option>[\s\S]*?<option value="kapali">Ödendi<\/option>/, "Fatura düzenleme ekranı ödeme durumunu açıkça seçtirmeli");
 assert.match(code, /"Takip Durumu",\s*"Kapanış Tarihi"/, "Takip durumu Google Sheets'te kalıcı olmalı");
 assert.match(code, /"Geçiş Kaydı"/, "Geçmiş düzeltmeler aylık ödeme istatistiğinden ayrılmalı");

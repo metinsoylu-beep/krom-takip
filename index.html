@@ -70,8 +70,8 @@
     .fatura-tur.satis { color:#67cdfa; background:rgba(103,205,250,.09); }
     .durum { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
     .islem-grup { display: flex; gap: 6px; flex-wrap: nowrap; align-items: center; }
-    .btn-odendi  { font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid #60a5fa44; background: #1a3a5c; color: #60a5fa; font-family: Georgia, serif; white-space: nowrap; }
-    .btn-odendi:hover { background: #1e4a72; }
+    .btn-odendi  { font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #4ade8066; background: #123824; color: #86efac; font-family: "Segoe UI", Arial, sans-serif; white-space: nowrap; }
+    .btn-odendi:hover { background: #18502f; border-color: #4ade80aa; color: #dcfce7; }
     .btn-geri-al { font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; border: 1px solid #4ade8044; background: #0d2218; color: #4ade80; font-family: Georgia, serif; white-space: nowrap; }
     .btn-duzenle { font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #c9a84c44; background: #1e1a0a; color: #c9a84c; font-family: Georgia, serif; white-space: nowrap; }
     .btn-duzenle:hover { background: #2a2410; }
@@ -5801,6 +5801,11 @@
       return takipKapaliMi(inv?.takipKapali) || faturaOdemeDurumu(inv) === "odendi";
     }
 
+    function faturayiOdendiDurumunaGetir(inv, kapanisTarihi=bugununTarihi()) {
+      if (!inv || faturaTakibiKapali(inv)) return inv;
+      return { ...inv, takipKapali:true, kapanisTarihi };
+    }
+
     function odemeKimligiOlustur(faturaId) {
       const rastgele = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       return `odm-${faturaId}-${rastgele}`;
@@ -11079,6 +11084,27 @@
       listeyiGoster(); rozetGuncelle(); ozetGuncelle();
     }
 
+    function faturayiOdendiIsaretle(kimlik) {
+      if (!yoneticiGerekli()) return false;
+      const liste = faturaYukle();
+      const inv = liste.find(item=>String(item.id) === String(kimlik));
+      if (!inv || faturaTakibiKapali(inv)) return false;
+      const onay = confirm(
+        `${inv.no} numaralı fatura ödendi olarak işaretlensin mi?\n\n` +
+        "Bu işlem yalnızca fatura takibini kapatır; cari hesaba yeni bir ödeme kaydı eklemez."
+      );
+      if (!onay) return false;
+      const kapanisTarihi = bugununTarihi();
+      const guncelListe = liste.map(item=>String(item.id) === String(kimlik)
+        ? faturayiOdendiDurumunaGetir(item, kapanisTarihi)
+        : item
+      );
+      if (!faturaKaydet(guncelListe, `${inv.no} faturası ödendi olarak işaretlendi`)) return false;
+      listeyiGoster(); rozetGuncelle(); ozetGuncelle(); cariHesaplariniGoster();
+      syncGoster(`${inv.no} ödendi olarak işaretlendi; cari hesaba yeni ödeme eklenmedi`, "#4ade80");
+      return true;
+    }
+
     // ── TABLO ──────────────────────────────────────────────────────────────────
     function listeyiGoster() {
       const liste = goruntulenenFaturalariGetir();
@@ -11123,6 +11149,7 @@
             <td class="tutar-hucre">${formatPara(inv.tutar)}</td>
             <td><span class="durum" style="color:${renk};background:${bg}"><i class="fa-solid fa-circle durum-nokta" aria-hidden="true"></i>${label}</span></td>
             ${yoneticiMi() ? `<td><div class="islem-grup">
+              ${!takipKapali ? `<button class="btn-odendi" type="button" data-fatura-id="${htmlGuvenli(kimlik)}" onclick="faturayiOdendiIsaretle(this.dataset.faturaId)" aria-label="${htmlGuvenli(inv.no)} faturasını ödendi olarak işaretle" title="Ödendi olarak işaretle"><i class="fa-solid fa-check" aria-hidden="true"></i> Ödendi</button>` : ''}
               <button class="btn-duzenle" onclick="duzenleAc(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını düzenle"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
               <button class="btn-sil-tablo" onclick="faturasSil(${inv.id})" aria-label="${htmlGuvenli(inv.no)} faturasını sil"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
             </div></td>` : ''}
