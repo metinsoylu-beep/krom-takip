@@ -25,7 +25,7 @@ const context = {
   tutarSayiyaCevir: Number,
   vadeTarihi: (tarih,vadeGun) => {
     const d = new Date(`${tarih}T12:00:00`);
-    d.setDate(d.getDate() + vadeGun);
+    d.setDate(d.getDate() + vadeGun - 1);
     return d;
   }
 };

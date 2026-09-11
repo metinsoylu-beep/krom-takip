@@ -41,7 +41,7 @@ const context = {
     }), { araToplam:0, kdvToplami:0, genelToplam:0 });
   },
   tutarSayiyaCevir(deger) { return Number(deger) || 0; },
-  vadeTarihi(tarih,vadeGun) { const d = new Date(`${tarih}T12:00:00`); d.setDate(d.getDate()+vadeGun); return d; },
+  vadeTarihi(tarih,vadeGun) { const d = new Date(`${tarih}T12:00:00`); d.setDate(d.getDate()+vadeGun-1); return d; },
   faturaTakibiKapali(inv) { return Boolean(inv.takipKapali); },
   kalanGun() { return 12; },
   durumBilgi() { return { label:"Vadeye 12 gün", renk:"#3b82f6", bg:"#3b82f622" }; },
@@ -62,7 +62,7 @@ const kalemli = context.faturaBelgesiVerisi({
   kalemler:[{ netTutar:200, kdvTutari:36, toplamTutar:236 }]
 },new Date(2026,8,4,10,30));
 assert.equal(kalemli.faturaTuruEtiketi,"Satış Faturası");
-assert.equal(kalemli.vadeTarihi,"2026-10-04");
+assert.equal(kalemli.vadeTarihi,"2026-10-03");
 assert.equal(kalemli.araToplam,200);
 assert.equal(kalemli.kdvToplami,36);
 assert.equal(kalemli.genelToplam,236);

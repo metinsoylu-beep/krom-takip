@@ -13,7 +13,7 @@ function bugununTarihi(tarih = new Date()) {
 function vadeTarihi(tarih, vadeGun) {
   const [yil, ay, gun] = tarih.split("-").map(Number);
   const sonuc = new Date(yil, ay-1, gun, 12, 0, 0, 0);
-  sonuc.setDate(sonuc.getDate() + Number(vadeGun));
+  sonuc.setDate(sonuc.getDate() + Number(vadeGun) - 1);
   return sonuc;
 }
 const context = {
@@ -54,10 +54,10 @@ assert.deepEqual(
 );
 
 const liste = [
-  { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-01-01", vadeGun:40, tutar:"100", odendi:false },
-  { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-01-01", vadeGun:30, tutar:"200", odendi:false },
-  { id:3, cari:"Örnek Metal", no:"F-3", tarih:"2026-02-01", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05", odemeler:[{tarih:"2026-02-05",tutar:300}] },
-  { id:4, cari:"Yılmaz Makina", no:"F-4", tarih:"2026-02-15", vadeGun:30, tutar:"400", odendi:false }
+  { id:1, cari:"Örnek Metal", no:"F-1", tarih:"2026-01-02", vadeGun:40, tutar:"100", odendi:false },
+  { id:2, cari:"Başarı Çelik", no:"F-2", tarih:"2026-01-02", vadeGun:30, tutar:"200", odendi:false },
+  { id:3, cari:"Örnek Metal", no:"F-3", tarih:"2026-02-02", vadeGun:20, tutar:"300", odendi:true, odemeTarihi:"2026-02-05", odemeler:[{tarih:"2026-02-05",tutar:300}] },
+  { id:4, cari:"Yılmaz Makina", no:"F-4", tarih:"2026-02-16", vadeGun:30, tutar:"400", odendi:false }
 ];
 const referans = new Date(2026,1,10);
 const aylik = context.raporListesiniOlustur(

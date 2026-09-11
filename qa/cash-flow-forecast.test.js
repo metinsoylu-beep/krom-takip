@@ -42,7 +42,7 @@ const context = {
   vadeTarihi(tarih,vadeGun) {
     const [yil,ay,gun] = String(tarih || "").split("T")[0].split("-").map(Number);
     const d = new Date(yil,ay-1,gun,12,0,0,0);
-    d.setDate(d.getDate()+(parseInt(vadeGun,10)||90));
+    d.setDate(d.getDate()+(parseInt(vadeGun,10)||90)-1);
     return d;
   },
   tutarSayiyaCevir(deger) { return Number(deger)||0; },

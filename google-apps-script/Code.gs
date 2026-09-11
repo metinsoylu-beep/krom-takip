@@ -2017,7 +2017,8 @@ function eskiOdemeleriCariHareketlereDonustur(items) {
 
 function vadeTarihi(tarih, vadeGun) {
   const d = tarihOlustur(tarih);
-  d.setDate(d.getDate() + (parseInt(vadeGun, 10) || 90));
+  const gunSayisi = Math.max(1, parseInt(vadeGun, 10) || 90);
+  d.setDate(d.getDate() + gunSayisi - 1);
   return d;
 }
 

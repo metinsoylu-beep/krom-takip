@@ -43,7 +43,7 @@ const context = {
   vadeTarihi(tarih, vadeGun) {
     const [yil, ay, gun] = String(tarih || "").split("T")[0].split("-").map(Number);
     const sonuc = new Date(yil, ay - 1, gun, 12, 0, 0, 0);
-    sonuc.setDate(sonuc.getDate() + (parseInt(vadeGun, 10) || 90));
+    sonuc.setDate(sonuc.getDate() + (parseInt(vadeGun, 10) || 90) - 1);
     return sonuc;
   },
   tutarSayiyaCevir(deger) { return Number(deger) || 0; },
@@ -61,17 +61,17 @@ function fatura(id, cari, tur, faturaTarihi, tutar, ek = {}) {
 }
 
 const faturalar = [
-  fatura("1", "Alfa Metal", "alis", "2026-08-31", 100),   // 1 Eylül: gecikmiş borç
-  fatura("2", "Beta Yapı", "satis", "2026-09-03", 200),  // 4 Eylül: gecikmiş alacak
-  fatura("3", "Ceylan Gıda", "alis", "2026-09-04", 300), // bugün
-  fatura("4", "Delta Tekstil", "satis", "2026-09-11", 400),
-  fatura("5", "Eksen Makina", "alis", "2026-09-12", 500),
-  fatura("6", "Fora Kimya", "satis", "2026-10-04", 600),
-  fatura("7", "Güneş Metal", "alis", "2026-10-05", 700),
-  fatura("8", "Hazar Lojistik", "satis", "2026-11-03", 800),
-  fatura("9", "İnci Yapı", "alis", "2026-11-04", 900),
-  fatura("10", "Kuzey Cam", "satis", "2027-01-01", 1000),
-  fatura("kapali", "Kapalı Cari", "alis", "2026-09-04", 999, { takipKapali:true }),
+  fatura("1", "Alfa Metal", "alis", "2026-09-01", 100),   // 1 Eylül: gecikmiş borç
+  fatura("2", "Beta Yapı", "satis", "2026-09-04", 200),  // 4 Eylül: gecikmiş alacak
+  fatura("3", "Ceylan Gıda", "alis", "2026-09-05", 300), // bugün
+  fatura("4", "Delta Tekstil", "satis", "2026-09-12", 400),
+  fatura("5", "Eksen Makina", "alis", "2026-09-13", 500),
+  fatura("6", "Fora Kimya", "satis", "2026-10-05", 600),
+  fatura("7", "Güneş Metal", "alis", "2026-10-06", 700),
+  fatura("8", "Hazar Lojistik", "satis", "2026-11-04", 800),
+  fatura("9", "İnci Yapı", "alis", "2026-11-05", 900),
+  fatura("10", "Kuzey Cam", "satis", "2027-01-02", 1000),
+  fatura("kapali", "Kapalı Cari", "alis", "2026-09-05", 999, { takipKapali:true }),
   fatura("gecersiz", "Hatalı Cari", "alis", "bozuk-tarih", 999)
 ];
 
