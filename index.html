@@ -3452,14 +3452,14 @@
           <div class="ozet-kart toplam">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
             <span>
-              <span class="ozet-etiket">Toplam Borç</span>
+              <span class="ozet-etiket">Açık Borç</span>
               <span class="ozet-deger" id="oz-toplam">0 ₺</span>
             </span>
           </div>
           <div class="ozet-kart odenen">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></span>
             <span>
-              <span class="ozet-etiket">Toplam Alacak</span>
+              <span class="ozet-etiket">Açık Alacak</span>
               <span class="ozet-deger" id="oz-odenen">0 ₺</span>
             </span>
           </div>
@@ -5707,6 +5707,15 @@
         const alacakToplami = hesap.acilisAlacak + hesap.satisFaturaToplami + hesap.odemeToplami + hesap.cekToplami;
         return { ...hesap, borcToplami, alacakToplami, bakiye:borcToplami-alacakToplami };
       }).sort((a,b) => a.cari.localeCompare(b.cari,"tr"));
+    }
+
+    function acikBakiyeOzetiniHesapla(hesaplar=cariOzetleriniHesapla()) {
+      const paraYuvarla = deger => Math.round((Number(deger) || 0) * 100) / 100;
+      const toplamBorc = paraYuvarla((hesaplar || []).reduce((toplam,hesap) =>
+        toplam + (hesap.bakiye > 0.005 ? hesap.bakiye : 0), 0));
+      const toplamAlacak = paraYuvarla((hesaplar || []).reduce((toplam,hesap) =>
+        toplam + (hesap.bakiye < -0.005 ? Math.abs(hesap.bakiye) : 0), 0));
+      return { toplamBorc, toplamAlacak, netBakiye:paraYuvarla(toplamBorc-toplamAlacak) };
     }
 
     function cariOzetiniGetir(cari) {
@@ -10810,17 +10819,10 @@
       const hamListe=hamFaturaVerisiniYukle();
       const liste=faturaYukle();
       const cariler=cariKartlariniYukle();
-      const alisFaturaToplami=liste.filter(inv=>faturaTurunuNormallestir(inv.faturaTuru)==="alis").reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
-      const satisFaturaToplami=liste.filter(inv=>faturaTurunuNormallestir(inv.faturaTuru)==="satis").reduce((deger,inv)=>deger+tutarSayiyaCevir(inv.tutar),0);
-      const acilisBorc=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisBorc),0);
-      const acilisAlacak=cariler.reduce((deger,cari)=>deger+tutarSayiyaCevir(cari.acilisAlacak),0);
-      const hareketler=cariHareketleriYukle().filter(hareket=>hareket?.durum!=="İptal");
-      const odemeler=hareketler.filter(hareket=>cariHareketTurunuNormallestir(hareket.islemTuru)==="odeme").reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
-      const tahsilatlar=hareketler.filter(hareket=>cariHareketTurunuNormallestir(hareket.islemTuru)==="tahsilat").reduce((deger,hareket)=>deger+tutarSayiyaCevir(hareket.tutar),0);
-      const cekler=cekleriYukle().filter(cek=>cek.durum!=="İptal").reduce((deger,cek)=>deger+tutarSayiyaCevir(cek.tutar),0);
-      const toplam=alisFaturaToplami+tahsilatlar+acilisBorc;
-      const toplamAlacak=satisFaturaToplami+odemeler+cekler+acilisAlacak;
-      const netBakiye=toplam-toplamAlacak;
+      const hareketler=cariHareketleriYukle();
+      const cekler=cekleriYukle();
+      const hesaplar=cariOzetleriniHesapla(liste,hareketler,cekler,cariler);
+      const { toplamBorc:toplam, toplamAlacak, netBakiye }=acikBakiyeOzetiniHesapla(hesaplar);
       const bakiye=bakiyeBilgisi(netBakiye);
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
       document.getElementById("oz-odenen").textContent=formatPara(toplamAlacak);

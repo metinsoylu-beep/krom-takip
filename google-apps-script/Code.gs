@@ -1675,6 +1675,53 @@ function cariAdiAnahtari(cari) {
   return String(cari || "Belirtilmedi").trim().toLocaleUpperCase("tr-TR").replace(/\s+/g, " ") || "BELİRTİLMEDİ";
 }
 
+function acikBakiyeOzetiniHesapla(items, cariHareketler, cekler, cariler) {
+  const hesaplar = {};
+  function hesapGetir(cari) {
+    const anahtar = cariAdiAnahtari(cari);
+    if (!hesaplar[anahtar]) hesaplar[anahtar] = { borc:0, alacak:0 };
+    return hesaplar[anahtar];
+  }
+
+  (Array.isArray(cariler) ? cariler : []).forEach(function(cari) {
+    const hesap = hesapGetir(cari.cari);
+    hesap.borc += tutarSayisi(cari.acilisBorc);
+    hesap.alacak += tutarSayisi(cari.acilisAlacak);
+  });
+  (Array.isArray(items) ? items : []).forEach(function(item) {
+    const hesap = hesapGetir(item.cari);
+    if (faturaTurunuNormallestir(item.faturaTuru) === "satis") hesap.alacak += tutarSayisi(item.tutar);
+    else hesap.borc += tutarSayisi(item.tutar);
+  });
+  (Array.isArray(cariHareketler) ? cariHareketler : []).filter(function(hareket) {
+    return hareket && hareket.durum !== "İptal";
+  }).forEach(function(hareket) {
+    const hesap = hesapGetir(hareket.cari);
+    if (cariHareketTurunuNormallestir(hareket.islemTuru) === "tahsilat") hesap.borc += tutarSayisi(hareket.tutar);
+    else hesap.alacak += tutarSayisi(hareket.tutar);
+  });
+  (Array.isArray(cekler) ? cekler : []).filter(function(cek) {
+    return cek && cek.durum !== "İptal";
+  }).forEach(function(cek) {
+    hesapGetir(cek.cari).alacak += tutarSayisi(cek.tutar);
+  });
+
+  let toplamBorc = 0;
+  let toplamAlacak = 0;
+  Object.keys(hesaplar).forEach(function(anahtar) {
+    const bakiye = hesaplar[anahtar].borc - hesaplar[anahtar].alacak;
+    if (bakiye > 0.005) toplamBorc += bakiye;
+    else if (bakiye < -0.005) toplamAlacak += Math.abs(bakiye);
+  });
+  toplamBorc = Math.round(toplamBorc * 100) / 100;
+  toplamAlacak = Math.round(toplamAlacak * 100) / 100;
+  return {
+    toplamBorc: toplamBorc,
+    toplamAlacak: toplamAlacak,
+    netBakiye: Math.round((toplamBorc - toplamAlacak) * 100) / 100
+  };
+}
+
 function cariKimligiOlustur(cari) {
   const metin = cariAdiAnahtari(cari);
   let ozet = 2166136261;
@@ -2586,25 +2633,14 @@ function doPost(e) {
     const stockMovementSheet = ss.getSheetByName(STOCK_MOVEMENT_SHEET_NAME) || ss.insertSheet(STOCK_MOVEMENT_SHEET_NAME);
     const invoiceLineSheet = ss.getSheetByName(INVOICE_LINE_SHEET_NAME) || ss.insertSheet(INVOICE_LINE_SHEET_NAME);
 
-    const alisFaturaToplami = items.filter(function(item) { return faturaTurunuNormallestir(item.faturaTuru) === "alis"; })
-      .reduce(function(deger, item) { return deger + item.tutar; }, 0);
-    const satisFaturaToplami = items.filter(function(item) { return faturaTurunuNormallestir(item.faturaTuru) === "satis"; })
-      .reduce(function(deger, item) { return deger + item.tutar; }, 0);
-    const acilisBorcToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisBorc; }, 0);
-    const acilisAlacakToplami = cariler.reduce(function(deger, cari) { return deger + cari.acilisAlacak; }, 0);
-    const odemeToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal" && cariHareketTurunuNormallestir(hareket.islemTuru) === "odeme"; })
-      .reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
-    const tahsilatToplami = cariHareketler.filter(function(hareket) { return hareket.durum !== "İptal" && cariHareketTurunuNormallestir(hareket.islemTuru) === "tahsilat"; })
-      .reduce(function(deger, hareket) { return deger + hareket.tutar; }, 0);
-    const cekToplami = cekler.filter(function(cek) { return cek.durum !== "İptal"; })
-      .reduce(function(deger, cek) { return deger + cek.tutar; }, 0);
-    const toplamBorc = alisFaturaToplami + tahsilatToplami + acilisBorcToplami;
-    const toplamAlacak = satisFaturaToplami + odemeToplami + cekToplami + acilisAlacakToplami;
-    const netBakiye = toplamBorc - toplamAlacak;
+    const acikBakiyeOzeti = acikBakiyeOzetiniHesapla(items, cariHareketler, cekler, cariler);
+    const toplamBorc = acikBakiyeOzeti.toplamBorc;
+    const toplamAlacak = acikBakiyeOzeti.toplamAlacak;
+    const netBakiye = acikBakiyeOzeti.netBakiye;
     const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
 
     const satirlar = [
-      ["💰 TOPLAM BORÇ", "✅ TOPLAM ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", "", ""],
+      ["💰 AÇIK BORÇ", "✅ AÇIK ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", "", ""],
       [
         toplamBorc.toLocaleString("tr-TR") + " ₺",
         toplamAlacak.toLocaleString("tr-TR") + " ₺",
