@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const index = fs.readFileSync("index.html", "utf8");
+const appsScript = fs.readFileSync("google-apps-script/Code.gs", "utf8");
 
 function fonksiyonuAl(kaynak, ad) {
   const baslangic = kaynak.indexOf(`function ${ad}(`);
@@ -40,6 +41,9 @@ assert.equal(ozet.toplamAlacak, 43197, "Negatif cari bakiyeleri açık alacakta 
 assert.equal(ozet.netBakiye, 603184.86, "Net bakiye açık borç ile açık alacak farkı olmalı");
 assert.match(index, /<span class="ozet-etiket">Açık Borç<\/span>/, "Ana kart Açık Borç adını taşımalı");
 assert.match(index, /<span class="ozet-etiket">Açık Alacak<\/span>/, "Ana kart Açık Alacak adını taşımalı");
+assert.match(index, /id="oz-bakiye-etiket">Net Cari Bakiye<\/span>/, "Net kartı cari mahsuplaşmasını açıkça belirtmeli");
+assert.match(index, /getElementById\("oz-bakiye-etiket"\)\.textContent="Net Cari Bakiye"/, "Net kart başlığı bakiye yönüne göre yanıltıcı biçimde değişmemeli");
 assert.match(index, /acikBakiyeOzetiniHesapla\(hesaplar\)/, "Ana özet açık cari bakiyelerinden hesaplanmalı");
+assert.match(appsScript, /const bakiyeBasligi = "⚖️ NET CARİ BAKİYE";/, "Google Sheets özeti de net cari bakiye adını taşımalı");
 
 console.log("dashboard-open-balance.test.js: açık borç, açık alacak ve net bakiye kontrolleri geçti");

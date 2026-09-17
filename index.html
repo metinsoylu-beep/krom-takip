@@ -3466,7 +3466,7 @@
           <div class="ozet-kart kalan" id="oz-bakiye-kart">
             <span class="ozet-ikon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
             <span>
-              <span class="ozet-etiket" id="oz-bakiye-etiket">Net Borç Bakiyesi</span>
+              <span class="ozet-etiket" id="oz-bakiye-etiket">Net Cari Bakiye</span>
               <span class="ozet-deger" id="oz-kalan">0 ₺</span>
             </span>
           </div>
@@ -10826,7 +10826,7 @@
       const bakiye=bakiyeBilgisi(netBakiye);
       document.getElementById("oz-toplam").textContent=formatPara(toplam);
       document.getElementById("oz-odenen").textContent=formatPara(toplamAlacak);
-      document.getElementById("oz-bakiye-etiket").textContent=bakiye.etiket;
+      document.getElementById("oz-bakiye-etiket").textContent="Net Cari Bakiye";
       document.getElementById("oz-kalan").textContent=formatPara(bakiye.tutar);
       const bakiyeKarti=document.getElementById("oz-bakiye-kart");
       bakiyeKarti?.classList.toggle("alacak",bakiye.sinif==="bakiye-alacak");

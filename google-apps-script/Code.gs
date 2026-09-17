@@ -2637,7 +2637,7 @@ function doPost(e) {
     const toplamBorc = acikBakiyeOzeti.toplamBorc;
     const toplamAlacak = acikBakiyeOzeti.toplamAlacak;
     const netBakiye = acikBakiyeOzeti.netBakiye;
-    const bakiyeBasligi = netBakiye < -0.005 ? "🟢 ALACAK BAKİYESİ" : netBakiye > 0.005 ? "🔴 BORÇ BAKİYESİ" : "⚪ KAPALI HESAP";
+    const bakiyeBasligi = "⚖️ NET CARİ BAKİYE";
 
     const satirlar = [
       ["💰 AÇIK BORÇ", "✅ AÇIK ALACAK", bakiyeBasligi, "🕐 Son Güncelleme", "", "", "", "", "", "", ""],
