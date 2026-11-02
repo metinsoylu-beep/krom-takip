@@ -1,16 +1,16 @@
 {
   "source": "Türkiye Cumhuriyet Merkez Bankası",
   "sourceUrl": "https://www.tcmb.gov.tr/kurlar/today.xml",
-  "sourceDate": "30.10.2026",
-  "updatedAt": "2026-10-30T18:37:16.922867Z",
+  "sourceDate": "02.11.2026",
+  "updatedAt": "2026-11-02T22:19:10.787564Z",
   "rates": {
     "USD": {
-      "buying": "49.7747",
-      "selling": "49.8644"
+      "buying": "49.8827",
+      "selling": "49.9726"
     },
     "EUR": {
-      "buying": "55.7149",
-      "selling": "55.8153"
+      "buying": "55.8953",
+      "selling": "55.9960"
     }
   }
 }
